@@ -664,7 +664,9 @@ async function handlePhotoUpload() {
   let uploaded = 0;
   for (const photo of photos) {
     const ext = photo.file.name.split('.').pop();
-    const path = `${currentUser.id}/${currentStubId}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
+    console.log('Uploading to path:', `${currentUser.id}/${currentStubId}/`);
+    const stubFolder = currentStubId ? currentStubId : 'unknown';
+    const path = `${currentUser.id}/${stubFolder}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
     const { error } = await sb.storage.from('photos').upload(path, photo.file, { upsert: true });
     if (!error) uploaded++;
     btn.innerHTML = `<span class="loading-spinner"></span>Uploading ${uploaded} of ${photos.length}...`;
