@@ -170,7 +170,7 @@
 <!-- ── LANDING ── -->
 <div id="screen-landing" class="screen active">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
   </nav>
   <div style="flex:1; position:relative; overflow:hidden; display:flex;">
@@ -213,7 +213,7 @@
 <!-- ── SIGN UP ── -->
 <div id="screen-signup" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 1 OF 4 — CREATE ACCOUNT</div>
   </nav>
   <div class="progress-track"><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
@@ -243,7 +243,7 @@
 <!-- ── LOGIN ── -->
 <div id="screen-login" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
   </nav>
   <div class="content" style="justify-content:center;max-width:480px;">
     <h2 class="screen-title">Welcome <span class="gold">Back.</span></h2>
@@ -264,7 +264,7 @@
 <!-- ── DASHBOARD ── -->
 <div id="screen-dashboard" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div style="display:flex;align-items:center;gap:16px;">
       <span id="dash-user-name" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);"></span>
       <button class="btn-secondary" style="padding:8px 16px;font-size:11px;" onclick="handleSignout()">Sign Out</button>
@@ -290,7 +290,7 @@
 <!-- ── EVENT DETAILS ── -->
 <div id="screen-event" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 2 OF 4 — EVENT DETAILS</div>
   </nav>
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
@@ -326,7 +326,7 @@
 <!-- ── PHOTO UPLOAD ── -->
 <div id="screen-photos" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 3 OF 4 — UPLOAD PHOTOS</div>
   </nav>
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
@@ -349,7 +349,7 @@
     <div id="photos-error" class="error-msg"></div>
     <div class="form-actions">
       <button class="btn-primary" id="upload-btn" onclick="handlePhotoUpload()">Upload & Continue →</button>
-      <button class="back-btn" onclick="goTo('screen-event')">← Back</button>
+      <button class="back-btn" onclick="goBackToEvent()">← Back</button>
     </div>
   </div>
 </div>
@@ -357,7 +357,7 @@
 <!-- ── NFC WRITE ── -->
 <div id="screen-nfc" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 4 OF 4 — PROGRAM YOUR STUB</div>
   </nav>
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
@@ -381,7 +381,7 @@
 
 <!-- ── SUCCESS ── -->
 <div id="screen-success" class="screen">
-  <nav class="top-bar"><div class="logo">Smart<span>Stubs</span></div></nav>
+  <nav class="top-bar"><div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div></nav>
   <div class="content" style="max-width:560px;justify-content:center;text-align:center;align-items:center;">
     <div style="font-size:72px;margin-bottom:24px;">🎟️</div>
     <div class="success-badge">✓ SmartStub Created Successfully</div>
@@ -398,7 +398,7 @@
 <!-- ── GALLERY (public) ── -->
 <div id="screen-gallery" class="screen">
   <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;" id="gallery-url-bar"></div>
   </nav>
   <div class="gallery-hero">
@@ -448,7 +448,17 @@ let currentStubId = null;
 let currentSlug = null;
 let photos = [];
 const MAX_PHOTOS = 25;
-const MIN_PHOTOS = 10;
+const MIN_PHOTOS = 1;
+
+// ── Logo Click ──
+function logoClick() {
+  if (currentUser) {
+    goTo('screen-dashboard');
+    loadDashboard();
+  } else {
+    goTo('screen-landing');
+  }
+}
 
 // ── Navigation ──
 function goTo(screenId) {
@@ -640,7 +650,7 @@ function renderPhotoGrid() {
   });
   const count = document.getElementById('photo-count');
   count.innerHTML = photos.length > 0
-    ? `<span style="color:var(--gold)">${photos.length}</span> / ${MAX_PHOTOS} photos selected ${photos.length < MIN_PHOTOS ? `— <span style="color:var(--red)">minimum ${MIN_PHOTOS} required</span>` : '— <span style="color:#4caf50">✓ ready to upload</span>'}`
+    ? `<span style="color:var(--gold)">${photos.length}</span> / ${MAX_PHOTOS} photos selected <span style="color:#4caf50">✓ ready to upload</span>`
     : '';
 }
 
@@ -655,7 +665,7 @@ async function handlePhotoUpload() {
   const btn = document.getElementById('upload-btn');
   errEl.classList.remove('show');
 
-  if (photos.length < MIN_PHOTOS) return showError(errEl, `Please select at least ${MIN_PHOTOS} photos.`);
+  if (photos.length < 1) return showError(errEl, 'Please select at least one photo.');
   if (!currentStubId) return showError(errEl, 'Event details not saved. Please go back and try again.');
 
   btn.disabled = true;
@@ -664,9 +674,7 @@ async function handlePhotoUpload() {
   let uploaded = 0;
   for (const photo of photos) {
     const ext = photo.file.name.split('.').pop();
-    console.log('Uploading to path:', `${currentUser.id}/${currentStubId}/`);
-    const stubFolder = currentStubId ? currentStubId : 'unknown';
-    const path = `${currentUser.id}/${stubFolder}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
+    const path = `${currentUser.id}/${currentStubId}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
     const { error } = await sb.storage.from('photos').upload(path, photo.file, { upsert: true });
     if (!error) uploaded++;
     btn.innerHTML = `<span class="loading-spinner"></span>Uploading ${uploaded} of ${photos.length}...`;
@@ -785,7 +793,21 @@ async function renderGallery(stub) {
   goTo('screen-gallery');
 }
 
-// ── Lightbox ──
+// ── Back to Event: repopulate form with saved data ──
+async function goBackToEvent() {
+  if (currentStubId) {
+    const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
+    if (stub) {
+      document.getElementById('event-name').value = stub.event_name || '';
+      document.getElementById('event-artist').value = stub.artist || '';
+      document.getElementById('event-date').value = stub.event_date || '';
+      document.getElementById('event-venue').value = stub.venue || '';
+      document.getElementById('event-city').value = stub.city || '';
+      document.getElementById('event-note').value = stub.personal_note || '';
+    }
+  }
+  goTo('screen-event');
+}
 function openLightbox(src) {
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('open');
