@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartStubs — Live Every Moment Twice</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --black: #0a0a0a;
@@ -16,447 +17,140 @@
     --muted: #7a7468;
     --stub-bg: #1a1612;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--off-white); min-height: 100vh; overflow-x: hidden; }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--black);
-    color: var(--off-white);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  .screen { display: none; min-height: 100vh; animation: fadeIn 0.4s ease; flex-direction: column; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── SCREENS ── */
-  .screen {
-    display: none;
-    min-height: 100vh;
-    animation: fadeIn 0.4s ease;
-  }
-  .screen.active { display: flex; flex-direction: column; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ── HEADER ── */
-  .top-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 32px;
-    border-bottom: 1px solid #222;
-    background: var(--black);
-    position: sticky; top: 0; z-index: 100;
-  }
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--gold);
-  }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 18px 32px; border-bottom: 1px solid #222; background: var(--black); position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--gold); }
   .logo span { color: var(--off-white); }
-  .step-indicator {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 2px;
-  }
+  .step-indicator { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 2px; }
 
-  /* ── HERO / LANDING ── */
-  #screen-landing {
-    background: var(--black);
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-bg {
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 60% at 60% 40%, #1e1508 0%, transparent 70%),
-                repeating-linear-gradient(0deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px),
-                repeating-linear-gradient(90deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px);
-    opacity: 0.7;
-  }
-  .hero-content {
-    position: relative; z-index: 2;
-    display: flex; flex-direction: column; align-items: flex-start;
-    padding: 80px 64px;
-    max-width: 720px;
-  }
-  .hero-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 24px;
-  }
-  .hero-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(64px, 10vw, 120px);
-    line-height: 0.9;
-    letter-spacing: 2px;
-    margin-bottom: 28px;
-  }
+  /* HERO */
+  #screen-landing { background: var(--black); position: relative; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, #1e1508 0%, transparent 70%), repeating-linear-gradient(0deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px), repeating-linear-gradient(90deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px); opacity: 0.7; }
+  .hero-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; padding: 80px 64px; max-width: 720px; }
+  .hero-tag { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(64px, 10vw, 120px); line-height: 0.9; letter-spacing: 2px; margin-bottom: 28px; }
   .hero-title .accent { color: var(--gold); }
-  .hero-sub {
-    font-size: 17px;
-    line-height: 1.65;
-    color: #b0aa9e;
-    max-width: 480px;
-    margin-bottom: 48px;
-    font-weight: 300;
-  }
-  .btn-primary {
-    background: var(--gold);
-    color: var(--black);
-    border: none;
-    padding: 16px 40px;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
-  }
+  .hero-sub { font-size: 17px; line-height: 1.65; color: #b0aa9e; max-width: 480px; margin-bottom: 48px; font-weight: 300; }
+
+  .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); }
   .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
-  .btn-secondary {
-    background: transparent;
-    color: var(--off-white);
-    border: 1px solid #444;
-    padding: 14px 32px;
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-left: 16px;
-  }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn-secondary { background: transparent; color: var(--off-white); border: 1px solid #444; padding: 14px 32px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  /* ── STUB VISUAL ── */
-  .stub-preview {
-    position: absolute;
-    right: -20px; top: 50%;
-    transform: translateY(-50%) rotate(-8deg);
-    width: 340px;
-  }
-  .stub-card {
-    background: var(--stub-bg);
-    border: 1px solid #3a3228;
-    padding: 32px;
-    position: relative;
-    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-  }
-  .stub-card::before {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; top: 50%;
-    height: 1px;
-    background: repeating-linear-gradient(90deg, #3a3228 0, #3a3228 8px, transparent 8px, transparent 14px);
-  }
-  .stub-perf {
-    position: absolute;
-    left: -12px; top: 50%; transform: translateY(-50%);
-    width: 24px; height: 24px;
-    background: var(--black);
-    border-radius: 50%;
-    border: 1px solid #3a3228;
-  }
-  .stub-perf-r {
-    right: -12px; left: auto;
-  }
+  .stub-preview { position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(-8deg); width: 340px; }
+  .stub-card { background: var(--stub-bg); border: 1px solid #3a3228; padding: 32px; position: relative; clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)); }
+  .stub-card::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: repeating-linear-gradient(90deg, #3a3228 0, #3a3228 8px, transparent 8px, transparent 14px); }
+  .stub-perf { position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: var(--black); border-radius: 50%; border: 1px solid #3a3228; }
+  .stub-perf-r { right: -12px; left: auto; }
   .stub-event { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--gold); }
   .stub-artist { font-size: 13px; color: #888; margin: 4px 0 16px; font-family: 'Space Mono', monospace; }
   .stub-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
   .stub-detail-label { font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
   .stub-detail-val { font-size: 13px; color: var(--off-white); font-family: 'Space Mono', monospace; }
-  .nfc-zone {
-    margin-top: 20px;
-    border: 1px dashed #4a4030;
-    padding: 12px;
-    display: flex; align-items: center; gap: 10px;
-    background: rgba(201,168,76,0.05);
-  }
-  .nfc-icon {
-    width: 32px; height: 32px;
-    background: var(--gold);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-  }
+  .nfc-zone { margin-top: 20px; border: 1px dashed #4a4030; padding: 12px; display: flex; align-items: center; gap: 10px; background: rgba(201,168,76,0.05); }
+  .nfc-icon { width: 32px; height: 32px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; }
   .nfc-label { font-size: 10px; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; font-family: 'Space Mono', monospace; }
 
-  /* ── CONTENT AREA ── */
-  .content {
-    flex: 1;
-    padding: 48px 64px;
-    max-width: 820px;
-    width: 100%;
-    margin: 0 auto;
-  }
-
-  .screen-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    letter-spacing: 2px;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
+  .content { flex: 1; padding: 48px 64px; max-width: 820px; width: 100%; margin: 0 auto; }
+  .screen-title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; line-height: 1; margin-bottom: 8px; }
   .screen-title .gold { color: var(--gold); }
-  .screen-desc {
-    color: var(--muted);
-    font-size: 15px;
-    margin-bottom: 40px;
-    font-weight: 300;
-  }
+  .screen-desc { color: var(--muted); font-size: 15px; margin-bottom: 40px; font-weight: 300; }
 
-  /* ── FORM ── */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .form-group { display: flex; flex-direction: column; gap: 8px; }
   .form-group.full { grid-column: 1 / -1; }
-  label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-  input, select, textarea {
-    background: #111;
-    border: 1px solid #2a2a2a;
-    color: var(--off-white);
-    padding: 14px 16px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
+  label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
+  input, select, textarea { background: #111; border: 1px solid #2a2a2a; color: var(--off-white); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; width: 100%; }
   input:focus, select:focus, textarea:focus { border-color: var(--gold); }
   input::placeholder { color: #444; }
   select option { background: #111; }
   textarea { resize: vertical; min-height: 80px; }
 
-  .form-actions {
-    display: flex; gap: 16px; margin-top: 40px; align-items: center;
-  }
-  .back-btn {
-    background: none; border: none; color: var(--muted);
-    font-family: 'Space Mono', monospace; font-size: 11px;
-    letter-spacing: 2px; text-transform: uppercase;
-    cursor: pointer; transition: color 0.2s;
-  }
+  .form-actions { display: flex; gap: 16px; margin-top: 40px; align-items: center; }
+  .back-btn { background: none; border: none; color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: color 0.2s; }
   .back-btn:hover { color: var(--off-white); }
 
-  /* ── PROGRESS BAR ── */
-  .progress-track {
-    display: flex; gap: 6px; padding: 20px 64px 0;
-  }
-  .progress-seg {
-    height: 3px; flex: 1;
-    background: #222;
-    transition: background 0.3s;
-  }
+  .progress-track { display: flex; gap: 6px; padding: 20px 64px 0; }
+  .progress-seg { height: 3px; flex: 1; background: #222; transition: background 0.3s; }
   .progress-seg.done { background: var(--gold); }
   .progress-seg.active { background: var(--gold-light); }
 
-  /* ── PHOTO GRID ── */
-  .photo-upload-zone {
-    border: 2px dashed #333;
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    margin-bottom: 24px;
-  }
+  .photo-upload-zone { border: 2px dashed #333; padding: 40px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; margin-bottom: 24px; }
   .photo-upload-zone:hover { border-color: var(--gold); background: rgba(201,168,76,0.03); }
   .upload-icon { font-size: 40px; margin-bottom: 12px; }
   .upload-text { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; color: var(--muted); }
-  .photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
-  }
-  .photo-thumb {
-    aspect-ratio: 1;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    overflow: hidden;
-    position: relative;
-    cursor: pointer;
-  }
+  .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .photo-thumb { aspect-ratio: 1; background: #1a1a1a; border: 1px solid #2a2a2a; overflow: hidden; position: relative; cursor: pointer; }
   .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-  .photo-thumb .remove-btn {
-    position: absolute; top: 4px; right: 4px;
-    background: var(--red); border: none;
-    width: 20px; height: 20px;
-    color: white; font-size: 12px;
-    cursor: pointer; display: none;
-    align-items: center; justify-content: center;
-    border-radius: 50%;
-  }
+  .photo-thumb .remove-btn { position: absolute; top: 4px; right: 4px; background: var(--red); border: none; width: 20px; height: 20px; color: white; font-size: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; border-radius: 50%; }
   .photo-thumb:hover .remove-btn { display: flex; }
-  .photo-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px; color: var(--muted);
-    margin-top: 12px;
-  }
-  .photo-count .gold { color: var(--gold); }
+  .photo-count { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); margin-top: 12px; }
 
-  /* ── NFC WRITE SCREEN ── */
+  /* NFC */
   #screen-nfc .content { text-align: center; align-items: center; display: flex; flex-direction: column; justify-content: center; }
-  .nfc-animation {
-    width: 180px; height: 180px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #1e1608 0%, transparent 70%);
-    border: 2px solid var(--gold);
-    display: flex; align-items: center; justify-content: center;
-    margin: 40px auto;
-    position: relative;
-    animation: nfcPulse 2s ease-in-out infinite;
-  }
-  .nfc-animation::before, .nfc-animation::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(201,168,76,0.3);
-    animation: nfcRipple 2s ease-out infinite;
-  }
+  .nfc-animation { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, #1e1608 0%, transparent 70%); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; margin: 40px auto; position: relative; animation: nfcPulse 2s ease-in-out infinite; }
+  .nfc-animation::before, .nfc-animation::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(201,168,76,0.3); animation: nfcRipple 2s ease-out infinite; }
   .nfc-animation::before { width: 220px; height: 220px; animation-delay: 0.3s; }
   .nfc-animation::after { width: 270px; height: 270px; animation-delay: 0.6s; }
-  @keyframes nfcPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); }
-    50% { box-shadow: 0 0 30px 10px rgba(201,168,76,0.1); }
-  }
-  @keyframes nfcRipple {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(1.3); }
-  }
+  @keyframes nfcPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0.4); } 50% { box-shadow: 0 0 30px 10px rgba(201,168,76,0.1); } }
+  @keyframes nfcRipple { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }
   .nfc-big-icon { font-size: 64px; }
-  .nfc-instructions {
-    font-size: 16px; color: var(--muted); max-width: 420px;
-    line-height: 1.7; font-weight: 300;
-  }
-  .nfc-url-preview {
-    background: #111; border: 1px solid #2a2a2a;
-    padding: 14px 20px; margin: 24px 0;
-    font-family: 'Space Mono', monospace; font-size: 13px;
-    color: var(--gold); letter-spacing: 1px;
-  }
-  .nfc-status {
-    margin-top: 16px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
+  .nfc-instructions { font-size: 16px; color: var(--muted); max-width: 420px; line-height: 1.7; font-weight: 300; }
+  .nfc-url-preview { background: #111; border: 1px solid #2a2a2a; padding: 14px 20px; margin: 24px 0; font-family: 'Space Mono', monospace; font-size: 13px; color: var(--gold); letter-spacing: 1px; word-break: break-all; }
+  .nfc-status { margin-top: 16px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
   .nfc-status.ready { color: var(--gold); animation: blink 1.2s ease-in-out infinite; }
   .nfc-status.success { color: #4caf50; animation: none; }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-  /* ── GALLERY ── */
-  #screen-gallery {
-    background: var(--black);
-  }
-  .gallery-hero {
-    position: relative;
-    padding: 64px;
-    border-bottom: 1px solid #1a1a1a;
-    overflow: hidden;
-  }
-  .gallery-bg {
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, #1a1208 0%, transparent 60%);
-  }
-  .gallery-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 4px;
-    color: var(--gold); text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .gallery-event-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: clamp(48px, 8vw, 96px);
-    line-height: 0.9; margin-bottom: 16px;
-    position: relative; z-index: 1;
-  }
-  .gallery-meta {
-    display: flex; gap: 32px; flex-wrap: wrap;
-    position: relative; z-index: 1;
-  }
-  .gallery-meta-item {
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .gallery-meta-label {
-    font-size: 9px; letter-spacing: 3px;
-    color: var(--muted); text-transform: uppercase;
-    font-family: 'Space Mono', monospace;
-  }
-  .gallery-meta-val {
-    font-size: 15px; color: var(--off-white);
-  }
-  .gallery-photos {
-    padding: 40px 64px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 4px;
-  }
-  .gallery-photo {
-    aspect-ratio: 1;
-    overflow: hidden;
-    background: #1a1a1a;
-    cursor: pointer;
-    position: relative;
-  }
+  /* GALLERY */
+  .gallery-hero { position: relative; padding: 64px; border-bottom: 1px solid #1a1a1a; overflow: hidden; }
+  .gallery-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #1a1208 0%, transparent 60%); }
+  .gallery-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 12px; }
+  .gallery-event-name { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 8vw, 96px); line-height: 0.9; margin-bottom: 16px; position: relative; z-index: 1; }
+  .gallery-meta { display: flex; gap: 32px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .gallery-meta-item { display: flex; flex-direction: column; gap: 4px; }
+  .gallery-meta-label { font-size: 9px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; font-family: 'Space Mono', monospace; }
+  .gallery-meta-val { font-size: 15px; color: var(--off-white); }
+  .gallery-photos { padding: 40px 64px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px; }
+  .gallery-photo { aspect-ratio: 1; overflow: hidden; background: #1a1a1a; cursor: pointer; position: relative; }
   .gallery-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
   .gallery-photo:hover img { transform: scale(1.06); }
-  .gallery-photo-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%);
-    opacity: 0; transition: opacity 0.3s;
-  }
-  .gallery-photo:hover .gallery-photo-overlay { opacity: 1; }
 
-  /* Lightbox */
-  .lightbox {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.95);
-    z-index: 1000;
-    align-items: center; justify-content: center;
-  }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
   .lightbox.open { display: flex; }
-  .lightbox img {
-    max-width: 90vw; max-height: 90vh;
-    object-fit: contain;
-  }
-  .lightbox-close {
-    position: absolute; top: 24px; right: 32px;
-    background: none; border: none;
-    color: var(--off-white); font-size: 32px;
-    cursor: pointer; opacity: 0.6;
-    transition: opacity 0.2s;
-  }
+  .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
+  .lightbox-close { position: absolute; top: 24px; right: 32px; background: none; border: none; color: var(--off-white); font-size: 32px; cursor: pointer; opacity: 0.6; }
   .lightbox-close:hover { opacity: 1; }
 
-  /* ── DIVIDER ── */
-  .divider {
-    border: none; border-top: 1px solid #1e1e1e;
-    margin: 32px 0;
-  }
+  .success-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); padding: 8px 16px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #4caf50; text-transform: uppercase; margin-bottom: 24px; }
 
-  /* ── SUCCESS BADGE ── */
-  .success-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: rgba(76,175,80,0.1);
-    border: 1px solid rgba(76,175,80,0.3);
-    padding: 8px 16px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 2px;
-    color: #4caf50; text-transform: uppercase;
-    margin-bottom: 24px;
-  }
+  .error-msg { color: var(--red); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 1px; margin-top: 12px; padding: 12px 16px; background: rgba(209,59,42,0.08); border: 1px solid rgba(209,59,42,0.2); display: none; }
+  .error-msg.show { display: block; }
+
+  .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: var(--black); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .divider { border: none; border-top: 1px solid #1e1e1e; margin: 32px 0; }
+
+  /* Dashboard */
+  .stub-list { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+  .stub-list-item { background: #111; border: 1px solid #2a2a2a; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; transition: border-color 0.2s; cursor: pointer; }
+  .stub-list-item:hover { border-color: var(--gold); }
+  .stub-list-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; color: var(--gold); }
+  .stub-list-meta { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .stub-list-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .btn-small { padding: 8px 16px; font-size: 11px; }
+
+  .empty-state { text-align: center; padding: 80px 40px; border: 1px dashed #2a2a2a; }
+  .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state-text { color: var(--muted); font-size: 15px; line-height: 1.7; }
 
   @media (max-width: 768px) {
     .content { padding: 32px 24px; }
@@ -464,21 +158,20 @@
     .hero-content { padding: 48px 24px; }
     .stub-preview { display: none; }
     .gallery-hero { padding: 40px 24px; }
-    .gallery-photos { padding: 24px; }
+    .gallery-photos { padding: 24px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     .progress-track { padding: 16px 24px 0; }
     .top-bar { padding: 16px 24px; }
+    .stub-list-item { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════
-     SCREEN 1: LANDING
-═══════════════════════════════════════ -->
+<!-- ── LANDING ── -->
 <div id="screen-landing" class="screen active">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
-    <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0">Sign In</button>
+    <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
   </nav>
   <div style="flex:1; position:relative; overflow:hidden; display:flex;">
     <div class="hero-bg"></div>
@@ -486,487 +179,663 @@
       <div class="hero-tag">&#9632; NFC-Powered Memory Keepsakes</div>
       <h1 class="hero-title">Live Every<br>Moment <span class="accent">Twice.</span></h1>
       <p class="hero-sub">SmartStubs transforms your concert ticket into a living gallery. Tap the stub, relive the night. Custom printed tickets embedded with NFC chips — linking your photos, memories, and moments.</p>
-      <div style="display:flex; flex-wrap:wrap; gap:0;">
+      <div style="display:flex; flex-wrap:wrap; gap:12px;">
         <button class="btn-primary" onclick="goTo('screen-signup')">Get Started</button>
-        <button class="btn-secondary" onclick="goTo('screen-gallery')" style="margin-left:16px">Preview Gallery</button>
+        <button class="btn-secondary" onclick="goTo('screen-login')">Sign In</button>
       </div>
     </div>
     <div class="stub-preview">
       <div class="stub-card">
-        <div class="stub-perf"></div>
-        <div class="stub-perf stub-perf-r"></div>
+        <div class="stub-perf"></div><div class="stub-perf stub-perf-r"></div>
         <div class="stub-event">THE WEEKEND</div>
         <div class="stub-artist">// AFTER HOURS TOUR</div>
-        <div style="font-size:11px; color:#555; font-family:'Space Mono',monospace;">SAT 14 SEP · ROW D · SEAT 22</div>
+        <div style="font-size:11px;color:#555;font-family:'Space Mono',monospace;">SAT 14 SEP · ROW D · SEAT 22</div>
         <div class="stub-details">
-          <div class="stub-detail-label">Venue</div>
-          <div class="stub-detail-label">City</div>
+          <div class="stub-detail-label">Venue</div><div class="stub-detail-label">City</div>
           <div class="stub-detail-val" style="font-size:11px;">Madison Sq Garden</div>
           <div class="stub-detail-val" style="font-size:11px;">New York, NY</div>
         </div>
         <div class="nfc-zone">
-          <div class="nfc-icon">&#128246;</div>
-          <div>
-            <div class="nfc-label">Tap to view gallery</div>
-            <div style="font-size:10px; color:#555; font-family:'Space Mono',monospace;">smartstubs.io/s/xk9m2</div>
-          </div>
+          <div class="nfc-icon">📲</div>
+          <div><div class="nfc-label">Tap to view gallery</div><div style="font-size:10px;color:#555;font-family:'Space Mono',monospace;">thesmartstub.com/g/xk9m2</div></div>
         </div>
       </div>
     </div>
   </div>
-  <!-- How it works strip -->
-  <div style="border-top:1px solid #1a1a1a; padding:40px 64px; display:grid; grid-template-columns: repeat(4,1fr); gap:32px; background:#0d0d0d;">
-    <div>
-      <div style="font-size:28px; margin-bottom:12px;">📬</div>
-      <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:6px; color:var(--gold)">01 Receive</div>
-      <div style="font-size:13px; color:var(--muted); line-height:1.6;">Your custom printed SmartStub arrives in the mail with a blank NFC chip inside.</div>
-    </div>
-    <div>
-      <div style="font-size:28px; margin-bottom:12px;">🎟️</div>
-      <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:6px; color:var(--gold)">02 Setup</div>
-      <div style="font-size:13px; color:var(--muted); line-height:1.6;">Create your account, enter event details, and upload up to 25 photos.</div>
-    </div>
-    <div>
-      <div style="font-size:28px; margin-bottom:12px;">📲</div>
-      <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:6px; color:var(--gold)">03 Write</div>
-      <div style="font-size:13px; color:var(--muted); line-height:1.6;">Tap your phone to the stub to write your unique gallery URL to the NFC chip.</div>
-    </div>
-    <div>
-      <div style="font-size:28px; margin-bottom:12px;">✨</div>
-      <div style="font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; margin-bottom:6px; color:var(--gold)">04 Relive</div>
-      <div style="font-size:13px; color:var(--muted); line-height:1.6;">Anyone who taps the stub is instantly taken to your private gallery forever.</div>
-    </div>
+  <div style="border-top:1px solid #1a1a1a;padding:40px 64px;display:grid;grid-template-columns:repeat(4,1fr);gap:32px;background:#0d0d0d;">
+    <div><div style="font-size:28px;margin-bottom:12px;">📬</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">01 Receive</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Your custom printed SmartStub arrives with a blank NFC chip inside.</div></div>
+    <div><div style="font-size:28px;margin-bottom:12px;">🎟️</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">02 Setup</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Create your account, enter event details, and upload up to 25 photos.</div></div>
+    <div><div style="font-size:28px;margin-bottom:12px;">📲</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">03 Write</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Tap your phone to the stub to write your unique gallery URL to the NFC chip.</div></div>
+    <div><div style="font-size:28px;margin-bottom:12px;">✨</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">04 Relive</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Anyone who taps the stub is instantly taken to your private gallery forever.</div></div>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     SCREEN 2: SIGN UP
-═══════════════════════════════════════ -->
+<!-- ── SIGN UP ── -->
 <div id="screen-signup" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 1 OF 4 — CREATE ACCOUNT</div>
   </nav>
-  <div class="progress-track">
-    <div class="progress-seg active"></div>
-    <div class="progress-seg"></div>
-    <div class="progress-seg"></div>
-    <div class="progress-seg"></div>
-  </div>
+  <div class="progress-track"><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content">
     <h2 class="screen-title">Create Your <span class="gold">Account</span></h2>
     <p class="screen-desc">Start preserving your memories. Free to join.</p>
     <div class="form-grid">
-      <div class="form-group">
-        <label>First Name</label>
-        <input type="text" placeholder="Alex" id="signup-first">
-      </div>
-      <div class="form-group">
-        <label>Last Name</label>
-        <input type="text" placeholder="Rivera" id="signup-last">
-      </div>
-      <div class="form-group full">
-        <label>Email Address</label>
-        <input type="email" placeholder="alex@example.com" id="signup-email">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" placeholder="8+ characters" id="signup-pass">
-      </div>
-      <div class="form-group">
-        <label>Confirm Password</label>
-        <input type="password" placeholder="Re-enter password" id="signup-pass2">
-      </div>
-      <div class="form-group full" style="flex-direction:row; align-items:center; gap:12px;">
-        <input type="checkbox" id="terms-check" style="width:18px; height:18px; accent-color:var(--gold); flex-shrink:0;">
-        <label for="terms-check" style="font-size:13px; letter-spacing:0; text-transform:none; color:var(--muted); font-family:'DM Sans',sans-serif;">I agree to the <a href="#" style="color:var(--gold);">Terms of Service</a> and <a href="#" style="color:var(--gold);">Privacy Policy</a></label>
+      <div class="form-group"><label>First Name</label><input type="text" id="signup-first" placeholder="Alex"></div>
+      <div class="form-group"><label>Last Name</label><input type="text" id="signup-last" placeholder="Rivera"></div>
+      <div class="form-group full"><label>Email Address</label><input type="email" id="signup-email" placeholder="alex@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="signup-pass" placeholder="8+ characters"></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" id="signup-pass2" placeholder="Re-enter password"></div>
+      <div class="form-group full" style="flex-direction:row;align-items:center;gap:12px;">
+        <input type="checkbox" id="terms-check" style="width:18px;height:18px;accent-color:var(--gold);flex-shrink:0;">
+        <label for="terms-check" style="font-size:13px;letter-spacing:0;text-transform:none;color:var(--muted);font-family:'DM Sans',sans-serif;">I agree to the <a href="#" style="color:var(--gold);">Terms of Service</a> and <a href="#" style="color:var(--gold);">Privacy Policy</a></label>
       </div>
     </div>
+    <div id="signup-error" class="error-msg"></div>
     <div class="form-actions">
-      <button class="btn-primary" onclick="goTo('screen-event')">Create Account →</button>
+      <button class="btn-primary" id="signup-btn" onclick="handleSignup()">Create Account →</button>
       <button class="back-btn" onclick="goTo('screen-landing')">← Back</button>
     </div>
-    <p style="margin-top:24px; font-size:13px; color:var(--muted);">Already have an account? <a href="#" onclick="goTo('screen-login')" style="color:var(--gold);">Sign in</a></p>
+    <p style="margin-top:24px;font-size:13px;color:var(--muted);">Already have an account? <a href="#" onclick="goTo('screen-login')" style="color:var(--gold);">Sign in</a></p>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     SCREEN 2B: LOGIN
-═══════════════════════════════════════ -->
+<!-- ── LOGIN ── -->
 <div id="screen-login" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
   </nav>
-  <div class="content" style="justify-content:center; max-width:480px;">
+  <div class="content" style="justify-content:center;max-width:480px;">
     <h2 class="screen-title">Welcome <span class="gold">Back.</span></h2>
     <p class="screen-desc">Sign in to manage your SmartStubs and galleries.</p>
     <div class="form-grid" style="grid-template-columns:1fr;">
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" placeholder="alex@example.com">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" placeholder="Your password">
-      </div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="login-email" placeholder="alex@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pass" placeholder="Your password"></div>
     </div>
+    <div id="login-error" class="error-msg"></div>
     <div class="form-actions">
-      <button class="btn-primary" onclick="goTo('screen-event')">Sign In →</button>
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">Sign In →</button>
       <button class="back-btn" onclick="goTo('screen-landing')">← Back</button>
     </div>
-    <p style="margin-top:24px; font-size:13px; color:var(--muted);">Don't have an account? <a href="#" onclick="goTo('screen-signup')" style="color:var(--gold);">Create one</a></p>
+    <p style="margin-top:24px;font-size:13px;color:var(--muted);">Don't have an account? <a href="#" onclick="goTo('screen-signup')" style="color:var(--gold);">Create one</a></p>
   </div>
 </div>
 
+<!-- ── DASHBOARD ── -->
+<div id="screen-dashboard" class="screen">
+  <nav class="top-bar">
+    <div class="logo">Smart<span>Stubs</span></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="dash-user-name" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);"></span>
+      <button class="btn-secondary" style="padding:8px 16px;font-size:11px;" onclick="handleSignout()">Sign Out</button>
+    </div>
+  </nav>
+  <div class="content" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h2 class="screen-title">Your <span class="gold">Stubs</span></h2>
+        <p class="screen-desc" style="margin-bottom:0;">Manage your SmartStub galleries.</p>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-event')">+ New Stub</button>
+    </div>
+    <div id="stub-list-container">
+      <div class="empty-state">
+        <div class="empty-state-icon">🎟️</div>
+        <p class="empty-state-text">You haven't created any SmartStubs yet.<br>Click "New Stub" to get started.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════
-     SCREEN 3: EVENT DETAILS
-═══════════════════════════════════════ -->
+<!-- ── EVENT DETAILS ── -->
 <div id="screen-event" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 2 OF 4 — EVENT DETAILS</div>
   </nav>
-  <div class="progress-track">
-    <div class="progress-seg done"></div>
-    <div class="progress-seg active"></div>
-    <div class="progress-seg"></div>
-    <div class="progress-seg"></div>
-  </div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content">
     <h2 class="screen-title">Tell Us About <span class="gold">The Event</span></h2>
-    <p class="screen-desc">This information will appear on your gallery page when someone taps your SmartStub.</p>
+    <p class="screen-desc">This information will appear on your gallery when someone taps your SmartStub.</p>
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Event / Concert Name</label>
-        <input type="text" placeholder="e.g. The Eras Tour" id="event-name">
-      </div>
-      <div class="form-group full">
-        <label>Artist / Headliner</label>
-        <input type="text" placeholder="e.g. Taylor Swift" id="event-artist">
-      </div>
-      <div class="form-group">
-        <label>Event Date</label>
-        <input type="date" id="event-date">
-      </div>
-      <div class="form-group">
-        <label>Event Type</label>
+      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour"></div>
+      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift"></div>
+      <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
+      <div class="form-group"><label>Event Type</label>
         <select id="event-type">
           <option value="">Select type...</option>
-          <option>Concert / Music Show</option>
-          <option>Festival</option>
-          <option>Sports Game</option>
-          <option>Theater / Broadway</option>
-          <option>Comedy Show</option>
-          <option>Film Premiere</option>
-          <option>Conference / Expo</option>
-          <option>Other</option>
+          <option>Concert / Music Show</option><option>Festival</option><option>Sports Game</option>
+          <option>Theater / Broadway</option><option>Comedy Show</option><option>Film Premiere</option>
+          <option>Conference / Expo</option><option>Other</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Venue Name</label>
-        <input type="text" placeholder="e.g. Madison Square Garden" id="event-venue">
-      </div>
-      <div class="form-group">
-        <label>City, State</label>
-        <input type="text" placeholder="e.g. New York, NY" id="event-city">
-      </div>
-      <div class="form-group">
-        <label>Section / Row</label>
-        <input type="text" placeholder="e.g. Floor B / Row 3">
-      </div>
-      <div class="form-group">
-        <label>Seat Number</label>
-        <input type="text" placeholder="e.g. 14–15">
-      </div>
-      <div class="form-group full">
-        <label>Your Personal Note (optional)</label>
-        <textarea placeholder="Write a short memory or note to attach to this stub..."></textarea>
-      </div>
+      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden"></div>
+      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY"></div>
+      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3"></div>
+      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14–15"></div>
+      <div class="form-group full"><label>Your Personal Note (optional)</label><textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..."></textarea></div>
     </div>
+    <div id="event-error" class="error-msg"></div>
     <div class="form-actions">
-      <button class="btn-primary" onclick="goTo('screen-photos')">Next: Upload Photos →</button>
-      <button class="back-btn" onclick="goTo('screen-signup')">← Back</button>
+      <button class="btn-primary" id="event-btn" onclick="handleEventSave()">Next: Upload Photos →</button>
+      <button class="back-btn" onclick="goTo('screen-dashboard')">← Back</button>
     </div>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     SCREEN 4: PHOTO UPLOAD
-═══════════════════════════════════════ -->
+<!-- ── PHOTO UPLOAD ── -->
 <div id="screen-photos" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 3 OF 4 — UPLOAD PHOTOS</div>
   </nav>
-  <div class="progress-track">
-    <div class="progress-seg done"></div>
-    <div class="progress-seg done"></div>
-    <div class="progress-seg active"></div>
-    <div class="progress-seg"></div>
-  </div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:900px;">
     <h2 class="screen-title">Upload Your <span class="gold">Memories</span></h2>
     <p class="screen-desc">Select between 10 and 25 photos from this event. JPEG or PNG, up to 20MB each.</p>
-
     <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()" id="drop-zone">
       <input type="file" id="photo-input" multiple accept="image/*" style="display:none" onchange="handlePhotos(event)">
       <div class="upload-icon">📸</div>
       <div class="upload-text">CLICK TO BROWSE · OR DRAG & DROP HERE</div>
-      <div style="font-size:12px; color:#444; margin-top:8px;">Up to 25 photos · JPEG, PNG, HEIC</div>
+      <div style="font-size:12px;color:#444;margin-top:8px;">Up to 25 photos · JPEG, PNG, HEIC</div>
     </div>
-
     <div class="photo-grid" id="photo-grid"></div>
     <div class="photo-count" id="photo-count"></div>
-
     <hr class="divider">
-
-    <div style="background:#111; border:1px solid #2a2a2a; padding:20px;">
-      <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--gold); text-transform:uppercase; margin-bottom:12px;">Gallery Cover Photo</div>
-      <p style="font-size:13px; color:var(--muted); line-height:1.6;">Your first selected photo will be used as the gallery cover. Drag photos to reorder. The cover photo appears as the preview when someone scans your SmartStub.</p>
+    <div style="background:#111;border:1px solid #2a2a2a;padding:20px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Gallery Cover Photo</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Your first selected photo will be used as the gallery cover. Remove and re-add to reorder.</p>
     </div>
-
+    <div id="photos-error" class="error-msg"></div>
     <div class="form-actions">
-      <button class="btn-primary" id="next-nfc-btn" onclick="goTo('screen-nfc')">Next: Program NFC →</button>
+      <button class="btn-primary" id="upload-btn" onclick="handlePhotoUpload()">Upload & Continue →</button>
       <button class="back-btn" onclick="goTo('screen-event')">← Back</button>
     </div>
   </div>
 </div>
 
-
-<!-- ═══════════════════════════════════════
-     SCREEN 5: NFC WRITE
-═══════════════════════════════════════ -->
+<!-- ── NFC WRITE ── -->
 <div id="screen-nfc" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
     <div class="step-indicator">STEP 4 OF 4 — PROGRAM YOUR STUB</div>
   </nav>
-  <div class="progress-track">
-    <div class="progress-seg done"></div>
-    <div class="progress-seg done"></div>
-    <div class="progress-seg done"></div>
-    <div class="progress-seg active"></div>
-  </div>
-  <div class="content" style="max-width:600px; align-items:center; text-align:center;">
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
+  <div class="content" style="max-width:600px;align-items:center;text-align:center;">
     <h2 class="screen-title">Program Your <span class="gold">SmartStub</span></h2>
-    <p class="screen-desc">Your gallery is ready. Now write the link to your physical ticket's NFC chip.</p>
-
-    <div class="nfc-url-preview" id="stub-url">smartstubs.io/s/xk9m2f</div>
-
-    <div class="nfc-animation">
-      <div class="nfc-big-icon">📲</div>
-    </div>
-
-    <p class="nfc-instructions">Hold the back of your phone against the NFC region of your SmartStub (marked with the NFC symbol). Your browser will prompt you to write the URL.</p>
-
+    <p class="screen-desc">Your gallery is ready. Now write the link to your ticket's NFC chip.</p>
+    <div class="nfc-url-preview" id="stub-url-display">Generating your URL...</div>
+    <div class="nfc-animation"><div class="nfc-big-icon">📲</div></div>
+    <p class="nfc-instructions">Hold the back of your phone against the NFC region of your SmartStub. Your browser will prompt you to write the URL. Works on Android Chrome. iPhone users: use the free NFC Tools app.</p>
     <div class="nfc-status ready" id="nfc-status-text">READY — AWAITING TAP</div>
-
-    <div class="form-actions" style="flex-direction:column; align-items:center; gap:12px; margin-top:32px;">
-      <button class="btn-primary" id="write-btn" onclick="simulateNFCWrite()">Write to NFC Tag</button>
+    <div class="form-actions" style="flex-direction:column;align-items:center;gap:12px;margin-top:32px;">
+      <button class="btn-primary" id="write-btn" onclick="handleNFCWrite()">Write to NFC Tag</button>
       <button class="back-btn" onclick="goTo('screen-photos')">← Edit Photos</button>
     </div>
-
-    <div style="margin-top:32px; background:#111; border:1px solid #2a2a2a; padding:20px; text-align:left;">
-      <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--gold); margin-bottom:10px;">TROUBLESHOOTING</div>
-      <p style="font-size:13px; color:var(--muted); line-height:1.7;">NFC writing requires a device and browser that supports the Web NFC API (currently Chrome on Android). On iOS, use a dedicated NFC writing app with the URL shown above. Make sure NFC is enabled in your phone settings.</p>
+    <div style="margin-top:32px;background:#111;border:1px solid #2a2a2a;padding:20px;text-align:left;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;">TROUBLESHOOTING</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.7;">NFC writing requires Chrome on Android with NFC enabled in settings. On iPhone, open the free <strong style="color:var(--off-white);">NFC Tools</strong> app, tap "Write", add a URL record, and paste in the URL shown above.</p>
     </div>
   </div>
 </div>
 
+<!-- ── SUCCESS ── -->
+<div id="screen-success" class="screen">
+  <nav class="top-bar"><div class="logo">Smart<span>Stubs</span></div></nav>
+  <div class="content" style="max-width:560px;justify-content:center;text-align:center;align-items:center;">
+    <div style="font-size:72px;margin-bottom:24px;">🎟️</div>
+    <div class="success-badge">✓ SmartStub Created Successfully</div>
+    <h2 class="screen-title">Your Stub Is <span class="gold">Live!</span></h2>
+    <p style="color:var(--muted);font-size:15px;line-height:1.7;max-width:400px;margin:16px auto 32px;">Anyone who taps your SmartStub will be taken directly to your memory gallery. The magic never expires.</p>
+    <div class="nfc-url-preview" id="success-url"></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:24px;">
+      <button class="btn-primary" id="view-gallery-btn" onclick="viewCurrentGallery()">View My Gallery</button>
+      <button class="btn-secondary" onclick="goTo('screen-dashboard')">Back to Dashboard</button>
+    </div>
+  </div>
+</div>
 
-<!-- ═══════════════════════════════════════
-     SCREEN 6: GALLERY (Public View)
-═══════════════════════════════════════ -->
+<!-- ── GALLERY (public) ── -->
 <div id="screen-gallery" class="screen">
   <nav class="top-bar">
     <div class="logo">Smart<span>Stubs</span></div>
-    <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:1px;">smartstubs.io/s/xk9m2f</div>
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;" id="gallery-url-bar"></div>
   </nav>
-
   <div class="gallery-hero">
     <div class="gallery-bg"></div>
     <div class="gallery-tag">📍 Live Gallery — SmartStub</div>
-    <h1 class="gallery-event-name" id="gallery-title">The Eras Tour</h1>
+    <h1 class="gallery-event-name" id="g-event-name">Loading...</h1>
     <div class="gallery-meta">
-      <div class="gallery-meta-item">
-        <div class="gallery-meta-label">Artist</div>
-        <div class="gallery-meta-val" id="gallery-artist">Taylor Swift</div>
-      </div>
-      <div class="gallery-meta-item">
-        <div class="gallery-meta-label">Date</div>
-        <div class="gallery-meta-val">Aug 9, 2024</div>
-      </div>
-      <div class="gallery-meta-item">
-        <div class="gallery-meta-label">Venue</div>
-        <div class="gallery-meta-val">SoFi Stadium</div>
-      </div>
-      <div class="gallery-meta-item">
-        <div class="gallery-meta-label">City</div>
-        <div class="gallery-meta-val">Los Angeles, CA</div>
-      </div>
+      <div class="gallery-meta-item"><div class="gallery-meta-label">Artist</div><div class="gallery-meta-val" id="g-artist">—</div></div>
+      <div class="gallery-meta-item"><div class="gallery-meta-label">Date</div><div class="gallery-meta-val" id="g-date">—</div></div>
+      <div class="gallery-meta-item"><div class="gallery-meta-label">Venue</div><div class="gallery-meta-val" id="g-venue">—</div></div>
+      <div class="gallery-meta-item"><div class="gallery-meta-label">City</div><div class="gallery-meta-val" id="g-city">—</div></div>
     </div>
-    <div style="margin-top:24px; padding:16px 20px; border-left:2px solid var(--gold); max-width:480px; position:relative; z-index:1;">
-      <p style="font-size:14px; color:#b0aa9e; font-style:italic; line-height:1.7;">"Best night of my entire life. Front row for Cruel Summer. I'm still not over it."</p>
+    <div id="g-note-container" style="margin-top:24px;padding:16px 20px;border-left:2px solid var(--gold);max-width:480px;position:relative;z-index:1;display:none;">
+      <p id="g-note" style="font-size:14px;color:#b0aa9e;font-style:italic;line-height:1.7;"></p>
     </div>
   </div>
-
-  <!-- Photo Grid -->
-  <div class="gallery-photos" id="gallery-photo-grid">
-    <!-- Placeholder photos generated via color blocks -->
-  </div>
-
-  <!-- Stub Summary Card -->
-  <div style="padding:40px 64px; border-top:1px solid #1a1a1a; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:24px;">
+  <div class="gallery-photos" id="gallery-photo-grid"></div>
+  <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
     <div>
-      <div style="font-family:'Space Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--muted); margin-bottom:8px; text-transform:uppercase;">Gallery Created By</div>
-      <div style="font-size:16px; font-weight:500;">Alex Rivera</div>
-      <div style="font-size:12px; color:var(--muted); margin-top:4px; font-family:'Space Mono',monospace;">via SmartStubs · 18 photos</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">Memory preserved with</div>
+      <div class="logo" style="font-size:22px;">Smart<span>Stubs</span></div>
     </div>
-    <div style="display:flex; gap:12px;">
-      <button class="btn-secondary" style="font-size:11px; padding:10px 20px;">Share Gallery</button>
-      <button class="btn-primary" style="font-size:11px; padding:10px 20px;" onclick="goTo('screen-landing')">Get Your SmartStub</button>
-    </div>
+    <button class="btn-primary" onclick="goTo('screen-landing')">Get Your SmartStub</button>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     SCREEN 7: SUCCESS
-═══════════════════════════════════════ -->
-<div id="screen-success" class="screen">
-  <nav class="top-bar">
-    <div class="logo">Smart<span>Stubs</span></div>
-  </nav>
-  <div class="content" style="max-width:560px; justify-content:center; text-align:center; align-items:center;">
-    <div style="font-size:72px; margin-bottom:24px;">🎟️</div>
-    <div class="success-badge">✓ NFC Tag Written Successfully</div>
-    <h2 class="screen-title">Your Stub Is <span class="gold">Live!</span></h2>
-    <p style="color:var(--muted); font-size:15px; line-height:1.7; max-width:400px; margin:16px auto 32px;">Anyone who taps your SmartStub will now be taken directly to your memory gallery. The magic never expires.</p>
-    <div class="nfc-url-preview">smartstubs.io/s/xk9m2f</div>
-    <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:24px;">
-      <button class="btn-primary" onclick="goTo('screen-gallery')">View My Gallery</button>
-      <button class="btn-secondary" onclick="goTo('screen-event')">Create Another Stub</button>
-    </div>
-    <button class="back-btn" onclick="goTo('screen-landing')" style="margin-top:24px; display:block;">← Back to Home</button>
-  </div>
-</div>
-
-<!-- Lightbox -->
+<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightbox-img" src="" alt="">
 </div>
 
 <script>
-  // ── Navigation ──
-  function goTo(screenId) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(screenId).classList.add('active');
-    window.scrollTo(0, 0);
+// ═══════════════════════════════════════════
+// CONFIGURATION — REPLACE THESE TWO VALUES
+// ═══════════════════════════════════════════
+const SUPABASE_URL = https://ozzcuksblqeuljchchrv.supabase.co;
+const SUPABASE_ANON_KEY = sb_publishable_VDyxuOyKYuuapAqIcc8OgQ_HZLYR1u4;
+// ═══════════════════════════════════════════
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── App State ──
+let currentUser = null;
+let currentStubId = null;
+let currentSlug = null;
+let photos = [];
+const MAX_PHOTOS = 25;
+const MIN_PHOTOS = 10;
+
+// ── Navigation ──
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── Auth: Sign Up ──
+async function handleSignup() {
+  const first = document.getElementById('signup-first').value.trim();
+  const last = document.getElementById('signup-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const pass = document.getElementById('signup-pass').value;
+  const pass2 = document.getElementById('signup-pass2').value;
+  const terms = document.getElementById('terms-check').checked;
+  const errEl = document.getElementById('signup-error');
+  const btn = document.getElementById('signup-btn');
+
+  errEl.classList.remove('show');
+
+  if (!first || !last || !email || !pass) return showError(errEl, 'Please fill in all fields.');
+  if (pass !== pass2) return showError(errEl, 'Passwords do not match.');
+  if (pass.length < 8) return showError(errEl, 'Password must be at least 8 characters.');
+  if (!terms) return showError(errEl, 'Please accept the Terms of Service to continue.');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Creating account...';
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password: pass,
+    options: { data: { first_name: first, last_name: last } }
+  });
+
+  btn.disabled = false;
+  btn.innerHTML = 'Create Account →';
+
+  if (error) return showError(errEl, error.message);
+
+  currentUser = data.user;
+  updateDashboardUser();
+  goTo('screen-dashboard');
+  loadDashboard();
+}
+
+// ── Auth: Login ──
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const btn = document.getElementById('login-btn');
+
+  errEl.classList.remove('show');
+  if (!email || !pass) return showError(errEl, 'Please enter your email and password.');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Signing in...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  btn.disabled = false;
+  btn.innerHTML = 'Sign In →';
+
+  if (error) return showError(errEl, 'Incorrect email or password. Please try again.');
+
+  currentUser = data.user;
+  updateDashboardUser();
+  goTo('screen-dashboard');
+  loadDashboard();
+}
+
+// ── Auth: Sign Out ──
+async function handleSignout() {
+  await sb.auth.signOut();
+  currentUser = null;
+  goTo('screen-landing');
+}
+
+function updateDashboardUser() {
+  if (!currentUser) return;
+  const meta = currentUser.user_metadata;
+  const name = meta?.first_name ? `${meta.first_name} ${meta.last_name}` : currentUser.email;
+  document.getElementById('dash-user-name').textContent = name;
+}
+
+// ── Dashboard: Load Stubs ──
+async function loadDashboard() {
+  if (!currentUser) return;
+  const container = document.getElementById('stub-list-container');
+  container.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;padding:20px 0;">Loading your stubs...</div>';
+
+  const { data, error } = await sb
+    .from('stubs')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎟️</div><p class="empty-state-text">You haven't created any SmartStubs yet.<br>Click "New Stub" to get started.</p></div>`;
+    return;
   }
 
-  // ── Photo Upload ──
-  let photos = [];
-  const MAX = 25, MIN = 10;
+  container.innerHTML = `<div class="stub-list">${data.map(stub => `
+    <div class="stub-list-item">
+      <div>
+        <div class="stub-list-name">${stub.event_name || 'Untitled Event'}</div>
+        <div class="stub-list-meta">${stub.artist ? stub.artist + ' · ' : ''}${stub.venue || ''} ${stub.event_date ? '· ' + formatDate(stub.event_date) : ''}</div>
+        <div class="stub-list-meta" style="margin-top:4px;color:var(--gold)">thesmartstub.com/g/${stub.slug}</div>
+      </div>
+      <div class="stub-list-actions">
+        <button class="btn-secondary btn-small" onclick="openGalleryById('${stub.id}')">View Gallery</button>
+        <button class="btn-primary btn-small" onclick="openNFCForStub('${stub.slug}')">Program NFC</button>
+      </div>
+    </div>`).join('')}</div>`;
+}
 
-  function handlePhotos(e) {
-    const files = Array.from(e.target.files);
-    files.forEach(f => {
-      if (photos.length >= MAX) return;
-      const url = URL.createObjectURL(f);
-      photos.push({ url, name: f.name });
-    });
-    renderPhotoGrid();
+// ── Event: Save ──
+async function handleEventSave() {
+  const name = document.getElementById('event-name').value.trim();
+  const artist = document.getElementById('event-artist').value.trim();
+  const date = document.getElementById('event-date').value;
+  const type = document.getElementById('event-type').value;
+  const venue = document.getElementById('event-venue').value.trim();
+  const city = document.getElementById('event-city').value.trim();
+  const section = document.getElementById('event-section').value.trim();
+  const seat = document.getElementById('event-seat').value.trim();
+  const note = document.getElementById('event-note').value.trim();
+  const errEl = document.getElementById('event-error');
+  const btn = document.getElementById('event-btn');
+
+  errEl.classList.remove('show');
+  if (!name) return showError(errEl, 'Please enter the event name.');
+  if (!venue) return showError(errEl, 'Please enter the venue name.');
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
+
+  const slug = generateSlug();
+
+  const payload = {
+    user_id: currentUser.id,
+    event_name: name,
+    artist,
+    event_date: date || null,
+    venue,
+    city,
+    personal_note: note,
+    slug
+  };
+
+  // If editing existing stub
+  let result;
+  if (currentStubId) {
+    result = await sb.from('stubs').update(payload).eq('id', currentStubId).select().single();
+  } else {
+    result = await sb.from('stubs').insert(payload).select().single();
   }
 
-  function renderPhotoGrid() {
-    const grid = document.getElementById('photo-grid');
-    grid.innerHTML = '';
-    photos.forEach((p, i) => {
-      const div = document.createElement('div');
-      div.className = 'photo-thumb';
-      div.innerHTML = `<img src="${p.url}" alt="${p.name}">
-        <button class="remove-btn" onclick="removePhoto(${i})">✕</button>`;
-      grid.appendChild(div);
-    });
-    const count = document.getElementById('photo-count');
-    count.innerHTML = photos.length > 0
-      ? `<span class="gold">${photos.length}</span> / ${MAX} photos selected${photos.length < MIN ? ` — <span style="color:var(--red)">minimum ${MIN} required</span>` : ' — <span style="color:#4caf50">✓ ready to continue</span>'}`
-      : '';
+  btn.disabled = false;
+  btn.innerHTML = 'Next: Upload Photos →';
+
+  if (result.error) return showError(errEl, 'Could not save event details. Please try again.');
+
+  currentStubId = result.data.id;
+  currentSlug = result.data.slug;
+  goTo('screen-photos');
+}
+
+// ── Photos: Handle Selection ──
+function handlePhotos(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    if (photos.length >= MAX_PHOTOS) return;
+    photos.push({ file: f, url: URL.createObjectURL(f) });
+  });
+  renderPhotoGrid();
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photo-grid');
+  grid.innerHTML = '';
+  photos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.innerHTML = `<img src="${p.url}" alt="Photo ${i+1}">
+      <button class="remove-btn" onclick="removePhoto(${i})">✕</button>`;
+    grid.appendChild(div);
+  });
+  const count = document.getElementById('photo-count');
+  count.innerHTML = photos.length > 0
+    ? `<span style="color:var(--gold)">${photos.length}</span> / ${MAX_PHOTOS} photos selected ${photos.length < MIN_PHOTOS ? `— <span style="color:var(--red)">minimum ${MIN_PHOTOS} required</span>` : '— <span style="color:#4caf50">✓ ready to upload</span>'}`
+    : '';
+}
+
+function removePhoto(idx) {
+  photos.splice(idx, 1);
+  renderPhotoGrid();
+}
+
+// ── Photos: Upload to Supabase ──
+async function handlePhotoUpload() {
+  const errEl = document.getElementById('photos-error');
+  const btn = document.getElementById('upload-btn');
+  errEl.classList.remove('show');
+
+  if (photos.length < MIN_PHOTOS) return showError(errEl, `Please select at least ${MIN_PHOTOS} photos.`);
+  if (!currentStubId) return showError(errEl, 'Event details not saved. Please go back and try again.');
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="loading-spinner"></span>Uploading 0 of ${photos.length}...`;
+
+  let uploaded = 0;
+  for (const photo of photos) {
+    const ext = photo.file.name.split('.').pop();
+    const path = `${currentUser.id}/${currentStubId}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
+    const { error } = await sb.storage.from('photos').upload(path, photo.file, { upsert: true });
+    if (!error) uploaded++;
+    btn.innerHTML = `<span class="loading-spinner"></span>Uploading ${uploaded} of ${photos.length}...`;
   }
 
-  function removePhoto(idx) {
-    photos.splice(idx, 1);
-    renderPhotoGrid();
-  }
+  btn.disabled = false;
+  btn.innerHTML = 'Upload & Continue →';
 
-  // ── Drag & Drop ──
-  const dz = document.getElementById('drop-zone');
-  ['dragover','dragleave','drop'].forEach(e => dz.addEventListener(e, ev => {
-    ev.preventDefault();
-    if (e === 'dragover') dz.style.borderColor = 'var(--gold)';
-    else dz.style.borderColor = '#333';
-    if (e === 'drop') {
-      const dt = ev.dataTransfer;
-      handlePhotos({ target: { files: dt.files } });
-    }
-  }));
+  if (uploaded === 0) return showError(errEl, 'Upload failed. Please check your connection and try again.');
 
-  // ── NFC Simulation ──
-  function simulateNFCWrite() {
-    const btn = document.getElementById('write-btn');
-    const status = document.getElementById('nfc-status-text');
-    btn.disabled = true;
-    btn.textContent = 'Writing...';
-    status.className = 'nfc-status';
-    status.textContent = 'WRITING TO TAG...';
-    status.style.color = 'var(--gold-light)';
-    setTimeout(() => {
+  const galleryUrl = `thesmartstub.com/g/${currentSlug}`;
+  document.getElementById('stub-url-display').textContent = galleryUrl;
+  goTo('screen-nfc');
+}
+
+// ── NFC Write ──
+async function handleNFCWrite() {
+  const btn = document.getElementById('write-btn');
+  const status = document.getElementById('nfc-status-text');
+  const url = `https://thesmartstub.com/g/${currentSlug}`;
+
+  // Try Web NFC API (Android Chrome only)
+  if ('NDEFReader' in window) {
+    try {
+      status.className = 'nfc-status';
+      status.textContent = 'WAITING FOR TAP...';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading-spinner"></span>Hold stub to phone...';
+
+      const ndef = new NDEFReader();
+      await ndef.write({ records: [{ recordType: 'url', data: url }] });
+
       status.className = 'nfc-status success';
       status.textContent = '✓ TAG WRITTEN SUCCESSFULLY';
-      btn.textContent = 'Done!';
-      setTimeout(() => goTo('screen-success'), 1200);
-    }, 2200);
-  }
-
-  // ── Gallery Placeholder Photos ──
-  function buildGallery() {
-    const grid = document.getElementById('gallery-photo-grid');
-    const colors = [
-      '#1a1208','#1e1510','#221a0e','#18140c',
-      '#15120a','#1c1812','#201c10','#1a1610',
-    ];
-    const emojis = ['🎸','🎤','🎶','🎵','🌟','🎸','🔥','🎶','💫','🎤','🎸','🎵','✨','🎶','🎤','🌟','🎸','🔥'];
-    for (let i = 0; i < 18; i++) {
-      const div = document.createElement('div');
-      div.className = 'gallery-photo';
-      div.style.background = colors[i % colors.length];
-      div.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.4;">${emojis[i]}</div>
-        <div class="gallery-photo-overlay"></div>`;
-      div.onclick = () => {};
-      grid.appendChild(div);
+      document.getElementById('success-url').textContent = url;
+      setTimeout(() => goTo('screen-success'), 1000);
+    } catch (err) {
+      btn.disabled = false;
+      btn.innerHTML = 'Write to NFC Tag';
+      status.className = 'nfc-status ready';
+      status.textContent = 'WRITE FAILED — TRY AGAIN';
     }
+  } else {
+    // Simulate for non-NFC browsers / show manual instructions
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span>Processing...';
+    status.className = 'nfc-status';
+    status.textContent = 'SAVING GALLERY...';
+    setTimeout(() => {
+      status.className = 'nfc-status success';
+      status.textContent = '✓ GALLERY SAVED — USE NFC TOOLS APP TO WRITE TAG';
+      document.getElementById('success-url').textContent = url;
+      btn.disabled = false;
+      btn.innerHTML = 'Continue →';
+      btn.onclick = () => goTo('screen-success');
+    }, 1500);
   }
-  buildGallery();
+}
 
-  // ── Lightbox ──
-  function openLightbox(src) {
-    document.getElementById('lightbox-img').src = src;
-    document.getElementById('lightbox').classList.add('open');
-  }
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('open');
-  }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+function openNFCForStub(slug) {
+  currentSlug = slug;
+  document.getElementById('stub-url-display').textContent = `thesmartstub.com/g/${slug}`;
+  goTo('screen-nfc');
+}
 
-  // ── Generate stub URL ──
-  function genId(len=6) {
-    return Math.random().toString(36).substring(2, 2+len);
+// ── Gallery: View ──
+async function openGalleryById(stubId) {
+  const { data: stub, error } = await sb.from('stubs').select('*').eq('id', stubId).single();
+  if (error || !stub) return alert('Could not load this gallery.');
+  await renderGallery(stub);
+}
+
+async function viewCurrentGallery() {
+  if (!currentStubId) return goTo('screen-dashboard');
+  await openGalleryById(currentStubId);
+}
+
+async function renderGallery(stub) {
+  document.getElementById('g-event-name').textContent = stub.event_name || 'Untitled Event';
+  document.getElementById('g-artist').textContent = stub.artist || '—';
+  document.getElementById('g-date').textContent = stub.event_date ? formatDate(stub.event_date) : '—';
+  document.getElementById('g-venue').textContent = stub.venue || '—';
+  document.getElementById('g-city').textContent = stub.city || '—';
+  document.getElementById('gallery-url-bar').textContent = `thesmartstub.com/g/${stub.slug}`;
+
+  const noteEl = document.getElementById('g-note-container');
+  if (stub.personal_note) {
+    document.getElementById('g-note').textContent = `"${stub.personal_note}"`;
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
   }
-  document.getElementById('stub-url').textContent = `smartstubs.io/s/${genId()}`;
+
+  // Load photos from storage
+  const grid = document.getElementById('gallery-photo-grid');
+  grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">Loading photos...</div>';
+
+  const { data: files, error } = await sb.storage.from('photos').list(`${stub.user_id}/${stub.id}`, { limit: 25 });
+
+  if (error || !files || files.length === 0) {
+    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted);">No photos found for this gallery.</div>';
+    goTo('screen-gallery');
+    return;
+  }
+
+  grid.innerHTML = '';
+  for (const file of files) {
+    const { data: urlData } = sb.storage.from('photos').getPublicUrl(`${stub.user_id}/${stub.id}/${file.name}`);
+    const div = document.createElement('div');
+    div.className = 'gallery-photo';
+    div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy">`;
+    div.onclick = () => openLightbox(urlData.publicUrl);
+    grid.appendChild(div);
+  }
+
+  goTo('screen-gallery');
+}
+
+// ── Lightbox ──
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+// ── Drag & Drop ──
+const dz = document.getElementById('drop-zone');
+['dragover','dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => {
+  e.preventDefault();
+  dz.style.borderColor = ev === 'dragover' ? 'var(--gold)' : '#333';
+  if (ev === 'drop') handlePhotos({ target: { files: e.dataTransfer.files } });
+}));
+
+// ── Helpers ──
+function showError(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function generateSlug(len = 8) {
+  return Math.random().toString(36).substring(2, 2 + len);
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ── Check for existing session on load ──
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    currentUser = session.user;
+    updateDashboardUser();
+
+    // Check if URL has a gallery slug e.g. ?g=abc123
+    const params = new URLSearchParams(window.location.search);
+    const gallerySlug = params.get('g');
+    if (gallerySlug) {
+      const { data: stub } = await sb.from('stubs').select('*').eq('slug', gallerySlug).single();
+      if (stub) { await renderGallery(stub); return; }
+    }
+
+    goTo('screen-dashboard');
+    loadDashboard();
+  }
+})();
 </script>
 </body>
 </html>
