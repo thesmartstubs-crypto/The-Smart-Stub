@@ -462,6 +462,120 @@
   @media (max-width: 600px) {
     .event-type-grid { grid-template-columns: repeat(2, 1fr); }
   }
+
+  /* ── Scoreboard ── */
+  .scoreboard {
+    background: #0a0a0a;
+    border: 1px solid #2a2a2a;
+    max-width: 720px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scoreboard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .scoreboard-header {
+    padding: 16px 28px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .scoreboard-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .scoreboard-status {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .scoreboard-teams {
+    padding: 24px 28px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .scoreboard-team-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #111;
+  }
+  .scoreboard-team-row:last-child { border-bottom: none; }
+  .scoreboard-team-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .scoreboard-team-name.winner { color: var(--gold); }
+  .scoreboard-team-score {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    letter-spacing: 2px;
+    line-height: 1;
+    min-width: 52px;
+    text-align: right;
+    color: var(--off-white);
+  }
+  .scoreboard-team-score.winner { color: var(--gold); }
+  /* Period/inning breakdown table */
+  .scoreboard-linescore {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 0;
+    font-family: 'Space Mono', monospace;
+  }
+  .scoreboard-linescore th {
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #3a3a3a;
+    text-transform: uppercase;
+    padding: 6px 8px;
+    text-align: center;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .scoreboard-linescore th.final-col { color: var(--gold); }
+  .scoreboard-linescore td {
+    font-size: 12px;
+    color: var(--muted);
+    padding: 8px 8px;
+    text-align: center;
+    border-bottom: 1px solid #111;
+  }
+  .scoreboard-linescore td.team-name-col {
+    text-align: left;
+    color: var(--off-white);
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding-left: 28px;
+  }
+  .scoreboard-linescore td.final-col {
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .scoreboard-linescore tr:last-child td { border-bottom: none; }
+  @media (max-width: 768px) {
+    #scoreboard-section { padding: 0 24px 40px; }
+    .scoreboard-header { padding: 14px 20px 10px; }
+    .scoreboard-teams { padding: 16px 20px 0; }
+    .scoreboard-linescore td, .scoreboard-linescore th { padding: 6px 4px; font-size: 10px; }
+    .scoreboard-linescore td.team-name-col { padding-left: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -1144,6 +1258,10 @@
   <!-- Setlist section — populated dynamically -->
   <div id="setlist-section">
     <div class="setlist-card" id="setlist-card-inner"></div>
+  </div>
+  <!-- Scoreboard section — populated dynamically for sports stubs -->
+  <div id="scoreboard-section" style="display:none; padding:0 64px 48px;">
+    <div id="scoreboard-inner"></div>
   </div>
   <div class="gallery-photos" id="gallery-photo-grid"></div>
   <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
@@ -1874,6 +1992,131 @@ async function viewCurrentGallery() {
 }
 
 
+
+// ── Sports Scoreboard ──
+const SPORTS_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/sports-proxy';
+
+async function fetchAndRenderScoreboard(stub) {
+  const meta = stub.metadata || {};
+  if (!meta.sport || !stub.artist || !stub.event_date) return;
+  try {
+    const res = await fetch(SPORTS_PROXY, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ sport: meta.sport, team: stub.artist.trim(), date: stub.event_date })
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.found) return;
+    renderScoreboardCard(data, meta.sport);
+  } catch (e) {
+    // Silent fail
+  }
+}
+
+function renderScoreboardCard(game, sport) {
+  const section = document.getElementById('scoreboard-section');
+  const inner = document.getElementById('scoreboard-inner');
+  if (!section || !inner) return;
+
+  const { home, away, status } = game;
+
+  // Build period/inning headers based on sport
+  let periodHeaders = [];
+  let periodLabel = '';
+  if (sport === 'nhl') {
+    periodHeaders = ['1', '2', '3'];
+    periodLabel = 'Periods';
+    // Add OT if either team has a 4th linescore
+    if ((home.linescores.length > 3) || (away.linescores.length > 3)) periodHeaders.push('OT');
+  } else if (sport === 'nba' || sport === 'wnba' || sport === 'ncaamb') {
+    periodHeaders = ['1', '2', '3', '4'];
+    periodLabel = 'Quarters';
+    const maxPeriods = Math.max(home.linescores.length, away.linescores.length);
+    for (let i = 4; i < maxPeriods; i++) periodHeaders.push(i === 4 ? 'OT' : `${i-3}OT`);
+  } else if (sport === 'nfl' || sport === 'ncaafb') {
+    periodHeaders = ['1', '2', '3', '4'];
+    periodLabel = 'Quarters';
+    const maxPeriods = Math.max(home.linescores.length, away.linescores.length);
+    for (let i = 4; i < maxPeriods; i++) periodHeaders.push(i === 4 ? 'OT' : `${i-3}OT`);
+  } else if (sport === 'mlb') {
+    const innings = Math.max(home.linescores.length, away.linescores.length, 9);
+    periodHeaders = Array.from({length: innings}, (_, i) => String(i + 1));
+    periodLabel = 'Innings';
+  } else if (sport === 'mls') {
+    periodHeaders = ['1st', '2nd'];
+    periodLabel = 'Halves';
+    if (home.linescores.length > 2 || away.linescores.length > 2) periodHeaders.push('ET');
+  }
+
+  // Build linescore rows
+  const hasLinescores = home.linescores.length > 0 || away.linescores.length > 0;
+  let linescoreHTML = '';
+  if (hasLinescores && periodHeaders.length > 0) {
+    const headerCells = periodHeaders.map(h => `<th>${h}</th>`).join('');
+    const awayScores = periodHeaders.map((_, i) => {
+      const val = away.linescores[i];
+      return `<td>${val !== undefined && val !== null ? val : '-'}</td>`;
+    }).join('');
+    const homeScores = periodHeaders.map((_, i) => {
+      const val = home.linescores[i];
+      return `<td>${val !== undefined && val !== null ? val : '-'}</td>`;
+    }).join('');
+
+    linescoreHTML = `
+      <table class="scoreboard-linescore">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding-left:28px;">Team</th>
+            ${headerCells}
+            <th class="final-col">Final</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="team-name-col">${away.shortName}</td>
+            ${awayScores}
+            <td class="final-col">${away.score}</td>
+          </tr>
+          <tr>
+            <td class="team-name-col">${home.shortName}</td>
+            ${homeScores}
+            <td class="final-col">${home.score}</td>
+          </tr>
+        </tbody>
+      </table>`;
+  }
+
+  // Sport display name
+  const sportNames = { nfl:'NFL', nba:'NBA', mlb:'MLB', nhl:'NHL', mls:'MLS', ncaafb:'NCAA Football', ncaamb:'NCAA Basketball', wnba:'WNBA' };
+  const sportLabel = sportNames[sport] || sport.toUpperCase();
+
+  inner.innerHTML = `
+    <div class="scoreboard">
+      <div class="scoreboard-header">
+        <div class="scoreboard-label">&#9632; ${sportLabel} — Final Score</div>
+        <div class="scoreboard-status">${status}</div>
+      </div>
+      <div class="scoreboard-teams">
+        <div class="scoreboard-team-row">
+          <div class="scoreboard-team-name${away.winner ? ' winner' : ''}">${away.name}</div>
+          <div class="scoreboard-team-score${away.winner ? ' winner' : ''}">${away.score}</div>
+        </div>
+        <div class="scoreboard-team-row">
+          <div class="scoreboard-team-name${home.winner ? ' winner' : ''}">${home.name}</div>
+          <div class="scoreboard-team-score${home.winner ? ' winner' : ''}">${home.score}</div>
+        </div>
+      </div>
+      ${linescoreHTML}
+    </div>
+  `;
+
+  section.style.display = 'block';
+}
+
 // ── Setlist.fm Integration ──
 const SETLIST_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler';
 
@@ -2038,11 +2281,15 @@ async function renderGallery(stub) {
     grid.appendChild(div);
   }
 
+  // Reset scoreboard section
+  const scoreboardSection = document.getElementById('scoreboard-section');
+  if (scoreboardSection) { scoreboardSection.style.display = 'none'; document.getElementById('scoreboard-inner').innerHTML = ''; }
+
   // Fire enrichment based on event type
   const meta = stub.metadata || {};
   const evType = meta.event_type || 'concert';
   if (evType === 'sports' && meta.sport) {
-    // Sports scoreboard — coming soon
+    fetchAndRenderScoreboard(stub);
   } else {
     // Default: try setlist for music events
     fetchAndRenderSetlist(stub);
