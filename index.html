@@ -240,6 +240,23 @@
   </div>
 </div>
 
+<!-- ── CHECK EMAIL ── -->
+<div id="screen-check-email" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+  </nav>
+  <div class="content" style="max-width:560px;justify-content:center;text-align:center;align-items:center;">
+    <div style="font-size:72px;margin-bottom:24px;">📬</div>
+    <h2 class="screen-title">Check Your <span class="gold">Email</span></h2>
+    <p style="color:var(--muted);font-size:15px;line-height:1.7;max-width:420px;margin:16px auto 12px;">We sent a confirmation link to:</p>
+    <div class="nfc-url-preview" id="check-email-address"></div>
+    <p style="color:var(--muted);font-size:14px;line-height:1.7;max-width:420px;margin:16px auto 32px;">Click the link in that email to activate your account and start creating SmartStubs.</p>
+    <hr class="divider">
+    <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Didn't receive it? Check your spam folder or try again.</p>
+    <button class="btn-secondary" onclick="goTo('screen-signup')">← Back to Sign Up</button>
+  </div>
+</div>
+
 <!-- ── LOGIN ── -->
 <div id="screen-login" class="screen">
   <nav class="top-bar">
@@ -527,10 +544,9 @@ async function handleSignup() {
 
   if (error) return showError(errEl, error.message);
 
-  currentUser = data.user;
-  updateDashboardUser();
-  goTo('screen-dashboard');
-  loadDashboard();
+  // Show check email screen instead of going straight to dashboard
+  goTo('screen-check-email');
+  document.getElementById('check-email-address').textContent = email;
 }
 
 // ── Auth: Login ──
@@ -551,7 +567,12 @@ async function handleLogin() {
   btn.disabled = false;
   btn.innerHTML = 'Sign In →';
 
-  if (error) return showError(errEl, 'Incorrect email or password. Please try again.');
+  if (error) {
+    if (error.message.toLowerCase().includes('confirm') || error.message.toLowerCase().includes('verified')) {
+      return showError(errEl, 'Please confirm your email address before signing in. Check your inbox for the confirmation link.');
+    }
+    return showError(errEl, 'Incorrect email or password. Please try again.');
+  }
 
   currentUser = data.user;
   updateDashboardUser();
@@ -852,14 +873,8 @@ async function executeDeleteStub() {
   }
 
   // Delete stub record from database
-  const { error: deleteError } = await sb.from('stubs').delete().eq('id', deleteTargetId);
-  if (deleteError) {
-    alert('Could not delete stub: ' + deleteError.message);
-    btn.textContent = 'Yes, Delete';
-    btn.disabled = false;
-    return;
-  }
-  
+  await sb.from('stubs').delete().eq('id', deleteTargetId);
+
   // Remove from UI instantly without reloading
   const el = document.getElementById(`stub-item-${deleteTargetId}`);
   if (el) el.remove();
@@ -923,6 +938,24 @@ function formatDate(dateStr) {
 
 // ── Startup: route to gallery or dashboard ──
 (async () => {
+  // Handle email confirmation link — Supabase redirects back with tokens in the URL hash
+  const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  const type = hashParams.get('type');
+
+  if (accessToken && type === 'signup') {
+    const { data, error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+    if (!error && data.user) {
+      currentUser = data.user;
+      updateDashboardUser();
+      window.history.replaceState(null, '', '/');
+      goTo('screen-dashboard');
+      loadDashboard();
+      return;
+    }
+  }
+
   // If URL matches /g/xxxxxxxx load that gallery directly
   const pathMatch = window.location.pathname.match(/^\/g\/([a-z0-9]+)$/i);
   if (pathMatch) {
