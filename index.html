@@ -425,6 +425,21 @@
   </div>
 </div>
 
+<!-- ── GALLERY NOT FOUND ── -->
+<div id="screen-not-found" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+  </nav>
+  <div class="content" style="max-width:560px;justify-content:center;text-align:center;align-items:center;">
+    <div style="font-size:72px;margin-bottom:24px;">🎟️</div>
+    <h2 class="screen-title">Gallery <span class="gold">Not Found</span></h2>
+    <p style="color:var(--muted);font-size:15px;line-height:1.7;max-width:400px;margin:16px auto 32px;">This SmartStub gallery no longer exists. It may have been removed by its owner.</p>
+    <hr class="divider">
+    <p style="color:var(--muted);font-size:14px;margin-bottom:24px;">Want to create your own SmartStub memory gallery?</p>
+    <button class="btn-primary" onclick="goTo('screen-landing')">Learn About SmartStubs</button>
+  </div>
+</div>
+
 <!-- DELETE CONFIRMATION MODAL -->
 <div id="delete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center;">
   <div style="background:#111;border:1px solid #333;padding:40px;max-width:420px;width:90%;margin:0 auto;">
@@ -923,7 +938,7 @@ function formatDate(dateStr) {
     const loader = document.getElementById('loading-screen');
     if (loader) loader.remove();
     if (stub) { await renderGallery(stub); return; }
-    goTo('screen-landing');
+    goTo('screen-not-found');
     return;
   }
 
