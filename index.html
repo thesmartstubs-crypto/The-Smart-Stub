@@ -843,8 +843,39 @@ function formatDate(dateStr) {
 
 // ── Check for existing session on load ──
 (async () => {
-  // Check if URL is a gallery path e.g. /g/xk9m2f
   const pathMatch = window.location.pathname.match(/^\/g\/([a-z0-9]+)$/i);
+  if (pathMatch) {
+    // Hide everything and show a loading state while we fetch the gallery
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.body.insertAdjacentHTML('beforeend', `
+      <div id="loading-screen" style="
+        position:fixed; inset:0; background:#0a0a0a;
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center; z-index:9999;">
+        <div style="font-family:'Bebas Neue',sans-serif; font-size:36px;
+          letter-spacing:3px; color:#c9a84c;">Smart<span style="color:#f0ece3;">Stubs</span></div>
+        <div style="margin-top:16px; width:40px; height:40px; border:2px solid #333;
+          border-top-color:#c9a84c; border-radius:50%;
+          animation:spin 0.8s linear infinite;"></div>
+      </div>
+    `);
+
+    const gallerySlug = pathMatch[1];
+    const { data: stub } = await sb.from('stubs').select('*').eq('slug', gallerySlug).single();
+    document.getElementById('loading-screen').remove();
+    if (stub) { await renderGallery(stub); return; }
+    goTo('screen-landing');
+    return;
+  }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user) {
+    currentUser = session.user;
+    updateDashboardUser();
+    goTo('screen-dashboard');
+    loadDashboard();
+  }
+})();
   if (pathMatch) {
     const gallerySlug = pathMatch[1];
     const { data: stub } = await sb.from('stubs').select('*').eq('slug', gallerySlug).single();
