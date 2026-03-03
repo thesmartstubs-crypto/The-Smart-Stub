@@ -843,19 +843,21 @@ function formatDate(dateStr) {
 
 // ── Check for existing session on load ──
 (async () => {
+  // Check if URL is a gallery path e.g. /g/xk9m2f
+  const pathMatch = window.location.pathname.match(/^\/g\/([a-z0-9]+)$/i);
+  if (pathMatch) {
+    const gallerySlug = pathMatch[1];
+    const { data: stub } = await sb.from('stubs').select('*').eq('slug', gallerySlug).single();
+    if (stub) { await renderGallery(stub); return; }
+    goTo('screen-landing');
+    return;
+  }
+
+  // Otherwise check for a logged in user
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
     currentUser = session.user;
     updateDashboardUser();
-
-    // Check if URL has a gallery slug e.g. ?g=abc123
-    const params = new URLSearchParams(window.location.search);
-    const gallerySlug = params.get('g');
-    if (gallerySlug) {
-      const { data: stub } = await sb.from('stubs').select('*').eq('slug', gallerySlug).single();
-      if (stub) { await renderGallery(stub); return; }
-    }
-
     goTo('screen-dashboard');
     loadDashboard();
   }
