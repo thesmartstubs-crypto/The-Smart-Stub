@@ -1770,6 +1770,7 @@ function renderSetlistCard(setlist, stub) {
         <div>
           <div class="setlist-label">&#9632; Setlist — Verified via Setlist.fm</div>
           <div class="setlist-artist-name">${stub.artist}</div>
+          ${tourName ? `<div class="setlist-tour-name">${tourName}</div>` : ''}
         </div>
       </div>
       <div class="setlist-trigger-right">
