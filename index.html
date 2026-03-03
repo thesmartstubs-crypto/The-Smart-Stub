@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartStubs — Live Every Moment Twice</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' font-family='serif'>🎟️</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' font-family='serif'>🎟️</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -460,9 +458,9 @@
 <div id="screen-signup" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 1 OF 4 — CREATE ACCOUNT</div>
+    <div class="step-indicator">STEP 1 OF 5 — CREATE ACCOUNT</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="progress-track"><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content">
     <h2 class="screen-title">Create Your <span class="gold">Account</span></h2>
     <p class="screen-desc">Start preserving your memories. Free to join.</p>
@@ -642,32 +640,25 @@
 <div id="screen-event" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator" id="event-step-indicator">STEP 2 OF 4 — EVENT DETAILS</div>
+    <div class="step-indicator" id="event-step-indicator">STEP 2 OF 5 — CORE DETAILS</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
-  <div class="content">
-    <h2 class="screen-title" id="event-screen-title">Tell Us About <span class="gold">The Event</span></h2>
-    <p class="screen-desc" id="event-screen-desc">Add as much or as little detail as you like — all fields are optional.</p>
-
-    <!-- Locked fields notice — hidden by default, shown when editing -->
-    <div id="locked-notice" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);padding:14px 18px;margin-bottom:24px;display:none;">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">🔒 Core Details Locked</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Event name, artist, and date are locked to this stub. All other details and photos can be updated freely.</p>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="content" style="max-width:600px;">
+    <h2 class="screen-title" id="event-screen-title">The Core <span class="gold">Details</span></h2>
+    <p class="screen-desc" id="event-screen-desc">These details will be permanently locked to this stub once saved.</p>
+    <div id="permanent-notice" style="background:rgba(201,168,76,0.05);border:1px solid #2a2410;padding:14px 18px;margin-bottom:24px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#8a7040;text-transform:uppercase;margin-bottom:6px;">&#9888; Cannot be changed later</div>
+      <p style="font-size:13px;color:#6a6050;line-height:1.6;">These four fields are permanently tied to this stub once saved. Everything on the next screen can be updated any time.</p>
+    </div>
+    <div id="locked-notice" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);padding:14px 18px;margin-bottom:24px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">&#128274; These Fields Are Locked</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Event name, artist, date and type are permanently tied to this stub and cannot be changed.</p>
     </div>
 
     <div class="form-grid">
-      <div class="form-group full">
-        <label>Event / Concert Name</label>
-        <input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)">
-      </div>
-      <div class="form-group full">
-        <label>Artist / Headliner</label>
-        <input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)">
-      </div>
-      <div class="form-group">
-        <label>Event Date</label>
-        <input type="date" id="event-date">
-      </div>
+      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
+      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
+      <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
       <div class="form-group"><label>Event Type</label>
         <select id="event-type">
           <option value="">Select type...</option>
@@ -676,16 +667,40 @@
           <option>Conference / Expo</option><option>Other</option>
         </select>
       </div>
-      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden (optional)"></div>
-      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY (optional)"></div>
-      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3 (optional)"></div>
-      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14–15 (optional)"></div>
-      <div class="form-group full"><label>Your Personal Note (optional)</label><textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..."></textarea></div>
     </div>
     <div id="event-error" class="error-msg"></div>
     <div class="form-actions">
-      <button class="btn-primary" id="event-btn" onclick="handleEventSave()">Next: Upload Photos →</button>
-      <button class="back-btn" onclick="goTo('screen-dashboard')">← Back</button>
+      <button class="btn-primary" id="event-btn" onclick="handleEventCoreNext()">Continue &rarr;</button>
+      <button class="back-btn" id="event-back-btn" onclick="goTo('screen-dashboard')">&larr; Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── EVENT FINE DETAILS (Step 3 of 5) ── -->
+<div id="screen-event-details" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+    <div class="step-indicator">STEP 3 OF 5 &mdash; EVENT DETAILS</div>
+  </nav>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="content" style="max-width:600px;">
+    <h2 class="screen-title" id="event-details-title">The Fine <span class="gold">Details</span></h2>
+    <p class="screen-desc">Add your venue, seat info, and a personal note. All of these can be updated any time.</p>
+    <div style="background:rgba(76,175,80,0.05);border:1px solid #1a2e1a;padding:14px 18px;margin-bottom:24px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#4a8a4a;text-transform:uppercase;margin-bottom:6px;">&#10003; Always Editable</div>
+      <p style="font-size:13px;color:#4a6a4a;line-height:1.6;">Everything on this screen can be changed later from your stub dashboard at any time.</p>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden (optional)"></div>
+      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY (optional)"></div>
+      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3 (optional)"></div>
+      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14&#8211;15 (optional)"></div>
+      <div class="form-group full"><label>Your Personal Note (optional)</label><textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..."></textarea></div>
+    </div>
+    <div id="event-details-error" class="error-msg"></div>
+    <div class="form-actions">
+      <button class="btn-primary" id="event-details-btn" onclick="handleEventDetailsSave()">Next: Upload Photos &rarr;</button>
+      <button class="back-btn" onclick="goBackToEventCore()">&larr; Back</button>
     </div>
   </div>
 </div>
@@ -694,9 +709,9 @@
 <div id="screen-photos" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 3 OF 4 — UPLOAD PHOTOS</div>
+    <div class="step-indicator">STEP 4 OF 5 — UPLOAD PHOTOS</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:900px;">
     <h2 class="screen-title">Upload Your <span class="gold">Memories</span></h2>
     <p class="screen-desc">Select between 10 and 25 photos from this event. JPEG or PNG, up to 20MB each.</p>
@@ -716,7 +731,7 @@
     <div id="photos-error" class="error-msg"></div>
     <div class="form-actions">
       <button class="btn-primary" id="upload-btn" onclick="handlePhotoUpload()">Upload & Continue →</button>
-      <button class="back-btn" onclick="goBackToEvent()">← Back</button>
+      <button class="back-btn" onclick="goBackToEventDetails()">← Back</button>
     </div>
   </div>
 </div>
@@ -725,9 +740,9 @@
 <div id="screen-nfc" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 4 OF 4 — PROGRAM YOUR STUB</div>
+    <div class="step-indicator">STEP 5 OF 5 — PROGRAM YOUR STUB</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
   <div class="content" style="max-width:600px;align-items:center;text-align:center;">
     <h2 class="screen-title">Program Your <span class="gold">SmartStub</span></h2>
     <p class="screen-desc">Your gallery is ready. Now write the link to your ticket's NFC chip.</p>
@@ -1156,59 +1171,88 @@ async function loadDashboard() {
     </div>`).join('')}</div>`;
 }
 
-// ── Event: Save ──
-async function handleEventSave() {
+// ── Event Screen 1: Core Details — Continue ──
+async function handleEventCoreNext() {
+  const errEl = document.getElementById('event-error');
+  const btn = document.getElementById('event-btn');
+  errEl.classList.remove('show');
+  if (isEditing) {
+    await loadFineDetailsForEdit();
+    goTo('screen-event-details');
+    return;
+  }
   const name = document.getElementById('event-name').value.trim();
   const artist = document.getElementById('event-artist').value.trim();
   const date = document.getElementById('event-date').value;
-  const type = document.getElementById('event-type').value;
-  const venue = document.getElementById('event-venue').value.trim();
-  const city = document.getElementById('event-city').value.trim();
-  const section = document.getElementById('event-section').value.trim();
-  const seat = document.getElementById('event-seat').value.trim();
-  const note = document.getElementById('event-note').value.trim();
-  const errEl = document.getElementById('event-error');
-  const btn = document.getElementById('event-btn');
-
-  errEl.classList.remove('show');
-
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
-
-  const slug = currentStubId ? currentSlug : generateSlug();
-
-  const payload = {
-    user_id: currentUser.id,
-    event_name: name,
-    artist,
-    event_date: date || null,
-    venue,
-    city,
-    personal_note: note,
-    slug
-  };
-
-  // If editing existing stub
-  let result;
-  if (currentStubId) {
-    result = await sb.from('stubs').update(payload).eq('id', currentStubId).select().single();
-  } else {
-    result = await sb.from('stubs').insert(payload).select().single();
-  }
-
+  const slug = generateSlug();
+  const result = await sb.from('stubs').insert({
+    user_id: currentUser.id, event_name: name, artist, event_date: date || null, slug
+  }).select().single();
   btn.disabled = false;
-  btn.innerHTML = 'Next: Upload Photos →';
-
+  btn.innerHTML = 'Continue →';
   if (result.error) return showError(errEl, 'Could not save event details. Please try again.');
-
   currentStubId = result.data.id;
   currentSlug = result.data.slug;
+  ['event-venue','event-city','event-section','event-seat','event-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  goTo('screen-event-details');
+}
 
-  // Load existing photos if editing, then go to photo screen
+// ── Event Screen 2: Fine Details — Save ──
+async function handleEventDetailsSave() {
+  const venue = document.getElementById('event-venue').value.trim();
+  const city = document.getElementById('event-city').value.trim();
+  const note = document.getElementById('event-note').value.trim();
+  const errEl = document.getElementById('event-details-error');
+  const btn = document.getElementById('event-details-btn');
+  errEl.classList.remove('show');
+  if (!currentStubId) return showError(errEl, 'Something went wrong. Please go back and try again.');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
+  const result = await sb.from('stubs').update({ venue, city, personal_note: note })
+    .eq('id', currentStubId).select().single();
+  btn.disabled = false;
+  btn.innerHTML = 'Next: Upload Photos →';
+  if (result.error) return showError(errEl, 'Could not save details. Please try again.');
   await loadExistingPhotos();
-  document.getElementById('event-btn').innerHTML = 'Next: Upload Photos →';
   goTo('screen-photos');
 }
+
+// ── Back: Fine Details → Core Details ──
+function goBackToEventCore() {
+  goTo('screen-event');
+}
+
+// ── Back: Photos → Fine Details ──
+async function goBackToEventDetails() {
+  if (currentStubId) {
+    const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
+    if (stub) {
+      document.getElementById('event-venue').value = stub.venue || '';
+      document.getElementById('event-city').value = stub.city || '';
+      document.getElementById('event-note').value = stub.personal_note || '';
+    }
+  }
+  photosToDelete = []; photos = [];
+  goTo('screen-event-details');
+}
+
+// ── Load fine details when editing ──
+async function loadFineDetailsForEdit() {
+  if (!currentStubId) return;
+  const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
+  if (stub) {
+    document.getElementById('event-venue').value = stub.venue || '';
+    document.getElementById('event-city').value = stub.city || '';
+    document.getElementById('event-section').value = '';
+    document.getElementById('event-seat').value = '';
+    document.getElementById('event-note').value = stub.personal_note || '';
+  }
+}
+
 
 // ── Photos: Handle Selection ──
 function handlePhotos(e) {
@@ -1513,11 +1557,18 @@ function startNewStub() {
   });
 
   // Reset screen text
-  document.getElementById('locked-notice').style.display = 'none';
-  document.getElementById('event-screen-title').innerHTML = 'Tell Us About <span class="gold">The Event</span>';
-  document.getElementById('event-screen-desc').textContent = 'Add as much or as little detail as you like — all fields are optional.';
-  document.getElementById('event-btn').innerHTML = 'Next: Upload Photos →';
-
+  // Reset notices and locks
+  const pn = document.getElementById('permanent-notice');
+  const ln = document.getElementById('locked-notice');
+  if (pn) pn.style.display = 'block';
+  if (ln) ln.style.display = 'none';
+  ['event-name','event-artist','event-date','event-type'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.removeAttribute('readonly'); el.classList.remove('locked-field'); }
+  });
+  document.getElementById('event-screen-title').innerHTML = 'The Core <span class="gold">Details</span>';
+  document.getElementById('event-screen-desc').textContent = 'These details will be permanently locked to this stub once saved.';
+  document.getElementById('event-btn').innerHTML = 'Continue →';
   goTo('screen-event');
 }
 
@@ -1536,20 +1587,18 @@ async function editStub(stubId) {
   document.getElementById('event-city').value = stub.city || '';
   document.getElementById('event-note').value = stub.personal_note || '';
 
-  // Lock the three core identity fields
-  const lockedFields = ['event-name', 'event-artist', 'event-date'];
-  lockedFields.forEach(id => {
+  // Lock all four core identity fields
+  ['event-name','event-artist','event-date','event-type'].forEach(id => {
     const el = document.getElementById(id);
-    el.setAttribute('readonly', true);
-    el.classList.add('locked-field');
+    if (el) { el.setAttribute('readonly', true); el.classList.add('locked-field'); }
   });
-
-  // Show locked notice and update screen text
-  document.getElementById('locked-notice').style.display = 'block';
+  const pn2 = document.getElementById('permanent-notice');
+  const ln2 = document.getElementById('locked-notice');
+  if (pn2) pn2.style.display = 'none';
+  if (ln2) ln2.style.display = 'block';
   document.getElementById('event-screen-title').innerHTML = 'Edit Your <span class="gold">Stub</span>';
-  document.getElementById('event-screen-desc').textContent = 'Update your stub details and photos.';
-  document.getElementById('event-btn').innerHTML = 'Save Changes →';
-
+  document.getElementById('event-screen-desc').textContent = 'Core details are locked. Continue to update venue, seat info and photos.';
+  document.getElementById('event-btn').innerHTML = 'Continue →';
   goTo('screen-event');
 }
 
@@ -1588,23 +1637,7 @@ function removeExistingPhoto(idx) {
   renderPhotoGrid();
 }
 
-// ── Back to Event: repopulate form with saved data ──
-async function goBackToEvent() {
-  if (currentStubId) {
-    const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
-    if (stub) {
-      document.getElementById('event-name').value = stub.event_name || '';
-      document.getElementById('event-artist').value = stub.artist || '';
-      document.getElementById('event-date').value = stub.event_date || '';
-      document.getElementById('event-venue').value = stub.venue || '';
-      document.getElementById('event-city').value = stub.city || '';
-      document.getElementById('event-note').value = stub.personal_note || '';
-    }
-  }
-  photosToDelete = [];
-  photos = [];
-  goTo('screen-event');
-}
+// goBackToEvent replaced by goBackToEventCore/goBackToEventDetails
 function openLightbox(src) {
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('open');
