@@ -1685,7 +1685,6 @@ async function fetchAndRenderSetlist(stub) {
     const fmDate = `${day}-${month}-${year}`; // setlist.fm uses DD-MM-YYYY
 
 const res = await fetch(SETLIST_PROXY, {
-const res = await fetch(SETLIST_PROXY, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ artistName: stub.artist.trim(), date: fmDate })
