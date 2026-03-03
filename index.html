@@ -2235,29 +2235,87 @@ function getTeamColors(teamName) {
   return null;
 }
 
-function applyTeamTheme(teamName, logoUrl) {
-  const hero = document.getElementById('gallery-hero');
+function applyThemeColors(primary, secondary) {
   const bg = document.getElementById('gallery-bg');
+  const hero = document.getElementById('gallery-hero');
+  const tag = document.getElementById('gallery-tag');
+  if (bg) bg.style.background = `linear-gradient(135deg, ${primary}cc 0%, ${secondary}66 50%, transparent 80%)`;
+  if (hero) hero.style.borderBottom = `1px solid ${primary}44`;
+  if (tag) tag.style.color = (primary === '#000000' || primary === '#111111' || primary === '#27251F' || primary === '#101820') ? 'var(--gold)' : primary;
+}
+
+function extractDominantColor(imgEl) {
+  return new Promise((resolve) => {
+    try {
+      const canvas = document.createElement('canvas');
+      const size = 40;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(imgEl, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+      const colorMap = {};
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
+        // Skip transparent, near-white, near-black pixels
+        if (a < 128) continue;
+        if (r > 230 && g > 230 && b > 230) continue;
+        if (r < 25 && g < 25 && b < 25) continue;
+        // Quantize to reduce noise
+        const qr = Math.round(r / 32) * 32;
+        const qg = Math.round(g / 32) * 32;
+        const qb = Math.round(b / 32) * 32;
+        const key = `${qr},${qg},${qb}`;
+        colorMap[key] = (colorMap[key] || 0) + 1;
+      }
+      const sorted = Object.entries(colorMap).sort((a, b) => b[1] - a[1]);
+      if (sorted.length === 0) { resolve(null); return; }
+      const [r, g, b] = sorted[0][0].split(',').map(Number);
+      const hex = '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+      // Pick a darker secondary from second most common
+      let secondary = '#1a1a1a';
+      if (sorted.length > 1) {
+        const [r2,g2,b2] = sorted[1][0].split(',').map(Number);
+        secondary = '#' + [r2,g2,b2].map(v => v.toString(16).padStart(2,'0')).join('');
+      }
+      resolve([hex, secondary]);
+    } catch(e) {
+      resolve(null);
+    }
+  });
+}
+
+function applyTeamTheme(teamName, logoUrl) {
   const logoWrap = document.getElementById('team-logo-wrap');
   const logoImg = document.getElementById('team-logo-img');
-  const tag = document.getElementById('gallery-tag');
 
-  const colors = getTeamColors(teamName);
-
-  if (colors) {
-    const [primary, secondary] = colors;
-    // Apply gradient background using team colors
-    bg.style.background = `linear-gradient(135deg, ${primary}cc 0%, ${secondary}66 50%, transparent 80%)`;
-    // Tint the border
-    hero.style.borderBottom = `1px solid ${primary}44`;
-    // Update the gallery tag color
-    if (tag) tag.style.color = primary === '#000000' || primary === '#111111' ? 'var(--gold)' : primary;
-  }
-
+  // Show logo first
   if (logoUrl) {
-    logoImg.src = logoUrl;
     logoImg.alt = teamName + ' logo';
     logoWrap.classList.add('visible');
+
+    // Try hardcoded colors first
+    const colors = getTeamColors(teamName);
+    if (colors) {
+      applyThemeColors(colors[0], colors[1]);
+      // Still load the logo image
+      logoImg.crossOrigin = 'anonymous';
+      logoImg.src = logoUrl;
+    } else {
+      // Load image and extract dominant color as fallback
+      logoImg.crossOrigin = 'anonymous';
+      logoImg.onload = async () => {
+        const extracted = await extractDominantColor(logoImg);
+        if (extracted) {
+          applyThemeColors(extracted[0], extracted[1]);
+        }
+      };
+      logoImg.onerror = () => {}; // silent fail
+      logoImg.src = logoUrl;
+    }
+  } else {
+    const colors = getTeamColors(teamName);
+    if (colors) applyThemeColors(colors[0], colors[1]);
   }
 }
 
