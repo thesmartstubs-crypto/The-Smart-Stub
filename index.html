@@ -543,9 +543,16 @@
   <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
     <div>
       <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">Memory preserved with</div>
-      <div class="logo" style="font-size:22px;">Smart<span>Stubs</span></div>
+      <div class="logo" onclick="logoClick()" style="font-size:22px;cursor:pointer;">Smart<span>Stubs</span></div>
     </div>
-    <button class="btn-primary" onclick="goTo('screen-landing')">Get Your SmartStub</button>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+      <div id="gallery-url-share" style="display:none;align-items:center;gap:10px;background:#111;border:1px solid #2a2a2a;padding:10px 16px;">
+        <span id="gallery-share-url" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;"></span>
+        <button onclick="copyGalleryUrl()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:0;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" id="copy-btn">Copy</button>
+      </div>
+      <button class="btn-secondary" onclick="toggleGalleryUrl()" id="share-btn" style="font-size:11px;padding:10px 20px;">Share URL</button>
+      <button class="btn-primary" onclick="goTo('screen-landing')" id="gallery-cta-btn">Get Your SmartStub</button>
+    </div>
   </div>
 </div>
 
@@ -598,6 +605,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let currentUser = null;
 let currentStubId = null;
 let currentSlug = null;
+let isEditing = false;
 let photos = [];
 let existingPhotos = [];
 let photosToDelete = [];
@@ -934,9 +942,17 @@ async function handlePhotoUpload() {
 
   if (photos.length > 0 && uploaded === 0) return showError(errEl, 'Upload failed. Please check your connection and try again.');
 
-  const galleryUrl = `thesmartstub.com/g/${currentSlug}`;
-  document.getElementById('stub-url-display').textContent = galleryUrl;
-  goTo('screen-nfc');
+  if (isEditing) {
+    // Go straight to gallery after editing
+    const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
+    if (stub) { await renderGallery(stub); return; }
+    goTo('screen-dashboard');
+  } else {
+    // New stub — go to NFC programming screen
+    const galleryUrl = `thesmartstub.com/g/${currentSlug}`;
+    document.getElementById('stub-url-display').textContent = galleryUrl;
+    goTo('screen-nfc');
+  }
 }
 
 // ── NFC Write ──
@@ -1017,6 +1033,21 @@ async function renderGallery(stub) {
     noteEl.style.display = 'none';
   }
 
+  // Set share URL
+  document.getElementById('gallery-share-url').textContent = `thesmartstub.com/g/${stub.slug}`;
+  document.getElementById('gallery-url-share').style.display = 'none';
+
+  // Show back to dashboard button if owner is viewing their own gallery
+  const ctaBtn = document.getElementById('gallery-cta-btn');
+  const shareBtn = document.getElementById('share-btn');
+  if (currentUser && currentUser.id === stub.user_id) {
+    ctaBtn.textContent = '← Back to Dashboard';
+    ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
+  } else {
+    ctaBtn.textContent = 'Get Your SmartStub';
+    ctaBtn.onclick = () => goTo('screen-landing');
+  }
+
   // Load photos from storage
   const grid = document.getElementById('gallery-photo-grid');
   grid.innerHTML = '<div style="grid-column:1/-1;padding:20px;color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;">Loading photos...</div>';
@@ -1040,6 +1071,28 @@ async function renderGallery(stub) {
   }
 
   goTo('screen-gallery');
+}
+
+// ── Gallery URL Share ──
+function toggleGalleryUrl() {
+  const el = document.getElementById('gallery-url-share');
+  const btn = document.getElementById('share-btn');
+  const isVisible = el.style.display === 'flex';
+  el.style.display = isVisible ? 'none' : 'flex';
+  btn.textContent = isVisible ? 'Share URL' : 'Hide URL';
+}
+
+function copyGalleryUrl() {
+  const url = document.getElementById('gallery-share-url').textContent;
+  navigator.clipboard.writeText('https://' + url).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied!';
+    btn.style.color = '#4caf50';
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.style.color = '';
+    }, 2000);
+  });
 }
 
 // ── Delete Stub ──
@@ -1093,6 +1146,7 @@ async function executeDeleteStub() {
 function startNewStub() {
   currentStubId = null;
   currentSlug = null;
+  isEditing = false;
   photos = [];
   existingPhotos = [];
   photosToDelete = [];
@@ -1125,8 +1179,7 @@ async function editStub(stubId) {
 
   currentStubId = stub.id;
   currentSlug = stub.slug;
-
-  // Populate all fields
+  isEditing = true;
   document.getElementById('event-name').value = stub.event_name || '';
   document.getElementById('event-artist').value = stub.artist || '';
   document.getElementById('event-date').value = stub.event_date || '';
