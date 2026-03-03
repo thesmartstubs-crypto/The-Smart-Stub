@@ -752,38 +752,72 @@
     height: 3px;
     background: linear-gradient(90deg, #f5c518, #c9a040, transparent);
   }
-  .playbill-program-header {
-    padding: 20px 28px 16px;
+  /* Collapsible trigger row */
+  .playbill-trigger {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #1a1a10;
+    padding: 18px 28px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    gap: 16px;
   }
+  .playbill-trigger:hover { background: rgba(245,197,24,0.03); }
+  .playbill-trigger-left { display: flex; align-items: center; gap: 16px; }
+  .playbill-trigger-badge {
+    background: #f5c518;
+    color: #000;
+    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .playbill-trigger-badge-top {
+    font-family: 'Space Mono', monospace;
+    font-size: 6px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 1px;
+  }
+  .playbill-trigger-badge-word {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .playbill-trigger-text {}
   .playbill-program-label {
     font-family: 'Space Mono', monospace;
     font-size: 10px;
     letter-spacing: 4px;
     color: #f5c518;
     text-transform: uppercase;
+    margin-bottom: 3px;
   }
   .playbill-show-name {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
+    font-size: 24px;
+    letter-spacing: 2px;
     color: var(--off-white);
-    padding: 16px 28px 4px;
+    line-height: 1;
   }
-  .playbill-program-body {
-    padding: 8px 28px 24px;
+  .playbill-chevron { color: #6a5a30; transition: transform 0.3s ease; }
+  .playbill-program.expanded .playbill-chevron { transform: rotate(180deg); }
+  /* Collapsible body */
+  .playbill-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+  .playbill-program.expanded .playbill-body { max-height: 1000px; }
+  .playbill-body-inner {
+    padding: 4px 28px 24px;
+    border-top: 1px solid #1a1a10;
     display: flex;
     flex-direction: column;
     gap: 14px;
   }
-  .playbill-field {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  .playbill-field { display: flex; flex-direction: column; gap: 4px; }
   .playbill-field-label {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
@@ -791,16 +825,11 @@
     color: #6a5a30;
     text-transform: uppercase;
   }
-  .playbill-field-value {
-    font-size: 14px;
-    color: var(--off-white);
-    line-height: 1.5;
-  }
+  .playbill-field-value { font-size: 14px; color: var(--off-white); line-height: 1.5; }
   @media (max-width: 768px) {
     .playbill-hero-layout { flex-direction: column; gap: 16px; }
-    .playbill-program-header { padding: 16px 20px 12px; }
-    .playbill-show-name { padding: 12px 20px 4px; }
-    .playbill-program-body { padding: 8px 20px 20px; }
+    .playbill-trigger { padding: 16px 20px; }
+    .playbill-body-inner { padding: 4px 20px 20px; }
   }
 </style>
 </head>
@@ -2780,7 +2809,6 @@ function renderPlaybillCard(stub) {
   const venue = stub.venue || '';
   const city = stub.city || '';
 
-  // Only render fields that have content
   const fields = [];
   if (theater) fields.push({ label: 'Theater', value: theater });
   if (cast) fields.push({ label: 'Cast', value: cast });
@@ -2797,16 +2825,32 @@ function renderPlaybillCard(stub) {
     </div>`).join('');
 
   inner.innerHTML = `
-    <div class="playbill-program">
-      <div class="playbill-program-header">
-        <div class="playbill-program-label">&#9632; Program — Live Theater</div>
+    <div class="playbill-program" id="playbill-card">
+      <div class="playbill-trigger" onclick="togglePlaybill()">
+        <div class="playbill-trigger-left">
+          <div class="playbill-trigger-badge">
+            <div class="playbill-trigger-badge-top">The</div>
+            <div class="playbill-trigger-badge-word">Playbill</div>
+          </div>
+          <div class="playbill-trigger-text">
+            <div class="playbill-program-label">&#9632; Program — Live Theater</div>
+            <div class="playbill-show-name">${showName}</div>
+          </div>
+        </div>
+        <svg class="playbill-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="playbill-show-name">${showName}</div>
-      <div class="playbill-program-body">${fieldsHTML}</div>
+      <div class="playbill-body">
+        <div class="playbill-body-inner">${fieldsHTML}</div>
+      </div>
     </div>
   `;
 
   section.style.display = 'block';
+}
+
+function togglePlaybill() {
+  const card = document.getElementById('playbill-card');
+  if (card) card.classList.toggle('expanded');
 }
 
 // ── Setlist.fm Integration ──
