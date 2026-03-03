@@ -415,6 +415,53 @@
     .setlist-card { padding: 24px 20px; }
     .setlist-songs { grid-template-columns: 1fr; }
   }
+
+  /* ── Event Type Picker ── */
+  .event-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
+  .event-type-tile {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    padding: 28px 16px 22px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .event-type-tile:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+  .event-type-tile.selected { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .event-type-tile svg { display: block; }
+  .event-type-tile-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--off-white);
+  }
+  .event-type-tile.selected .event-type-tile-label { color: var(--gold); }
+
+  /* Sport selector row */
+  .sport-select-row {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+  }
+  .sport-select-row.visible { display: flex; }
+
+  /* Dynamic field label */
+  .dynamic-label { transition: opacity 0.2s; }
+
+  @media (max-width: 600px) {
+    .event-type-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 </head>
 <body>
@@ -875,12 +922,71 @@
 </div>
 
 <!-- ── EVENT DETAILS ── -->
+<!-- ── PICK EVENT TYPE (Step 2 of 6) ── -->
+<div id="screen-pick-type" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+    <div class="step-indicator">STEP 2 OF 6 — WHAT KIND OF EVENT?</div>
+  </nav>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="content" style="max-width:640px;">
+    <h2 class="screen-title">What Kind of <span class="gold">Event?</span></h2>
+    <p class="screen-desc">This helps us tailor your stub and find the right details automatically.</p>
+    <div class="event-type-grid" id="event-type-tiles">
+      <div class="event-type-tile" onclick="selectEventType('concert')" id="tile-concert">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <div class="event-type-tile-label">Concert</div>
+      </div>
+      <div class="event-type-tile" onclick="selectEventType('sports')" id="tile-sports">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/><path d="M4.93 19.07L19.07 4.93"/></svg>
+        <div class="event-type-tile-label">Sports Game</div>
+      </div>
+      <div class="event-type-tile" onclick="selectEventType('festival')" id="tile-festival">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <div class="event-type-tile-label">Festival</div>
+      </div>
+      <div class="event-type-tile" onclick="selectEventType('theater')" id="tile-theater">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>
+        <div class="event-type-tile-label">Theater</div>
+      </div>
+      <div class="event-type-tile" onclick="selectEventType('comedy')" id="tile-comedy">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        <div class="event-type-tile-label">Comedy</div>
+      </div>
+      <div class="event-type-tile" onclick="selectEventType('other')" id="tile-other">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="event-type-tile-label">Other</div>
+      </div>
+    </div>
+    <!-- Sport selector — shown only when Sports is selected -->
+    <div class="sport-select-row" id="sport-select-row">
+      <label>Which Sport?</label>
+      <select id="pick-sport">
+        <option value="">Select sport...</option>
+        <option value="nfl">NFL Football</option>
+        <option value="nba">NBA Basketball</option>
+        <option value="mlb">MLB Baseball</option>
+        <option value="nhl">NHL Hockey</option>
+        <option value="mls">MLS Soccer</option>
+        <option value="ncaafb">NCAA Football</option>
+        <option value="ncaamb">NCAA Basketball</option>
+        <option value="wnba">WNBA Basketball</option>
+      </select>
+    </div>
+    <div id="pick-type-error" class="error-msg"></div>
+    <div class="form-actions" style="margin-top:40px;">
+      <button class="btn-primary" id="pick-type-btn" onclick="handlePickType()">Continue &rarr;</button>
+      <button class="back-btn" onclick="goTo('screen-dashboard')">&larr; Back</button>
+    </div>
+  </div>
+</div>
+
 <div id="screen-event" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div class="step-indicator" id="event-step-indicator">STEP 2 OF 5 — CORE DETAILS</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:600px;">
     <h2 class="screen-title" id="event-screen-title">The Core <span class="gold">Details</span></h2>
     <p class="screen-desc" id="event-screen-desc">These details will be permanently locked to this stub once saved.</p>
@@ -894,22 +1000,22 @@
     </div>
 
     <div class="form-grid">
-      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
-      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
+      <div class="form-group full"><label id="label-event-name">Event Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
+      <div class="form-group full"><label id="label-event-artist">Artist / Performer</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
+      <div class="form-group full" id="opponent-group" style="display:none;"><label>Opponent Team</label><input type="text" id="event-opponent" placeholder="e.g. New York Giants (optional)"></div>
       <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
-      <div class="form-group"><label>Event Type</label>
-        <select id="event-type">
-          <option value="">Select type...</option>
-          <option>Concert / Music Show</option><option>Festival</option><option>Sports Game</option>
-          <option>Theater / Broadway</option><option>Comedy Show</option><option>Film Premiere</option>
-          <option>Conference / Expo</option><option>Other</option>
+      <div class="form-group" id="homeaway-group" style="display:none;"><label>Home or Away?</label>
+        <select id="event-homeaway">
+          <option value="">Select...</option>
+          <option value="home">Home Game</option>
+          <option value="away">Away Game</option>
         </select>
       </div>
     </div>
     <div id="event-error" class="error-msg"></div>
     <div class="form-actions">
       <button class="btn-primary" id="event-btn" onclick="handleEventCoreNext()">Continue &rarr;</button>
-      <button class="back-btn" id="event-back-btn" onclick="goTo('screen-dashboard')">&larr; Back</button>
+      <button class="back-btn" id="event-back-btn" onclick="goTo('screen-pick-type')">&larr; Back</button>
     </div>
   </div>
 </div>
@@ -918,9 +1024,9 @@
 <div id="screen-event-details" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 3 OF 5 &mdash; EVENT DETAILS</div>
+    <div class="step-indicator">STEP 4 OF 6 &mdash; EVENT DETAILS</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:600px;">
     <h2 class="screen-title" id="event-details-title">The Fine <span class="gold">Details</span></h2>
     <p class="screen-desc">Add your venue, seat info, and a personal note. All of these can be updated any time.</p>
@@ -947,9 +1053,9 @@
 <div id="screen-photos" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 4 OF 5 — UPLOAD PHOTOS</div>
+    <div class="step-indicator">STEP 5 OF 6 — UPLOAD PHOTOS</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:900px;">
     <h2 class="screen-title">Upload Your <span class="gold">Memories</span></h2>
     <p class="screen-desc">Select between 10 and 25 photos from this event. JPEG or PNG, up to 20MB each.</p>
@@ -978,9 +1084,9 @@
 <div id="screen-nfc" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 5 OF 5 — PROGRAM YOUR STUB</div>
+    <div class="step-indicator">STEP 6 OF 6 — PROGRAM YOUR STUB</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
+  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div></div>
   <div class="content" style="max-width:600px;align-items:center;text-align:center;">
     <h2 class="screen-title">Program Your <span class="gold">SmartStub</span></h2>
     <p class="screen-desc">Your gallery is ready. Now write the link to your ticket's NFC chip.</p>
@@ -1106,6 +1212,8 @@ let currentUser = null;
 let currentStubId = null;
 let currentSlug = null;
 let isEditing = false;
+let currentEventType = null; // concert | sports | festival | theater | comedy | other
+let currentSport = null;
 let photos = [];
 let existingPhotos = [];
 let photosToDelete = [];
@@ -1403,7 +1511,8 @@ async function loadDashboard() {
     const city   = stub.city   || '\u2014';
     const name   = stub.event_name || 'Untitled Event';
     const artist = stub.artist ? stub.artist.toUpperCase() : 'SMARTSTUB';
-    const badge  = stub.event_type || 'SMARTSTUB';
+    const meta   = stub.metadata || {};
+    const badge  = meta.event_type ? meta.event_type.toUpperCase() : (stub.event_type || 'SMARTSTUB');
     return `
     <div class="stub-pin-wrapper">
       <div class="pushpin"><div class="pushpin-head"></div><div class="pushpin-needle"></div></div>
@@ -1438,6 +1547,87 @@ async function loadDashboard() {
 }
 
 // ── Event Screen 1: Core Details — Continue ──
+
+// ── Event Type Picker ──
+function selectEventType(type) {
+  currentEventType = type;
+  // Update tile selection
+  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById('tile-' + type);
+  if (tile) tile.classList.add('selected');
+  // Show sport selector if sports
+  const sportRow = document.getElementById('sport-select-row');
+  if (type === 'sports') {
+    sportRow.classList.add('visible');
+  } else {
+    sportRow.classList.remove('visible');
+    document.getElementById('pick-sport').value = '';
+    currentSport = null;
+  }
+  document.getElementById('pick-type-error').classList.remove('show');
+}
+
+function handlePickType() {
+  const errEl = document.getElementById('pick-type-error');
+  if (!currentEventType) return showError(errEl, 'Please select an event type.');
+  if (currentEventType === 'sports') {
+    currentSport = document.getElementById('pick-sport').value;
+    if (!currentSport) return showError(errEl, 'Please select a sport.');
+  }
+  // Adapt the core details screen labels & fields based on type
+  adaptEventScreen(currentEventType);
+  goTo('screen-event');
+}
+
+function adaptEventScreen(type) {
+  const nameLabel = document.getElementById('label-event-name');
+  const artistLabel = document.getElementById('label-event-artist');
+  const artistInput = document.getElementById('event-artist');
+  const nameInput = document.getElementById('event-name');
+  const opponentGroup = document.getElementById('opponent-group');
+  const homeawayGroup = document.getElementById('homeaway-group');
+  const stepIndicator = document.getElementById('event-step-indicator');
+
+  // Reset
+  opponentGroup.style.display = 'none';
+  homeawayGroup.style.display = 'none';
+
+  if (type === 'concert') {
+    nameLabel.textContent = 'Concert / Tour Name';
+    nameInput.placeholder = 'e.g. The Eras Tour (optional)';
+    artistLabel.textContent = 'Artist / Headliner';
+    artistInput.placeholder = 'e.g. Taylor Swift';
+  } else if (type === 'sports') {
+    nameLabel.textContent = 'Event / Game Name (optional)';
+    nameInput.placeholder = 'e.g. Wild Card Game (optional)';
+    artistLabel.textContent = 'Your Team';
+    artistInput.placeholder = 'e.g. New England Patriots';
+    opponentGroup.style.display = 'flex';
+    homeawayGroup.style.display = 'flex';
+  } else if (type === 'festival') {
+    nameLabel.textContent = 'Festival Name';
+    nameInput.placeholder = 'e.g. Coachella 2024';
+    artistLabel.textContent = 'Headliner / Main Act';
+    artistInput.placeholder = 'e.g. Beyoncé (optional)';
+  } else if (type === 'theater') {
+    nameLabel.textContent = 'Show Name';
+    nameInput.placeholder = 'e.g. Hamilton';
+    artistLabel.textContent = 'Production / Company';
+    artistInput.placeholder = 'e.g. Broadway (optional)';
+  } else if (type === 'comedy') {
+    nameLabel.textContent = 'Show / Tour Name (optional)';
+    nameInput.placeholder = 'e.g. The Come Back Tour (optional)';
+    artistLabel.textContent = 'Comedian / Performer';
+    artistInput.placeholder = 'e.g. Dave Chappelle';
+  } else {
+    nameLabel.textContent = 'Event Name';
+    nameInput.placeholder = 'e.g. Event name (optional)';
+    artistLabel.textContent = 'Artist / Performer';
+    artistInput.placeholder = 'e.g. Performer name (optional)';
+  }
+  if (stepIndicator) stepIndicator.textContent = 'STEP 3 OF 6 — CORE DETAILS';
+}
+
 async function handleEventCoreNext() {
   const errEl = document.getElementById('event-error');
   const btn = document.getElementById('event-btn');
@@ -1453,8 +1643,15 @@ async function handleEventCoreNext() {
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
   const slug = generateSlug();
+  // Build metadata based on event type
+  const metadata = { event_type: currentEventType || 'other' };
+  if (currentEventType === 'sports') {
+    metadata.sport = currentSport;
+    metadata.opponent = document.getElementById('event-opponent')?.value.trim() || '';
+    metadata.home_away = document.getElementById('event-homeaway')?.value || '';
+  }
   const result = await sb.from('stubs').insert({
-    user_id: currentUser.id, event_name: name, artist, event_date: date || null, slug
+    user_id: currentUser.id, event_name: name, artist, event_date: date || null, slug, metadata
   }).select().single();
   btn.disabled = false;
   btn.innerHTML = 'Continue →';
@@ -1837,8 +2034,15 @@ async function renderGallery(stub) {
     grid.appendChild(div);
   }
 
-  // Fire setlist fetch — silently fills in if found
-  fetchAndRenderSetlist(stub);
+  // Fire enrichment based on event type
+  const meta = stub.metadata || {};
+  const evType = meta.event_type || 'concert';
+  if (evType === 'sports' && meta.sport) {
+    // Sports scoreboard — coming soon
+  } else {
+    // Default: try setlist for music events
+    fetchAndRenderSetlist(stub);
+  }
 
   goTo('screen-gallery');
 }
@@ -1946,7 +2150,15 @@ function startNewStub() {
   document.getElementById('event-screen-title').innerHTML = 'The Core <span class="gold">Details</span>';
   document.getElementById('event-screen-desc').textContent = 'These details will be permanently locked to this stub once saved.';
   document.getElementById('event-btn').innerHTML = 'Continue →';
-  goTo('screen-event');
+  // Reset event type picker
+  currentEventType = null;
+  currentSport = null;
+  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
+  document.getElementById('sport-select-row').classList.remove('visible');
+  document.getElementById('pick-sport').value = '';
+  document.getElementById('event-opponent').value = '';
+  document.getElementById('event-homeaway').value = '';
+  goTo('screen-pick-type');
 }
 
 // ── Edit Stub ──
