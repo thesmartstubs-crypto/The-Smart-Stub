@@ -139,6 +139,10 @@
 
   .locked-field { background: #0d0d0d !important; color: #555 !important; border-color: #1e1e1e !important; cursor: not-allowed !important; }
   .locked-label { color: #555 !important; }
+  .qty-option { border: 1px solid #2a2a2a; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: #111; }
+  .qty-option:hover { border-color: #c9a84c; }
+  .qty-option.selected { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+  .order-stub-block { background: #0d0d0d; border: 1px solid #1e1e1e; padding: 28px; margin-bottom: 16px; }
 
   .divider { border: none; border-top: 1px solid #1e1e1e; margin: 32px 0; }
 
@@ -193,7 +197,7 @@
       <h1 class="hero-title">Live Every<br>Moment <span class="accent">Twice.</span></h1>
       <p class="hero-sub">SmartStubs transforms your concert ticket into a living gallery. Tap the stub, relive the night. Custom printed tickets embedded with NFC chips — linking your photos, memories, and moments.</p>
       <div style="display:flex; flex-wrap:wrap; gap:12px;">
-        <button class="btn-primary" onclick="goTo('screen-signup')">Get Started</button>
+        <button class="btn-primary" onclick="goTo('screen-order')">Order a SmartStub</button>
         <button class="btn-secondary" onclick="goTo('screen-login')">Sign In</button>
       </div>
     </div>
@@ -341,13 +345,112 @@
   <div style="padding:80px 64px;text-align:center;background:#0d0d0d;">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,64px);letter-spacing:2px;line-height:1.1;max-width:700px;margin:0 auto 32px;">"The ticket got you in.<br>The <span style="color:var(--gold);">SmartStub</span> keeps you there."</div>
     <p style="font-size:15px;color:var(--muted);margin-bottom:40px;font-weight:300;">Every great night deserves to be more than a memory that fades.</p>
-    <button class="btn-primary" onclick="goTo('screen-signup')" style="font-size:14px;padding:18px 48px;">Get Your SmartStub</button>
+    <button class="btn-primary" onclick="goTo('screen-order')" style="font-size:14px;padding:18px 48px;">Order Your SmartStub</button>
   </div>
 
   <!-- FOOTER -->
   <div style="padding:24px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;font-size:20px;">Smart<span>Stubs</span></div>
     <div style="font-family:'Space Mono',monospace;font-size:10px;color:#333;letter-spacing:2px;">© 2025 SMARTSTUBS · THESMARTSTUB.COM</div>
+  </div>
+</div>
+
+<!-- ── ORDER ── -->
+<div id="screen-order" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="back-btn" onclick="goTo('screen-landing')" style="color:var(--muted);font-size:11px;">← Back</button>
+      <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
+    </div>
+  </nav>
+
+  <div class="content" style="max-width:760px;">
+    <div style="margin-bottom:40px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">&#9632; Custom Order</div>
+      <h2 class="screen-title">Order Your <span class="gold">SmartStub</span></h2>
+      <p class="screen-desc">Fill in your event details below. We'll print them directly onto your custom ticket stub so it looks and feels like the real thing.</p>
+    </div>
+
+    <!-- QUANTITY + PRICING -->
+    <div style="background:#0d0d0d;border:1px solid #1e1e1e;padding:28px;margin-bottom:32px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">How Many Stubs?</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="quantity-selector">
+        <div class="qty-option selected" onclick="selectQuantity(1)" data-qty="1">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;">1</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:1px;">$18.00</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">per stub</div>
+        </div>
+        <div class="qty-option" onclick="selectQuantity(2)" data-qty="2">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;">2</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:1px;">$15.00 each</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">$30.00 total</div>
+        </div>
+        <div class="qty-option" onclick="selectQuantity(3)" data-qty="3">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;">3+</div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);letter-spacing:1px;">$13.00 each</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">best value</div>
+        </div>
+      </div>
+      <!-- 3+ quantity input -->
+      <div id="multi-qty-input" style="display:none;margin-top:16px;">
+        <label style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;">Number of stubs (3 or more)</label>
+        <input type="number" id="order-qty-count" min="3" value="3" style="margin-top:8px;width:120px;" oninput="updateOrderTotal()">
+      </div>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1e1e1e;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;">Order Total</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--gold);" id="order-total">$18.00</div>
+      </div>
+    </div>
+
+    <!-- EVENT DETAILS — repeatable per stub -->
+    <div id="order-stubs-container"></div>
+
+    <!-- SHIPPING -->
+    <div style="background:#0d0d0d;border:1px solid #1e1e1e;padding:28px;margin-bottom:32px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">Shipping Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label>First Name</label><input type="text" id="ship-first" placeholder="Alex"></div>
+        <div class="form-group"><label>Last Name</label><input type="text" id="ship-last" placeholder="Rivera"></div>
+        <div class="form-group full"><label>Street Address</label><input type="text" id="ship-address" placeholder="123 Main Street"></div>
+        <div class="form-group full"><label>Apt / Suite (optional)</label><input type="text" id="ship-address2" placeholder="Apt 4B"></div>
+        <div class="form-group"><label>City</label><input type="text" id="ship-city" placeholder="New York"></div>
+        <div class="form-group"><label>State</label><input type="text" id="ship-state" placeholder="NY"></div>
+        <div class="form-group"><label>ZIP Code</label><input type="text" id="ship-zip" placeholder="10001"></div>
+        <div class="form-group"><label>Country</label>
+          <select id="ship-country">
+            <option value="US">United States</option>
+            <option value="CA">Canada</option>
+            <option value="GB">United Kingdom</option>
+            <option value="AU">Australia</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Email Address</label><input type="email" id="order-email" placeholder="alex@example.com"></div>
+      </div>
+    </div>
+
+    <!-- ORDER SUMMARY -->
+    <div style="background:#0d0d0d;border:1px solid #1e1e1e;padding:28px;margin-bottom:32px;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;">Order Summary</div>
+      <div id="order-summary-lines" style="font-size:13px;color:var(--muted);line-height:2;margin-bottom:16px;"></div>
+      <div style="border-top:1px solid #1e1e1e;padding-top:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;">TOTAL (USD)</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);" id="order-summary-total">$18.00</div>
+      </div>
+      <p style="font-size:12px;color:#444;margin-top:12px;line-height:1.6;font-family:'Space Mono',monospace;">+ shipping calculated at checkout · estimated delivery 5–10 business days</p>
+    </div>
+
+    <div id="order-error" class="error-msg"></div>
+
+    <!-- PAYMENT BUTTON — placeholder until Stripe is connected -->
+    <div style="background:#111;border:1px solid #2a2a2a;padding:24px;margin-bottom:16px;text-align:center;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:12px;">Secure Checkout</div>
+      <button class="btn-primary" id="order-btn" onclick="handleOrderSubmit()" style="width:100%;padding:18px;font-size:14px;letter-spacing:3px;">Proceed to Payment →</button>
+      <p style="font-size:11px;color:#333;margin-top:12px;font-family:'Space Mono',monospace;">Payment powered by Stripe · Your card details are never stored</p>
+    </div>
+
+    <p style="font-size:12px;color:#333;text-align:center;line-height:1.7;">By placing an order you agree to our <a href="#" style="color:#555;">Terms of Service</a>. Stubs are custom printed to order and non-refundable once production begins.</p>
   </div>
 </div>
 
@@ -749,6 +852,112 @@ let existingPhotos = [];
 let photosToDelete = [];
 const MAX_PHOTOS = 25;
 const MIN_PHOTOS = 1;
+
+// ── Order Page ──
+let orderQuantity = 1;
+
+const PRICES = { 1: 18, 2: 15, 3: 13 };
+
+function selectQuantity(qty) {
+  orderQuantity = qty;
+  document.querySelectorAll('.qty-option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.qty-option[data-qty="${qty}"]`).classList.add('selected');
+  document.getElementById('multi-qty-input').style.display = qty === 3 ? 'block' : 'none';
+  renderOrderStubs();
+  updateOrderTotal();
+}
+
+function getActualQty() {
+  if (orderQuantity === 3) {
+    return Math.max(3, parseInt(document.getElementById('order-qty-count').value) || 3);
+  }
+  return orderQuantity;
+}
+
+function updateOrderTotal() {
+  const qty = getActualQty();
+  const priceKey = qty === 1 ? 1 : qty === 2 ? 2 : 3;
+  const total = (PRICES[priceKey] * qty).toFixed(2);
+  document.getElementById('order-total').textContent = `$${total}`;
+  document.getElementById('order-summary-total').textContent = `$${total}`;
+  updateOrderSummary();
+}
+
+function renderOrderStubs() {
+  const qty = getActualQty();
+  const container = document.getElementById('order-stubs-container');
+  container.innerHTML = '';
+  for (let i = 0; i < qty; i++) {
+    container.innerHTML += `
+      <div class="order-stub-block">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">
+          ${qty > 1 ? `Stub ${i + 1} of ${qty} — Event Details` : 'Event Details'}
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">These details will be printed directly onto your ticket stub. All fields are optional — leave blank for a minimal design.</p>
+        <div class="form-grid">
+          <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="stub-${i}-name" placeholder="e.g. The Eras Tour"></div>
+          <div class="form-group full"><label>Artist / Team / Headliner</label><input type="text" id="stub-${i}-artist" placeholder="e.g. Taylor Swift"></div>
+          <div class="form-group"><label>Event Date</label><input type="date" id="stub-${i}-date"></div>
+          <div class="form-group"><label>Event Type</label>
+            <select id="stub-${i}-type">
+              <option value="">Select type...</option>
+              <option>Concert / Music Show</option><option>Festival</option><option>Sports Game</option>
+              <option>Theater / Broadway</option><option>Comedy Show</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Venue Name</label><input type="text" id="stub-${i}-venue" placeholder="e.g. Madison Square Garden"></div>
+          <div class="form-group"><label>City, State</label><input type="text" id="stub-${i}-city" placeholder="e.g. New York, NY"></div>
+          <div class="form-group"><label>Section / Row</label><input type="text" id="stub-${i}-section" placeholder="e.g. Floor B / Row 3"></div>
+          <div class="form-group"><label>Seat Number</label><input type="text" id="stub-${i}-seat" placeholder="e.g. 14–15"></div>
+        </div>
+      </div>`;
+  }
+  updateOrderSummary();
+}
+
+function updateOrderSummary() {
+  const qty = getActualQty();
+  const priceKey = qty === 1 ? 1 : qty === 2 ? 2 : 3;
+  const lines = document.getElementById('order-summary-lines');
+  let html = '';
+  for (let i = 0; i < qty; i++) {
+    const nameEl = document.getElementById(`stub-${i}-name`);
+    const name = nameEl ? nameEl.value.trim() : '';
+    html += `<div style="display:flex;justify-content:space-between;">
+      <span>${qty > 1 ? `Stub ${i+1}: ` : ''}${name || 'SmartStub'}</span>
+      <span style="color:var(--gold);">$${PRICES[priceKey].toFixed(2)}</span>
+    </div>`;
+  }
+  lines.innerHTML = html;
+}
+
+function handleOrderSubmit() {
+  const errEl = document.getElementById('order-error');
+  errEl.classList.remove('show');
+
+  // Validate shipping
+  const required = [
+    { id: 'ship-first', label: 'First name' },
+    { id: 'ship-last', label: 'Last name' },
+    { id: 'ship-address', label: 'Street address' },
+    { id: 'ship-city', label: 'City' },
+    { id: 'ship-state', label: 'State' },
+    { id: 'ship-zip', label: 'ZIP code' },
+    { id: 'order-email', label: 'Email address' },
+  ];
+  for (const field of required) {
+    if (!document.getElementById(field.id).value.trim()) {
+      return showError(errEl, `Please enter your ${field.label}.`);
+    }
+  }
+
+  // Stripe not yet connected — show placeholder message
+  showError(errEl, 'Payment processing coming soon. Thank you for your interest in SmartStubs!');
+}
+
+// Initialize order page on first load
+renderOrderStubs();
+updateOrderTotal();
 
 // ── Logo Click ──
 function logoClick() {
