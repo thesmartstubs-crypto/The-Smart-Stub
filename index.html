@@ -1982,6 +1982,10 @@ function toggleSetlist() {
 }
 
 async function renderGallery(stub) {
+  // Reset enrichment sections on every load
+  const setlistSection = document.getElementById('setlist-section');
+  if (setlistSection) { setlistSection.style.display = 'none'; document.getElementById('setlist-card-inner').innerHTML = ''; }
+  
   document.getElementById('g-event-name').textContent = stub.event_name || 'Untitled Event';
   document.getElementById('g-artist').textContent = stub.artist || '—';
   document.getElementById('g-date').textContent = stub.event_date ? formatDate(stub.event_date) : '—';
