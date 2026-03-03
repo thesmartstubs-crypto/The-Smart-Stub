@@ -701,6 +701,107 @@
     .team-logo-img { width: 64px; height: 64px; }
     .sports-hero-layout { gap: 16px; }
   }
+
+  /* ── Playbill Theater Theme ── */
+  .playbill-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f5c518;
+    color: #000;
+    padding: 10px 14px;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  .playbill-badge-top {
+    font-family: 'Space Mono', monospace;
+    font-size: 7px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .playbill-badge-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+  .playbill-hero-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    position: relative;
+    z-index: 1;
+  }
+  .playbill-hero-text { flex: 1; }
+  .playbill-program {
+    background: #0a0a08;
+    border: 1px solid #2a2510;
+    max-width: 720px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .playbill-program::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f5c518, #c9a040, transparent);
+  }
+  .playbill-program-header {
+    padding: 20px 28px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1a1a10;
+  }
+  .playbill-program-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #f5c518;
+    text-transform: uppercase;
+  }
+  .playbill-show-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--off-white);
+    padding: 16px 28px 4px;
+  }
+  .playbill-program-body {
+    padding: 8px 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .playbill-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .playbill-field-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #6a5a30;
+    text-transform: uppercase;
+  }
+  .playbill-field-value {
+    font-size: 14px;
+    color: var(--off-white);
+    line-height: 1.5;
+  }
+  @media (max-width: 768px) {
+    .playbill-hero-layout { flex-direction: column; gap: 16px; }
+    .playbill-program-header { padding: 16px 20px 12px; }
+    .playbill-show-name { padding: 12px 20px 4px; }
+    .playbill-program-body { padding: 8px 20px 20px; }
+  }
 </style>
 </head>
 <body>
@@ -1242,6 +1343,10 @@
       <div class="form-group full"><label id="label-event-name">Event Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
       <div class="form-group full"><label id="label-event-artist">Artist / Performer</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
       <div class="form-group full" id="opponent-group" style="display:none;"><label>Opponent Team</label><input type="text" id="event-opponent" placeholder="e.g. New York Giants (optional)"></div>
+      <!-- Theater-specific fields -->
+      <div class="form-group full" id="theater-cast-group" style="display:none;"><label>Lead Cast (optional)</label><input type="text" id="theater-cast" placeholder="e.g. Aaron Tveit, Sutton Foster"></div>
+      <div class="form-group full" id="theater-director-group" style="display:none;"><label>Director (optional)</label><input type="text" id="theater-director" placeholder="e.g. Bartlett Sher"></div>
+      <div class="form-group full" id="theater-production-group" style="display:none;"><label>Production Company (optional)</label><input type="text" id="theater-production" placeholder="e.g. Lincoln Center Theater"></div>
       <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
       <div class="form-group" id="homeaway-group" style="display:none;"><label>Home or Away?</label>
         <select id="event-homeaway">
@@ -1397,6 +1502,10 @@
   <!-- Scoreboard section — populated dynamically for sports stubs -->
   <div id="scoreboard-section" style="display:none; padding:0 64px 48px;">
     <div id="scoreboard-inner"></div>
+  </div>
+  <!-- Playbill section — populated dynamically for theater stubs -->
+  <div id="playbill-section" style="display:none; padding:0 64px 48px;">
+    <div id="playbill-inner"></div>
   </div>
   <!-- Caption toggle — shown to owner only -->
   <div class="caption-toggle-bar" id="caption-toggle-bar">
@@ -1932,9 +2041,15 @@ function adaptEventScreen(type) {
   const homeawayGroup = document.getElementById('homeaway-group');
   const stepIndicator = document.getElementById('event-step-indicator');
 
-  // Reset
+  const theaterCastGroup = document.getElementById('theater-cast-group');
+  const theaterDirectorGroup = document.getElementById('theater-director-group');
+  const theaterProductionGroup = document.getElementById('theater-production-group');
+  // Reset all conditional groups
   opponentGroup.style.display = 'none';
   homeawayGroup.style.display = 'none';
+  if (theaterCastGroup) theaterCastGroup.style.display = 'none';
+  if (theaterDirectorGroup) theaterDirectorGroup.style.display = 'none';
+  if (theaterProductionGroup) theaterProductionGroup.style.display = 'none';
 
   if (type === 'concert') {
     nameLabel.textContent = 'Concert / Tour Name';
@@ -1956,8 +2071,11 @@ function adaptEventScreen(type) {
   } else if (type === 'theater') {
     nameLabel.textContent = 'Show Name';
     nameInput.placeholder = 'e.g. Hamilton';
-    artistLabel.textContent = 'Production / Company';
-    artistInput.placeholder = 'e.g. Broadway (optional)';
+    artistLabel.textContent = 'Theater / Venue';
+    artistInput.placeholder = 'e.g. Richard Rodgers Theatre';
+    if (theaterCastGroup) theaterCastGroup.style.display = 'flex';
+    if (theaterDirectorGroup) theaterDirectorGroup.style.display = 'flex';
+    if (theaterProductionGroup) theaterProductionGroup.style.display = 'flex';
   } else if (type === 'comedy') {
     nameLabel.textContent = 'Show / Tour Name (optional)';
     nameInput.placeholder = 'e.g. The Come Back Tour (optional)';
@@ -1993,6 +2111,10 @@ async function handleEventCoreNext() {
     metadata.sport = currentSport;
     metadata.opponent = document.getElementById('event-opponent')?.value.trim() || '';
     metadata.home_away = document.getElementById('event-homeaway')?.value || '';
+  } else if (currentEventType === 'theater') {
+    metadata.cast = document.getElementById('theater-cast')?.value.trim() || '';
+    metadata.director = document.getElementById('theater-director')?.value.trim() || '';
+    metadata.production = document.getElementById('theater-production')?.value.trim() || '';
   }
   const result = await sb.from('stubs').insert({
     user_id: currentUser.id, event_name: name, artist, event_date: date || null, slug, metadata
@@ -2618,6 +2740,75 @@ function renderScoreboardCard(game, sport, stub) {
   applyTeamTheme(userTeam.name, userTeam.logo);
 }
 
+
+// ── Theater / Playbill Theme ──
+function applyPlaybillTheme(stub) {
+  const bg = document.getElementById('gallery-bg');
+  const hero = document.getElementById('gallery-hero');
+  const tag = document.getElementById('gallery-tag');
+  const logoWrap = document.getElementById('team-logo-wrap');
+
+  // Rich dark gold theater color scheme
+  if (bg) bg.style.background = 'linear-gradient(135deg, #1a1500cc 0%, #0d0c0566 50%, transparent 80%)';
+  if (hero) hero.style.borderBottom = '1px solid #f5c51844';
+  if (tag) { tag.style.color = '#f5c518'; tag.textContent = '🎭 Live Gallery — SmartStub'; }
+  if (logoWrap) logoWrap.classList.remove('visible'); // no logo for theater
+
+  // Inject playbill badge into hero layout
+  const heroLayout = document.querySelector('.sports-hero-layout');
+  if (heroLayout && !document.getElementById('playbill-badge-el')) {
+    const badge = document.createElement('div');
+    badge.id = 'playbill-badge-el';
+    badge.className = 'playbill-badge';
+    badge.innerHTML = '<div class="playbill-badge-top">The</div><div class="playbill-badge-title">Playbill</div>';
+    heroLayout.insertBefore(badge, heroLayout.firstChild);
+  }
+}
+
+function renderPlaybillCard(stub) {
+  const section = document.getElementById('playbill-section');
+  const inner = document.getElementById('playbill-inner');
+  if (!section || !inner) return;
+
+  const meta = stub.metadata || {};
+  const showName = stub.event_name || 'Untitled Show';
+  const theater = stub.artist || '';
+  const cast = meta.cast || '';
+  const director = meta.director || '';
+  const production = meta.production || '';
+  const date = stub.event_date ? formatDate(stub.event_date) : '';
+  const venue = stub.venue || '';
+  const city = stub.city || '';
+
+  // Only render fields that have content
+  const fields = [];
+  if (theater) fields.push({ label: 'Theater', value: theater });
+  if (cast) fields.push({ label: 'Cast', value: cast });
+  if (director) fields.push({ label: 'Director', value: director });
+  if (production) fields.push({ label: 'Production', value: production });
+  if (venue) fields.push({ label: 'Venue', value: venue });
+  if (city) fields.push({ label: 'City', value: city });
+  if (date) fields.push({ label: 'Date', value: date });
+
+  const fieldsHTML = fields.map(f => `
+    <div class="playbill-field">
+      <div class="playbill-field-label">${f.label}</div>
+      <div class="playbill-field-value">${f.value}</div>
+    </div>`).join('');
+
+  inner.innerHTML = `
+    <div class="playbill-program">
+      <div class="playbill-program-header">
+        <div class="playbill-program-label">&#9632; Program — Live Theater</div>
+      </div>
+      <div class="playbill-show-name">${showName}</div>
+      <div class="playbill-program-body">${fieldsHTML}</div>
+    </div>
+  `;
+
+  section.style.display = 'block';
+}
+
 // ── Setlist.fm Integration ──
 const SETLIST_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler';
 
@@ -2823,11 +3014,20 @@ async function renderGallery(stub) {
   if (heroTag) { heroTag.style.color = ''; heroTag.textContent = '📍 Live Gallery — SmartStub'; }
   if (logoWrap) logoWrap.classList.remove('visible');
 
+  // Reset playbill section and badge
+  const playbillSection = document.getElementById('playbill-section');
+  if (playbillSection) { playbillSection.style.display = 'none'; document.getElementById('playbill-inner').innerHTML = ''; }
+  const existingBadge = document.getElementById('playbill-badge-el');
+  if (existingBadge) existingBadge.remove();
+
   // Fire enrichment based on event type
   const meta = stub.metadata || {};
   const evType = meta.event_type || 'concert';
   if (evType === 'sports' && meta.sport) {
     fetchAndRenderScoreboard(stub);
+  } else if (evType === 'theater') {
+    applyPlaybillTheme(stub);
+    renderPlaybillCard(stub);
   } else {
     // Default: try setlist for music events
     fetchAndRenderSetlist(stub);
@@ -2971,6 +3171,9 @@ function startNewStub() {
   document.getElementById('pick-sport').value = '';
   document.getElementById('event-opponent').value = '';
   document.getElementById('event-homeaway').value = '';
+  const tcEl = document.getElementById('theater-cast'); if (tcEl) tcEl.value = '';
+  const tdEl = document.getElementById('theater-director'); if (tdEl) tdEl.value = '';
+  const tpEl = document.getElementById('theater-production'); if (tpEl) tpEl.value = '';
   goTo('screen-pick-type');
 }
 
