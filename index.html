@@ -139,14 +139,76 @@
   .gallery-photo-caption {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #555;
+    color: #777;
     text-align: center;
     padding-top: 8px;
     letter-spacing: 1px;
-    text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-height: 0;
+  }
+  .gallery-photo-caption:empty { display: none; }
+  /* Editable caption input — owner only */
+  .caption-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed #333;
+    color: #999;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-align: center;
+    padding: 6px 4px 4px;
+    outline: none;
+    transition: border-color 0.2s, color 0.2s;
+    margin-top: 6px;
+  }
+  .caption-input:focus { border-bottom-color: var(--gold); color: var(--off-white); }
+  .caption-input::placeholder { color: #333; }
+  /* Caption toggle bar — owner only */
+  .caption-toggle-bar {
+    display: none;
+    padding: 14px 64px;
+    border-bottom: 1px solid #111;
+    align-items: center;
+    gap: 12px;
+  }
+  .caption-toggle-bar.visible { display: flex; }
+  .caption-toggle-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 36px;
+    height: 20px;
+    cursor: pointer;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: #2a2a2a;
+    border-radius: 20px;
+    transition: background 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--gold); }
+  .toggle-knob {
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 14px; height: 14px;
+    background: var(--off-white);
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .toggle-switch input:checked ~ .toggle-knob { transform: translateX(16px); }
+  @media (max-width: 768px) {
+    .caption-toggle-bar { padding: 12px 24px; }
   }
 
   .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
@@ -1301,6 +1363,15 @@
   <!-- Scoreboard section — populated dynamically for sports stubs -->
   <div id="scoreboard-section" style="display:none; padding:0 64px 48px;">
     <div id="scoreboard-inner"></div>
+  </div>
+  <!-- Caption toggle — shown to owner only -->
+  <div class="caption-toggle-bar" id="caption-toggle-bar">
+    <span class="caption-toggle-label">Photo Captions</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="caption-toggle" onchange="toggleCaptions(this.checked)">
+      <div class="toggle-track"></div>
+      <div class="toggle-knob"></div>
+    </label>
   </div>
   <div class="gallery-photos" id="gallery-photo-grid"></div>
   <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
@@ -2586,12 +2657,36 @@ async function renderGallery(stub) {
   }
 
   grid.innerHTML = '';
+  const isOwner = currentUser && currentUser.id === stub.user_id;
+  const captions = stub.metadata?.captions || {};
+  const toggleBar = document.getElementById('caption-toggle-bar');
+  const captionToggle = document.getElementById('caption-toggle');
+
+  // Show caption toggle bar only to owner
+  if (isOwner) {
+    toggleBar.classList.add('visible');
+    captionToggle.checked = true; // default on for owner
+  } else {
+    toggleBar.classList.remove('visible');
+  }
+
   for (const file of files) {
     const { data: urlData } = sb.storage.from('photos').getPublicUrl(`${stub.user_id}/${stub.id}/${file.name}`);
     const div = document.createElement('div');
     div.className = 'gallery-photo';
-    div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy"><div class="gallery-photo-caption">${stub.artist || stub.event_name || 'SmartStub'}</div>`;
-    div.onclick = () => openLightbox(urlData.publicUrl);
+    const savedCaption = captions[file.name] || '';
+
+    let captionHTML = '';
+    if (isOwner) {
+      // Owner gets editable input
+      captionHTML = `<input class="caption-input" data-filename="${file.name}" placeholder="Add a caption..." value="${savedCaption.replace(/"/g, '&quot;')}" onblur="saveCaption(this, '${stub.id}')">`;
+    } else if (savedCaption) {
+      // Visitor only sees caption if one exists
+      captionHTML = `<div class="gallery-photo-caption">${savedCaption}</div>`;
+    }
+
+    div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy">${captionHTML}`;
+    div.onclick = (e) => { if (e.target.tagName !== 'INPUT') openLightbox(urlData.publicUrl); };
     grid.appendChild(div);
   }
 
@@ -2619,6 +2714,30 @@ async function renderGallery(stub) {
   }
 
   goTo('screen-gallery');
+}
+
+
+// ── Photo Captions ──
+async function saveCaption(inputEl, stubId) {
+  const filename = inputEl.dataset.filename;
+  const value = inputEl.value.trim();
+  // Load current metadata
+  const { data: stub } = await sb.from('stubs').select('metadata').eq('id', stubId).single();
+  const metadata = stub?.metadata || {};
+  const captions = metadata.captions || {};
+  if (value) {
+    captions[filename] = value;
+  } else {
+    delete captions[filename];
+  }
+  metadata.captions = captions;
+  await sb.from('stubs').update({ metadata }).eq('id', stubId);
+}
+
+function toggleCaptions(show) {
+  document.querySelectorAll('.caption-input').forEach(el => {
+    el.style.display = show ? '' : 'none';
+  });
 }
 
 // ── Gallery URL Share ──
