@@ -425,6 +425,19 @@
   </div>
 </div>
 
+<!-- DELETE CONFIRMATION MODAL -->
+<div id="delete-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center;">
+  <div style="background:#111;border:1px solid #333;padding:40px;max-width:420px;width:90%;margin:0 auto;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:12px;">Delete <span style="color:#d13b2a;">Stub?</span></div>
+    <p id="delete-modal-msg" style="font-size:14px;color:#7a7468;line-height:1.7;margin-bottom:32px;"></p>
+    <p style="font-size:13px;color:#555;margin-bottom:24px;font-family:'Space Mono',monospace;letter-spacing:1px;">THIS CANNOT BE UNDONE. ALL PHOTOS WILL BE PERMANENTLY DELETED.</p>
+    <div style="display:flex;gap:12px;">
+      <button onclick="executeDeleteStub()" style="background:#d13b2a;color:white;border:none;padding:14px 28px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">Yes, Delete</button>
+      <button onclick="closeDeleteModal()" style="background:transparent;color:#f0ece3;border:1px solid #444;padding:14px 28px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -563,7 +576,7 @@ async function loadDashboard() {
   }
 
   container.innerHTML = `<div class="stub-list">${data.map(stub => `
-    <div class="stub-list-item">
+    <div class="stub-list-item" id="stub-item-${stub.id}">
       <div>
         <div class="stub-list-name">${stub.event_name || 'Untitled Event'}</div>
         <div class="stub-list-meta">${stub.artist ? stub.artist + ' · ' : ''}${stub.venue || ''} ${stub.event_date ? '· ' + formatDate(stub.event_date) : ''}</div>
@@ -572,6 +585,7 @@ async function loadDashboard() {
       <div class="stub-list-actions">
         <button class="btn-secondary btn-small" onclick="openGalleryById('${stub.id}')">View Gallery</button>
         <button class="btn-primary btn-small" onclick="openNFCForStub('${stub.slug}')">Program NFC</button>
+        <button class="btn-small" onclick="confirmDeleteStub('${stub.id}', '${stub.user_id}', '${stub.event_name || 'this stub'}')" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 14px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#d13b2a';this.style.color='#d13b2a'" onmouseout="this.style.borderColor='#444';this.style.color='#888'">Delete</button>
       </div>
     </div>`).join('')}</div>`;
 }
@@ -789,6 +803,53 @@ async function renderGallery(stub) {
   }
 
   goTo('screen-gallery');
+}
+
+// ── Delete Stub ──
+let deleteTargetId = null;
+let deleteTargetUserId = null;
+
+function confirmDeleteStub(stubId, userId, eventName) {
+  deleteTargetId = stubId;
+  deleteTargetUserId = userId;
+  document.getElementById('delete-modal-msg').textContent = `You are about to delete "${eventName}" and all of its photos.`;
+  const modal = document.getElementById('delete-modal');
+  modal.style.display = 'flex';
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-modal').style.display = 'none';
+  deleteTargetId = null;
+  deleteTargetUserId = null;
+}
+
+async function executeDeleteStub() {
+  if (!deleteTargetId) return;
+  const btn = document.querySelector('#delete-modal button');
+  btn.textContent = 'Deleting...';
+  btn.disabled = true;
+
+  // Delete photos from storage
+  const { data: files } = await sb.storage.from('photos').list(`${deleteTargetUserId}/${deleteTargetId}`);
+  if (files && files.length > 0) {
+    const paths = files.map(f => `${deleteTargetUserId}/${deleteTargetId}/${f.name}`);
+    await sb.storage.from('photos').remove(paths);
+  }
+
+  // Delete stub record from database
+  await sb.from('stubs').delete().eq('id', deleteTargetId);
+
+  // Remove from UI instantly without reloading
+  const el = document.getElementById(`stub-item-${deleteTargetId}`);
+  if (el) el.remove();
+
+  closeDeleteModal();
+
+  // If no stubs left show empty state
+  const list = document.querySelector('.stub-list');
+  if (list && list.children.length === 0) {
+    document.getElementById('stub-list-container').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎟️</div><p class="empty-state-text">You haven't created any SmartStubs yet.<br>Click "New Stub" to get started.</p></div>`;
+  }
 }
 
 // ── Back to Event: repopulate form with saved data ──
