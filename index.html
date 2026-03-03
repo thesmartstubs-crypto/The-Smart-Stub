@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SmartStubs — Live Every Moment Twice</title>
+<title>SmartStubs — Live Every Moment Endlessly</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --black: #0a0a0a;
-    --off-white: #f0ece3;
-    --cream: #e8e2d5;
-    --gold: #c9a84c;
-    --gold-light: #f0c96a;
-    --red: #d13b2a;
-    --muted: #7a7468;
-    --stub-bg: #1a1612;
+    --black: #0e0c0a;
+    --off-white: #f2ede4;
+    --cream: #e8e0d0;
+    --gold: #d4b896;
+    --gold-light: #e8ceaa;
+    --red: #c0503a;
+    --muted: #8a8178;
+    --stub-bg: #181410;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'DM Sans', sans-serif; background: var(--black); color: var(--off-white); min-height: 100vh; overflow-x: hidden; }
@@ -31,21 +31,21 @@
 
   /* HERO */
   #screen-landing { background: var(--black); position: relative; overflow: hidden; }
-  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, #1e1508 0%, transparent 70%), repeating-linear-gradient(0deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px), repeating-linear-gradient(90deg, transparent, transparent 59px, #1a1612 59px, #1a1612 60px); opacity: 0.7; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, #201a10 0%, transparent 70%); opacity: 0.9; }
   .hero-content { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; padding: 80px 64px; max-width: 720px; }
   .hero-tag { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 4px; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; }
   .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(64px, 10vw, 120px); line-height: 0.9; letter-spacing: 2px; margin-bottom: 28px; }
   .hero-title .accent { color: var(--gold); }
   .hero-sub { font-size: 17px; line-height: 1.65; color: #b0aa9e; max-width: 480px; margin-bottom: 48px; font-weight: 300; }
 
-  .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px)); }
+  .btn-primary { background: var(--gold); color: var(--black); border: none; padding: 16px 40px; font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 8px; }
   .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
   .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn-secondary { background: transparent; color: var(--off-white); border: 1px solid #444; padding: 14px 32px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .btn-secondary { background: transparent; color: var(--off-white); border: 1px solid #444; padding: 14px 32px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 8px; }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
   .stub-preview { position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(-8deg); width: 340px; }
-  .stub-card { background: var(--stub-bg); border: 1px solid #3a3228; padding: 32px; position: relative; clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px)); }
+  .stub-card { background: var(--stub-bg); border: 1px solid #3a3228; padding: 32px; position: relative; border-radius: 10px; }
   .stub-card::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: repeating-linear-gradient(90deg, #3a3228 0, #3a3228 8px, transparent 8px, transparent 14px); }
   .stub-perf { position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: var(--black); border-radius: 50%; border: 1px solid #3a3228; }
   .stub-perf-r { right: -12px; left: auto; }
@@ -67,7 +67,7 @@
   .form-group { display: flex; flex-direction: column; gap: 8px; }
   .form-group.full { grid-column: 1 / -1; }
   label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
-  input, select, textarea { background: #111; border: 1px solid #2a2a2a; color: var(--off-white); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; width: 100%; }
+  input, select, textarea { background: #161210; border: 1px solid #2e2820; color: var(--off-white); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; width: 100%; border-radius: 8px; }
   input:focus, select:focus, textarea:focus { border-color: var(--gold); }
   input::placeholder { color: #444; }
   select option { background: #111; }
@@ -321,7 +321,7 @@
   .stub-pin-wrapper:nth-child(3n)   .pushpin-head { background: radial-gradient(circle at 38% 35%, #a5d6a7, #2e7d32); }
 
   /* ── Ticket card grid ── */
-  .ticket-card { background: #0e0c0a; border: 1px solid #3a3228; position: relative; overflow: hidden; width: 272px; box-shadow: 4px 8px 22px rgba(0,0,0,0.65); transition: box-shadow 0.2s; }
+  .ticket-card { background: #181410; border: 1px solid #3a3228; position: relative; overflow: hidden; width: 272px; box-shadow: 4px 8px 22px rgba(0,0,0,0.65); transition: box-shadow 0.2s; border-radius: 10px; }
   .stub-pin-wrapper:hover .ticket-card { box-shadow: 8px 16px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.25); }
   .ticket-top { padding: 20px 22px 18px; }
   .ticket-badge { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 3px; color: #3e3020; text-transform: uppercase; margin-bottom: 8px; }
@@ -337,7 +337,7 @@
   .ticket-footer { background: rgba(0,0,0,0.3); border-top: 1px solid #1e1a14; padding: 10px 22px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .ticket-url { font-family: 'Space Mono', monospace; font-size: 9px; color: #2e2a20; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
   .ticket-actions { display: flex; gap: 5px; flex-shrink: 0; }
-  .btn-icon { background: transparent; border: 1px solid #2a2a2a; color: #555; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; line-height: 1; transition: all 0.15s; padding: 0; }
+  .btn-icon { background: transparent; border: 1px solid #2a2a2a; color: #555; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; line-height: 1; transition: all 0.15s; padding: 0; border-radius: 6px; }
   .btn-icon:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.07); }
   .btn-icon.danger:hover { border-color: #d13b2a; color: #d13b2a; background: rgba(209,59,42,0.07); }
   .btn-small { padding: 8px 16px; font-size: 11px; }
@@ -557,11 +557,12 @@
 
   /* ── Scoreboard ── */
   .scoreboard {
-    background: #0a0a0a;
-    border: 1px solid #2a2a2a;
+    background: #0d0b08;
+    border: 1px solid #2a2210;
     max-width: 720px;
     position: relative;
     overflow: hidden;
+    border-radius: 10px;
   }
   .scoreboard::before {
     content: '';
@@ -717,7 +718,7 @@
     <div class="hero-bg"></div>
     <div class="hero-content">
       <div class="hero-tag">&#9632; NFC-Powered Memory Keepsakes</div>
-      <h1 class="hero-title">Live Every<br>Moment <span class="accent">Twice.</span></h1>
+      <h1 class="hero-title">Live Every<br>Moment <span class="accent">Endlessly.</span></h1>
       <p class="hero-sub">SmartStubs transforms your concert ticket into a living gallery. Tap the stub, relive the night. Custom printed tickets embedded with NFC chips — linking your photos, memories, and moments.</p>
       <div style="display:flex; flex-wrap:wrap; gap:12px;">
         <button class="btn-primary" onclick="goTo('screen-order')">Order a SmartStub</button>
@@ -1270,7 +1271,7 @@
     <p class="screen-desc">Add your venue, seat info, and a personal note. All of these can be updated any time.</p>
     <div style="background:rgba(76,175,80,0.05);border:1px solid #1a2e1a;padding:14px 18px;margin-bottom:24px;">
       <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#4a8a4a;text-transform:uppercase;margin-bottom:6px;">&#10003; Always Editable</div>
-      <p style="font-size:13px;color:#4a6a4a;line-height:1.6;">Everything on this screen can be changed later from your stub dashboard at any time.</p>
+      <p style="font-size:13px;color:#4a6a4a;line-height:1.6;">Everything on this screen can be changed later from your My Stubs page at any time.</p>
     </div>
     <div class="form-grid">
       <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden (optional)"></div>
@@ -1354,7 +1355,7 @@
     <div class="nfc-url-preview" id="success-url"></div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:24px;">
       <button class="btn-primary" id="view-gallery-btn" onclick="viewCurrentGallery()">View My Gallery</button>
-      <button class="btn-secondary" onclick="goTo('screen-dashboard')">Back to Dashboard</button>
+      <button class="btn-secondary" onclick="goTo('screen-dashboard')">My Stubs</button>
     </div>
   </div>
 </div>
@@ -1363,7 +1364,10 @@
 <div id="screen-gallery" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;" id="gallery-url-bar"></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button id="gallery-mystubs-btn" onclick="goTo('screen-dashboard');loadDashboard();" style="display:none;background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">← My Stubs</button>
+      <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;" id="gallery-url-bar"></div>
+    </div>
   </nav>
   <div class="gallery-hero" id="gallery-hero">
     <div class="gallery-bg" id="gallery-bg"></div>
@@ -1591,7 +1595,7 @@ updateOrderTotal();
 function logoClick() {
   if (currentUser) {
     goTo('screen-dashboard');
-    loadDashboard();
+    loadMy Stubs();
   } else {
     goTo('screen-landing');
   }
@@ -1637,7 +1641,7 @@ window.addEventListener('popstate', async (e) => {
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       currentUser = session.user;
-      await loadDashboard();
+      await loadMy Stubs();
       goTo('screen-dashboard', false);
     } else {
       goTo('screen-landing', false);
@@ -1743,7 +1747,7 @@ async function handleResetPassword() {
   if (error) return showError(errEl, error.message);
 
   goTo('screen-dashboard');
-  loadDashboard();
+  loadMy Stubs();
 }
 
 // ── Auth: Sign Up ──
@@ -1809,9 +1813,9 @@ async function handleLogin() {
   }
 
   currentUser = data.user;
-  updateDashboardUser();
+  updateMy StubsUser();
   goTo('screen-dashboard');
-  loadDashboard();
+  loadMy Stubs();
 }
 
 // ── Auth: Sign Out ──
@@ -1821,15 +1825,15 @@ async function handleSignout() {
   goTo('screen-landing');
 }
 
-function updateDashboardUser() {
+function updateMy StubsUser() {
   if (!currentUser) return;
   const meta = currentUser.user_metadata;
   const name = meta?.first_name ? `${meta.first_name} ${meta.last_name}` : currentUser.email;
   document.getElementById('dash-user-name').textContent = name;
 }
 
-// ── Dashboard: Load Stubs ──
-async function loadDashboard() {
+// ── My Stubs: Load Stubs ──
+async function loadMy Stubs() {
   if (!currentUser) return;
   const container = document.getElementById('stub-list-container');
   container.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;padding:20px 0;">Loading your stubs...</div>';
@@ -2749,11 +2753,12 @@ async function renderGallery(stub) {
   const ctaBtn = document.getElementById('gallery-cta-btn');
   const shareBtn = document.getElementById('share-btn');
   if (currentUser && currentUser.id === stub.user_id) {
-    ctaBtn.textContent = '← Back to Dashboard';
-    ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
+    ctaBtn.textContent = '← My Stubs';
+    ctaBtn.onclick = () => { goTo('screen-dashboard'); loadMy Stubs(); };
   } else {
     ctaBtn.textContent = 'Get Your SmartStub';
     ctaBtn.onclick = () => goTo('screen-landing');
+    if (myStubsTopBtn) myStubsTopBtn.style.display = 'none';
   }
 
   // Load photos from storage
@@ -3122,10 +3127,10 @@ function formatDate(dateStr) {
     const { data, error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     if (!error && data.user) {
       currentUser = data.user;
-      updateDashboardUser();
+      updateMy StubsUser();
       window.history.replaceState(null, '', '/');
       goTo('screen-dashboard');
-      loadDashboard();
+      loadMy Stubs();
       return;
     }
   }
@@ -3168,9 +3173,9 @@ function formatDate(dateStr) {
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
     currentUser = session.user;
-    updateDashboardUser();
+    updateMy StubsUser();
     goTo('screen-dashboard');
-    loadDashboard();
+    loadMy Stubs();
   }
 })();
 </script>
