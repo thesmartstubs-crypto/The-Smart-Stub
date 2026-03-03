@@ -4,8 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SmartStubs — Live Every Moment Twice</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' font-family='serif'>🎟️</text></svg>">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' font-family='serif'>🎟️</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -167,6 +165,13 @@
     .progress-track { padding: 16px 24px 0; }
     .top-bar { padding: 16px 24px; }
     .stub-list-item { flex-direction: column; align-items: flex-start; }
+    #screen-story .content-grid { grid-template-columns: 1fr !important; }
+    #screen-story [style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+    #screen-story [style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr !important; }
+    #screen-story [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    #screen-story [style*="padding:64px"] { padding: 40px 24px !important; }
+    #screen-story [style*="padding:80px 64px"] { padding: 48px 24px !important; }
+    #screen-story [style*="border-left:1px solid #1a1a1a"] { border-left: none !important; border-top: 1px solid #1a1a1a !important; }
   }
 </style>
 </head>
@@ -176,7 +181,10 @@
 <div id="screen-landing" class="screen active">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="back-btn" onclick="goTo('screen-story')" style="color:var(--muted);font-size:11px;">The Story</button>
+      <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
+    </div>
   </nav>
   <div style="flex:1; position:relative; overflow:hidden; display:flex;">
     <div class="hero-bg"></div>
@@ -212,6 +220,134 @@
     <div><div style="font-size:28px;margin-bottom:12px;">🎟️</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">02 Setup</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Create your account, enter event details, and upload up to 25 photos.</div></div>
     <div><div style="font-size:28px;margin-bottom:12px;">📲</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">03 Write</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Tap your phone to the stub to write your unique gallery URL to the NFC chip.</div></div>
     <div><div style="font-size:28px;margin-bottom:12px;">✨</div><div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:6px;color:var(--gold)">04 Relive</div><div style="font-size:13px;color:var(--muted);line-height:1.6;">Anyone who taps the stub is instantly taken to your private gallery forever.</div></div>
+  </div>
+</div>
+
+<!-- ── THE STORY ── -->
+<div id="screen-story" class="screen">
+  <nav class="top-bar">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <button class="back-btn" onclick="goTo('screen-landing')" style="color:var(--muted);font-size:11px;">← Back</button>
+      <button class="btn-secondary" onclick="goTo('screen-login')" style="margin:0;padding:10px 20px;font-size:11px;">Sign In</button>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div style="position:relative;padding:80px 64px 64px;overflow:hidden;border-bottom:1px solid #1a1a1a;">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 20% 50%, #1e1508 0%, transparent 70%);"></div>
+    <div style="position:relative;z-index:1;max-width:680px;">
+      <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">&#9632; The Story</div>
+      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(56px,9vw,110px);line-height:0.9;letter-spacing:2px;margin-bottom:28px;">Memories<br>Deserve A<br><span style="color:var(--gold);">Home.</span></h1>
+      <p style="font-size:17px;line-height:1.75;color:#b0aa9e;max-width:520px;font-weight:300;">A photo on your phone gets buried. A ticket stub sits in a drawer. SmartStubs brings them together — giving every great night a permanent, tangible place to live.</p>
+    </div>
+  </div>
+
+  <!-- THE PROBLEM -->
+  <div style="padding:64px;border-bottom:1px solid #1a1a1a;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;">
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;">The Problem</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;line-height:1;margin-bottom:20px;">Great Nights<br>Get <span style="color:var(--gold);">Forgotten.</span></h2>
+      <p style="font-size:15px;line-height:1.8;color:#b0aa9e;font-weight:300;margin-bottom:16px;">You spend months looking forward to a concert. You're front row. The energy is unreal. You take 200 photos. And then — those photos sit buried in your camera roll, never seen again.</p>
+      <p style="font-size:15px;line-height:1.8;color:#b0aa9e;font-weight:300;">The ticket stub ends up in your pocket, then a drawer, then gone. There's no object that holds the memory together. No easy way to share it. No moment of rediscovery.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="background:#111;border:1px solid #1e1e1e;padding:20px 24px;border-left:3px solid #2a2a2a;">
+        <div style="font-size:28px;margin-bottom:8px;">📱</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:6px;">Photos on your phone</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">Buried under thousands of other images. Hard to find, easy to forget.</div>
+      </div>
+      <div style="background:#111;border:1px solid #1e1e1e;padding:20px 24px;border-left:3px solid #2a2a2a;">
+        <div style="font-size:28px;margin-bottom:8px;">🗂️</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:6px;">The ticket stub</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">A great physical reminder that carries zero context. No photos, no story.</div>
+      </div>
+      <div style="background:#111;border:1px solid #1e1e1e;padding:20px 24px;border-left:3px solid #2a2a2a;">
+        <div style="font-size:28px;margin-bottom:8px;">🤷</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:#555;text-transform:uppercase;margin-bottom:6px;">No connection</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;">The physical and digital live in completely separate worlds.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- THE SOLUTION -->
+  <div style="padding:64px;border-bottom:1px solid #1a1a1a;background:#0d0d0d;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;text-align:center;">The Solution</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,72px);letter-spacing:2px;line-height:1;margin-bottom:16px;text-align:center;">A Stub That <span style="color:var(--gold);">Remembers.</span></h2>
+    <p style="font-size:16px;line-height:1.8;color:#b0aa9e;font-weight:300;text-align:center;max-width:600px;margin:0 auto 56px;">SmartStubs are custom printed ticket stubs with an NFC chip embedded inside. Each one is a physical object that holds a living, permanent link to your gallery of memories.</p>
+
+    <!-- Steps -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;max-width:1000px;margin:0 auto;">
+      <div style="background:#111;padding:32px 24px;position:relative;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:#1a1a1a;line-height:1;position:absolute;top:16px;right:20px;">01</div>
+        <div style="font-size:36px;margin-bottom:16px;">📬</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:10px;color:var(--gold);">Receive</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Order your SmartStub and receive a beautifully custom printed ticket with a blank NFC chip embedded inside.</p>
+      </div>
+      <div style="background:#111;padding:32px 24px;position:relative;border-left:1px solid #1a1a1a;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:#1a1a1a;line-height:1;position:absolute;top:16px;right:20px;">02</div>
+        <div style="font-size:36px;margin-bottom:16px;">🎟️</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:10px;color:var(--gold);">Setup</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Create your account, enter your event details — artist, venue, date — and upload your favourite photos from the night.</p>
+      </div>
+      <div style="background:#111;padding:32px 24px;position:relative;border-left:1px solid #1a1a1a;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:#1a1a1a;line-height:1;position:absolute;top:16px;right:20px;">03</div>
+        <div style="font-size:36px;margin-bottom:16px;">📲</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:10px;color:var(--gold);">Write</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Tap your phone to the NFC zone on your stub to write your unique gallery link directly onto the chip. Takes seconds.</p>
+      </div>
+      <div style="background:#111;padding:32px 24px;position:relative;border-left:1px solid #1a1a1a;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:#1a1a1a;line-height:1;position:absolute;top:16px;right:20px;">04</div>
+        <div style="font-size:36px;margin-bottom:16px;">✨</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:10px;color:var(--gold);">Relive</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Any time you — or anyone else — taps the stub, it opens your gallery instantly. The memory never expires.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT MAKES IT SPECIAL -->
+  <div style="padding:64px;border-bottom:1px solid #1a1a1a;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;">What Makes It Special</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;line-height:1;margin-bottom:48px;">More Than A <span style="color:var(--gold);">Ticket.</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:32px;">
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Physical + Digital</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">SmartStubs live in both worlds. Hold it in your hand, tap it with your phone. The physical and digital finally connected in one object.</p>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Permanent Gallery</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">Your gallery lives at a permanent URL that never changes. The stub you program today will still work years from now.</p>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Instantly Shareable</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">Hand your stub to a friend, they tap it, they see everything. No app needed, no login required to view a gallery.</p>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Custom Printed</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">Every stub is printed to order with your event details. It looks and feels like a real premium ticket, not a piece of paper.</p>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Up to 25 Photos</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">Upload your best shots from the night. Add a personal note. Build a gallery that actually tells the story of being there.</p>
+      </div>
+      <div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Works Everywhere</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.8;">Concerts, sports games, festivals, theatre, travel. If it was worth being there, it's worth remembering with a SmartStub.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUOTE / CLOSER -->
+  <div style="padding:80px 64px;text-align:center;background:#0d0d0d;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,64px);letter-spacing:2px;line-height:1.1;max-width:700px;margin:0 auto 32px;">"The ticket got you in.<br>The <span style="color:var(--gold);">SmartStub</span> keeps you there."</div>
+    <p style="font-size:15px;color:var(--muted);margin-bottom:40px;font-weight:300;">Every great night deserves to be more than a memory that fades.</p>
+    <button class="btn-primary" onclick="goTo('screen-signup')" style="font-size:14px;padding:18px 48px;">Get Your SmartStub</button>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="padding:24px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+    <div class="logo" onclick="logoClick()" style="cursor:pointer;font-size:20px;">Smart<span>Stubs</span></div>
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:#333;letter-spacing:2px;">© 2025 SMARTSTUBS · THESMARTSTUB.COM</div>
   </div>
 </div>
 
