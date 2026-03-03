@@ -852,8 +852,14 @@ async function executeDeleteStub() {
   }
 
   // Delete stub record from database
-  await sb.from('stubs').delete().eq('id', deleteTargetId);
-
+  const { error: deleteError } = await sb.from('stubs').delete().eq('id', deleteTargetId);
+  if (deleteError) {
+    alert('Could not delete stub: ' + deleteError.message);
+    btn.textContent = 'Yes, Delete';
+    btn.disabled = false;
+    return;
+  }
+  
   // Remove from UI instantly without reloading
   const el = document.getElementById(`stub-item-${deleteTargetId}`);
   if (el) el.remove();
