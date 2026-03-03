@@ -576,6 +576,38 @@
     .scoreboard-linescore td, .scoreboard-linescore th { padding: 6px 4px; font-size: 10px; }
     .scoreboard-linescore td.team-name-col { padding-left: 20px; }
   }
+
+  /* ── Sports Team Theme ── */
+  .gallery-hero.sports-themed .gallery-bg {
+    background: var(--team-gradient, linear-gradient(135deg, #1a1208 0%, transparent 60%));
+  }
+  .gallery-hero.sports-themed {
+    --team-primary: #1a1208;
+    --team-secondary: #0a0a0a;
+  }
+  .sports-hero-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    position: relative;
+    z-index: 1;
+  }
+  .team-logo-wrap {
+    flex-shrink: 0;
+    display: none;
+  }
+  .team-logo-wrap.visible { display: block; }
+  .team-logo-img {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.6));
+  }
+  .sports-hero-text { flex: 1; }
+  @media (max-width: 768px) {
+    .team-logo-img { width: 64px; height: 64px; }
+    .sports-hero-layout { gap: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -1241,15 +1273,22 @@
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
     <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;" id="gallery-url-bar"></div>
   </nav>
-  <div class="gallery-hero">
-    <div class="gallery-bg"></div>
-    <div class="gallery-tag">📍 Live Gallery — SmartStub</div>
-    <h1 class="gallery-event-name" id="g-event-name">Loading...</h1>
-    <div class="gallery-meta">
+  <div class="gallery-hero" id="gallery-hero">
+    <div class="gallery-bg" id="gallery-bg"></div>
+    <div class="gallery-tag" id="gallery-tag">📍 Live Gallery — SmartStub</div>
+    <div class="sports-hero-layout">
+      <div class="team-logo-wrap" id="team-logo-wrap">
+        <img id="team-logo-img" class="team-logo-img" src="" alt="Team logo">
+      </div>
+      <div class="sports-hero-text">
+        <h1 class="gallery-event-name" id="g-event-name">Loading...</h1>
+        <div class="gallery-meta" id="gallery-meta">
       <div class="gallery-meta-item"><div class="gallery-meta-label">Artist</div><div class="gallery-meta-val" id="g-artist">—</div></div>
       <div class="gallery-meta-item"><div class="gallery-meta-label">Date</div><div class="gallery-meta-val" id="g-date">—</div></div>
       <div class="gallery-meta-item"><div class="gallery-meta-label">Venue</div><div class="gallery-meta-val" id="g-venue">—</div></div>
       <div class="gallery-meta-item"><div class="gallery-meta-label">City</div><div class="gallery-meta-val" id="g-city">—</div></div>
+        </div>
+      </div>
     </div>
     <div id="g-note-container" style="margin-top:24px;padding:16px 20px;border-left:2px solid var(--gold);max-width:480px;position:relative;z-index:1;display:none;">
       <p id="g-note" style="font-size:14px;color:#b0aa9e;font-style:italic;line-height:1.7;"></p>
@@ -2011,13 +2050,218 @@ async function fetchAndRenderScoreboard(stub) {
     if (!res.ok) return;
     const data = await res.json();
     if (!data.found) return;
-    renderScoreboardCard(data, meta.sport);
+    renderScoreboardCard(data, meta.sport, stub);
   } catch (e) {
     // Silent fail
   }
 }
 
-function renderScoreboardCard(game, sport) {
+
+// ── Team Colors Map ──
+const TEAM_COLORS = {
+  // NFL
+  'arizona cardinals':    ['#97233F','#000000'],
+  'atlanta falcons':      ['#A71930','#000000'],
+  'baltimore ravens':     ['#241773','#9E7C0C'],
+  'buffalo bills':        ['#00338D','#C60C30'],
+  'carolina panthers':    ['#0085CA','#101820'],
+  'chicago bears':        ['#0B162A','#C83803'],
+  'cincinnati bengals':   ['#FB4F14','#000000'],
+  'cleveland browns':     ['#311D00','#FF3C00'],
+  'dallas cowboys':       ['#003594','#869397'],
+  'denver broncos':       ['#FB4F14','#002244'],
+  'detroit lions':        ['#0076B6','#B0B7BC'],
+  'green bay packers':    ['#203731','#FFB612'],
+  'houston texans':       ['#03202F','#A71930'],
+  'indianapolis colts':   ['#002C5F','#A2AAAD'],
+  'jacksonville jaguars': ['#006778','#9F792C'],
+  'kansas city chiefs':   ['#E31837','#FFB81C'],
+  'las vegas raiders':    ['#000000','#A5ACAF'],
+  'los angeles chargers': ['#0080C6','#FFC20E'],
+  'los angeles rams':     ['#003594','#FFA300'],
+  'miami dolphins':       ['#008E97','#FC4C02'],
+  'minnesota vikings':    ['#4F2683','#FFC62F'],
+  'new england patriots': ['#002244','#C60C30'],
+  'new orleans saints':   ['#101820','#D3BC8D'],
+  'new york giants':      ['#0B2265','#A71930'],
+  'new york jets':        ['#125740','#000000'],
+  'philadelphia eagles':  ['#004C54','#A5ACAF'],
+  'pittsburgh steelers':  ['#101820','#FFB612'],
+  'san francisco 49ers':  ['#AA0000','#B3995D'],
+  'seattle seahawks':     ['#002244','#69BE28'],
+  'tampa bay buccaneers': ['#D50A0A','#FF7900'],
+  'tennessee titans':     ['#0C2340','#4B92DB'],
+  'washington commanders':['#5A1414','#FFB612'],
+  // NBA
+  'atlanta hawks':        ['#E03A3E','#C1D32F'],
+  'boston celtics':       ['#007A33','#BA9653'],
+  'brooklyn nets':        ['#000000','#FFFFFF'],
+  'charlotte hornets':    ['#1D1160','#00788C'],
+  'chicago bulls':        ['#CE1141','#000000'],
+  'cleveland cavaliers':  ['#860038','#FDBB30'],
+  'dallas mavericks':     ['#00538C','#002B5E'],
+  'denver nuggets':       ['#0E2240','#FEC524'],
+  'detroit pistons':      ['#C8102E','#006BB6'],
+  'golden state warriors':['#1D428A','#FFC72C'],
+  'houston rockets':      ['#CE1141','#000000'],
+  'indiana pacers':       ['#002D62','#FDBB30'],
+  'la clippers':          ['#C8102E','#1D428A'],
+  'los angeles clippers': ['#C8102E','#1D428A'],
+  'los angeles lakers':   ['#552583','#FDB927'],
+  'memphis grizzlies':    ['#5D76A9','#12173F'],
+  'miami heat':           ['#98002E','#F9A01B'],
+  'milwaukee bucks':      ['#00471B','#EEE1C6'],
+  'minnesota timberwolves':['#0C2340','#236192'],
+  'new orleans pelicans': ['#0C2340','#C8102E'],
+  'new york knicks':      ['#006BB6','#F58426'],
+  'oklahoma city thunder':['#007AC1','#EF3B24'],
+  'orlando magic':        ['#0077C0','#C4CDD2'],
+  'philadelphia 76ers':   ['#006BB6','#ED174C'],
+  'phoenix suns':         ['#1D1160','#E56020'],
+  'portland trail blazers':['#E03A3E','#000000'],
+  'sacramento kings':     ['#5A2D81','#63727A'],
+  'san antonio spurs':    ['#C4CDD2','#000000'],
+  'toronto raptors':      ['#CE1141','#000000'],
+  'utah jazz':            ['#002B5C','#00471B'],
+  'washington wizards':   ['#002B5C','#E31837'],
+  // MLB
+  'arizona diamondbacks': ['#A71930','#E3D4AD'],
+  'atlanta braves':       ['#CE1141','#13274F'],
+  'baltimore orioles':    ['#DF4601','#000000'],
+  'boston red sox':       ['#BD3039','#0C2340'],
+  'chicago cubs':         ['#0E3386','#CC3433'],
+  'chicago white sox':    ['#27251F','#C4CDD2'],
+  'cincinnati reds':      ['#C6011F','#000000'],
+  'cleveland guardians':  ['#E31937','#002B5C'],
+  'colorado rockies':     ['#33006F','#C4CDD2'],
+  'detroit tigers':       ['#0C2340','#FA4616'],
+  'houston astros':       ['#002D62','#EB6E1F'],
+  'kansas city royals':   ['#004687','#C09A5B'],
+  'los angeles angels':   ['#BA0021','#003263'],
+  'los angeles dodgers':  ['#005A9C','#EF3E42'],
+  'miami marlins':        ['#00A3E0','#FF6600'],
+  'milwaukee brewers':    ['#FFC52F','#12284B'],
+  'minnesota twins':      ['#002B5C','#D31145'],
+  'new york mets':        ['#002D72','#FF5910'],
+  'new york yankees':     ['#003087','#C4CDD2'],
+  'oakland athletics':    ['#003831','#EFB21E'],
+  'philadelphia phillies':['#E81828','#002D72'],
+  'pittsburgh pirates':   ['#FDB827','#27251F'],
+  'san diego padres':     ['#2F241D','#FFC425'],
+  'san francisco giants': ['#FD5A1E','#27251F'],
+  'seattle mariners':     ['#0C2C56','#005C5C'],
+  'st. louis cardinals':  ['#C41E3A','#FEDB00'],
+  'tampa bay rays':       ['#092C5C','#8FBCE6'],
+  'texas rangers':        ['#003278','#C0111F'],
+  'toronto blue jays':    ['#134A8E','#1D2D5C'],
+  'washington nationals': ['#AB0003','#14225A'],
+  // NHL
+  'anaheim ducks':        ['#F47A38','#B9975B'],
+  'arizona coyotes':      ['#8C2633','#E2D6B5'],
+  'boston bruins':        ['#FFB81C','#000000'],
+  'buffalo sabres':       ['#003087','#FCB514'],
+  'calgary flames':       ['#C8102E','#F1BE48'],
+  'carolina hurricanes':  ['#CC0000','#000000'],
+  'chicago blackhawks':   ['#CF0A2C','#000000'],
+  'colorado avalanche':   ['#6F263D','#236192'],
+  'columbus blue jackets':['#002654','#CE1126'],
+  'dallas stars':         ['#006847','#8F8F8C'],
+  'detroit red wings':    ['#CE1126','#FFFFFF'],
+  'edmonton oilers':      ['#FF4C00','#003777'],
+  'florida panthers':     ['#041E42','#C8102E'],
+  'los angeles kings':    ['#111111','#A2AAAD'],
+  'minnesota wild':       ['#154734','#A6192E'],
+  'montreal canadiens':   ['#AF1E2D','#192168'],
+  'nashville predators':  ['#FFB81C','#041E42'],
+  'new jersey devils':    ['#CE1126','#000000'],
+  'new york islanders':   ['#00539B','#F47D30'],
+  'new york rangers':     ['#0038A8','#CE1126'],
+  'ottawa senators':      ['#C52032','#C2912C'],
+  'philadelphia flyers':  ['#F74902','#000000'],
+  'pittsburgh penguins':  ['#FCB514','#000000'],
+  'san jose sharks':      ['#006D75','#EA7200'],
+  'seattle kraken':       ['#001628','#99D9D9'],
+  'st. louis blues':      ['#002F87','#FCB514'],
+  'tampa bay lightning':  ['#002868','#FFFFFF'],
+  'toronto maple leafs':  ['#00205B','#FFFFFF'],
+  'utah hockey club':     ['#69B3E7','#010101'],
+  'vancouver canucks':    ['#00205B','#00843D'],
+  'vegas golden knights': ['#B4975A','#333F42'],
+  'washington capitals':  ['#041E42','#C8102E'],
+  'winnipeg jets':        ['#041E42','#004C97'],
+  // MLS
+  'atlanta united':       ['#80000A','#9DC2EA'],
+  'austin fc':            ['#00B140','#000000'],
+  'charlotte fc':         ['#1A85C8','#000000'],
+  'chicago fire':         ['#CE0E2D','#003087'],
+  'fc cincinnati':        ['#003087','#FE5000'],
+  'colorado rapids':      ['#960A2C','#9BC4E2'],
+  'columbus crew':        ['#FEDD00','#000000'],
+  'dc united':            ['#000000','#EF3E42'],
+  'fc dallas':            ['#E81F3E','#002244'],
+  'houston dynamo':       ['#F5821F','#101820'],
+  'inter miami':          ['#F7B5CD','#231F20'],
+  'la galaxy':            ['#00245D','#FFD200'],
+  'lafc':                 ['#C39E6D','#000000'],
+  'minnesota united':     ['#8CD2F4','#231F20'],
+  'cf montreal':          ['#003DA5','#AAAAAA'],
+  'nashville sc':         ['#ECE83A','#1F1646'],
+  'new england revolution':['#C63323','#002244'],
+  'new york city fc':     ['#6CACE4','#003087'],
+  'new york red bulls':   ['#ED1D37','#23326A'],
+  'orlando city':         ['#633492','#FDE192'],
+  'philadelphia union':   ['#071B2C','#B19B69'],
+  'portland timbers':     ['#004812','#EBE72B'],
+  'real salt lake':       ['#B30838','#013A81'],
+  'san jose earthquakes': ['#0D4C92','#E31837'],
+  'seattle sounders':     ['#5D9732','#005695'],
+  'sporting kansas city': ['#93B4D9','#002F65'],
+  'st. louis city':       ['#C8102E','#1B3D6E'],
+  'toronto fc':           ['#B81137','#FFFFFF'],
+  'vancouver whitecaps':  ['#009BC8','#002D55'],
+};
+
+function getTeamColors(teamName) {
+  const key = teamName.toLowerCase().trim();
+  // Direct match
+  if (TEAM_COLORS[key]) return TEAM_COLORS[key];
+  // Partial match
+  for (const [k, v] of Object.entries(TEAM_COLORS)) {
+    if (key.includes(k) || k.includes(key)) return v;
+    // Match on last word (e.g. "Bills" → "buffalo bills")
+    const lastWord = key.split(' ').pop();
+    if (lastWord && lastWord.length > 3 && k.includes(lastWord)) return v;
+  }
+  return null;
+}
+
+function applyTeamTheme(teamName, logoUrl) {
+  const hero = document.getElementById('gallery-hero');
+  const bg = document.getElementById('gallery-bg');
+  const logoWrap = document.getElementById('team-logo-wrap');
+  const logoImg = document.getElementById('team-logo-img');
+  const tag = document.getElementById('gallery-tag');
+
+  const colors = getTeamColors(teamName);
+
+  if (colors) {
+    const [primary, secondary] = colors;
+    // Apply gradient background using team colors
+    bg.style.background = `linear-gradient(135deg, ${primary}cc 0%, ${secondary}66 50%, transparent 80%)`;
+    // Tint the border
+    hero.style.borderBottom = `1px solid ${primary}44`;
+    // Update the gallery tag color
+    if (tag) tag.style.color = primary === '#000000' || primary === '#111111' ? 'var(--gold)' : primary;
+  }
+
+  if (logoUrl) {
+    logoImg.src = logoUrl;
+    logoImg.alt = teamName + ' logo';
+    logoWrap.classList.add('visible');
+  }
+}
+
+function renderScoreboardCard(game, sport, stub) {
   const section = document.getElementById('scoreboard-section');
   const inner = document.getElementById('scoreboard-inner');
   if (!section || !inner) return;
@@ -2120,6 +2364,13 @@ function renderScoreboardCard(game, sport) {
   `;
 
   section.style.display = 'block';
+
+  // Apply team colors and logo to gallery hero
+  // Use the stub's team for color theme — check both home and away
+  const userTeamIsHome = game.home.name.toLowerCase().includes(stub?.artist?.toLowerCase()?.split(' ').pop() || '');
+  const userTeam = userTeamIsHome ? game.home : game.away;
+  const otherTeam = userTeamIsHome ? game.away : game.home;
+  applyTeamTheme(userTeam.name, userTeam.logo);
 }
 
 // ── Setlist.fm Integration ──
@@ -2286,9 +2537,18 @@ async function renderGallery(stub) {
     grid.appendChild(div);
   }
 
-  // Reset scoreboard section
+  // Reset scoreboard section and team theme
   const scoreboardSection = document.getElementById('scoreboard-section');
   if (scoreboardSection) { scoreboardSection.style.display = 'none'; document.getElementById('scoreboard-inner').innerHTML = ''; }
+  // Reset hero theme
+  const heroBg = document.getElementById('gallery-bg');
+  const heroEl = document.getElementById('gallery-hero');
+  const heroTag = document.getElementById('gallery-tag');
+  const logoWrap = document.getElementById('team-logo-wrap');
+  if (heroBg) heroBg.style.background = '';
+  if (heroEl) heroEl.style.borderBottom = '';
+  if (heroTag) { heroTag.style.color = ''; heroTag.textContent = '📍 Live Gallery — SmartStub'; }
+  if (logoWrap) logoWrap.classList.remove('visible');
 
   // Fire enrichment based on event type
   const meta = stub.metadata || {};
