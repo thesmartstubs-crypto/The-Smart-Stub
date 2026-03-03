@@ -281,28 +281,43 @@
     display: none;
   }
   .setlist-card {
-    background: #0d0b08;
-    border: 1px solid #2a2210;
-    padding: 36px 40px;
-    position: relative;
-    overflow: hidden;
-    max-width: 720px;
-  }
+  background: #0d0b08;
+  border: 1px solid #2a2210;
+  position: relative;
+  overflow: hidden;
+  max-width: 720px;
+}
   .setlist-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, var(--gold), transparent);
-  }
-  .setlist-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 28px;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+  .setlist-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 32px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+  gap: 16px;
+}
+  .setlist-trigger:hover { background: rgba(201,168,76,0.04); }
+  .setlist-trigger-left { display: flex; align-items: center; gap: 18px; }
+  .setlist-trigger-icon {
+  width: 36px; height: 36px;
+  border: 1px solid #3a2810;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+  .setlist-trigger-right { display: flex; align-items: center; gap: 20px; flex-shrink: 0; }
+  .setlist-chevron { color: var(--muted); transition: transform 0.3s ease; }
+  .setlist-card.expanded .setlist-chevron { transform: rotate(180deg); }
+  .setlist-body { max-height: 0; overflow: hidden; transition: max-height 0.45s ease; }
+  .setlist-card.expanded .setlist-body { max-height: 3000px; }
+  .setlist-body-inner { padding: 4px 32px 28px; border-top: 1px solid #1e1a10; }
   .setlist-label {
     font-family: 'Space Mono', monospace;
     font-size: 10px;
@@ -1728,13 +1743,8 @@ function renderSetlistCard(setlist, stub) {
   sets.forEach((set, setIdx) => {
     const songs = set.song || [];
     if (songs.length === 0) return;
-
     const isEncore = set.encore === 1 || set.encore === '1' || set.name?.toLowerCase().includes('encore');
-
-    if (setIdx > 0) {
-      songsHTML += `<div class="setlist-divider"></div>`;
-    }
-
+    if (setIdx > 0) songsHTML += `<div class="setlist-divider"></div>`;
     if (isEncore) {
       songsHTML += `<div class="setlist-encore-badge">Encore</div>`;
     } else if (set.name) {
@@ -1742,35 +1752,44 @@ function renderSetlistCard(setlist, stub) {
     } else if (sets.length > 1 && setIdx === 0) {
       songsHTML += `<div class="setlist-set-label">Main Set</div>`;
     }
-
     songsHTML += `<div class="setlist-songs">`;
     songs.forEach(song => {
       songCounter++;
       const note = song.cover ? ` <span class="setlist-song-note">(${song.cover.name} cover)</span>` : (song.info ? ` <span class="setlist-song-note">${song.info}</span>` : '');
-      songsHTML += `
-        <div class="setlist-song">
-          <span class="setlist-song-num">${String(songCounter).padStart(2, '0')}</span>
-          <span class="setlist-song-title">${song.name || '—'}${note}</span>
-        </div>`;
+      songsHTML += `<div class="setlist-song"><span class="setlist-song-num">${String(songCounter).padStart(2, '0')}</span><span class="setlist-song-title">${song.name || '—'}${note}</span></div>`;
     });
     songsHTML += `</div>`;
   });
 
   card.innerHTML = `
-    <div class="setlist-header">
-      <div>
-        <div class="setlist-label">&#9632; Setlist — Verified via Setlist.fm</div>
-        <div class="setlist-artist-name">${stub.artist}</div>
-        ${tourName ? `<div class="setlist-tour-name">${tourName}</div>` : ''}
+    <div class="setlist-trigger" onclick="toggleSetlist()">
+      <div class="setlist-trigger-left">
+        <div class="setlist-trigger-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div>
+          <div class="setlist-label">&#9632; Setlist — Verified via Setlist.fm</div>
+          <div class="setlist-artist-name">${stub.artist}</div>
+        </div>
       </div>
-      <div class="setlist-song-count">
-        Songs played<span>${totalSongs}</span>
+      <div class="setlist-trigger-right">
+        <div class="setlist-song-count">Songs played<span>${totalSongs}</span></div>
+        <svg class="setlist-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
     </div>
-    <div class="setlist-sets">${songsHTML}</div>
+    <div class="setlist-body">
+      <div class="setlist-body-inner">
+        ${tourName ? `<div class="setlist-tour-name">${tourName}</div>` : ''}
+        <div class="setlist-sets">${songsHTML}</div>
+      </div>
+    </div>
   `;
 
   section.style.display = 'block';
+}
+
+function toggleSetlist() {
+  document.getElementById('setlist-card-inner').classList.toggle('expanded');
 }
 
 async function renderGallery(stub) {
