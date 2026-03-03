@@ -2032,11 +2032,16 @@ function renderScoreboardCard(game, sport) {
     periodLabel = 'Periods';
     // Add OT if either team has a 4th linescore
     if ((home.linescores.length > 3) || (away.linescores.length > 3)) periodHeaders.push('OT');
-  } else if (sport === 'nba' || sport === 'wnba' || sport === 'ncaamb') {
+  } else if (sport === 'nba' || sport === 'wnba') {
     periodHeaders = ['1', '2', '3', '4'];
     periodLabel = 'Quarters';
     const maxPeriods = Math.max(home.linescores.length, away.linescores.length);
     for (let i = 4; i < maxPeriods; i++) periodHeaders.push(i === 4 ? 'OT' : `${i-3}OT`);
+  } else if (sport === 'ncaamb') {
+    periodHeaders = ['1st', '2nd'];
+    periodLabel = 'Halves';
+    const maxPeriods = Math.max(home.linescores.length, away.linescores.length);
+    for (let i = 2; i < maxPeriods; i++) periodHeaders.push(i === 2 ? 'OT' : `${i-1}OT`);
   } else if (sport === 'nfl' || sport === 'ncaafb') {
     periodHeaders = ['1', '2', '3', '4'];
     periodLabel = 'Quarters';
