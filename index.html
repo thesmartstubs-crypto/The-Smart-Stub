@@ -1598,11 +1598,88 @@ function logoClick() {
 }
 
 // ── Navigation ──
-function goTo(screenId) {
+// ── Navigation with History API ──
+let _suppressHistoryPush = false;
+
+function goTo(screenId, pushState = true) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
   window.scrollTo(0, 0);
+
+  if (pushState && !_suppressHistoryPush) {
+    // Store screen + any relevant state
+    const state = { screen: screenId };
+    if (screenId === 'screen-gallery' && currentSlug) state.slug = currentSlug;
+    if (screenId === 'screen-event' || screenId === 'screen-event-details' || 
+        screenId === 'screen-photos' || screenId === 'screen-nfc') {
+      state.stubId = currentStubId;
+      state.slug = currentSlug;
+    }
+    history.pushState(state, '', '');
+  }
 }
+
+// Handle browser back/forward
+window.addEventListener('popstate', async (e) => {
+  const state = e.state;
+  if (!state) {
+    // No state — go to landing
+    _suppressHistoryPush = true;
+    goTo('screen-landing', false);
+    _suppressHistoryPush = false;
+    return;
+  }
+
+  const screen = state.screen;
+  _suppressHistoryPush = true;
+
+  if (screen === 'screen-dashboard') {
+    if (currentUser) {
+      await loadDashboard();
+      goTo('screen-dashboard', false);
+    } else {
+      goTo('screen-landing', false);
+    }
+  } else if (screen === 'screen-gallery') {
+    if (state.slug) {
+      const { data: stub } = await sb.from('stubs').select('*').eq('slug', state.slug).single();
+      if (stub) {
+        await renderGallery(stub);
+      } else {
+        goTo('screen-landing', false);
+      }
+    } else {
+      goTo('screen-landing', false);
+    }
+  } else if (screen === 'screen-event' || screen === 'screen-event-details' || 
+             screen === 'screen-photos' || screen === 'screen-nfc') {
+    if (currentUser && state.stubId) {
+      currentStubId = state.stubId;
+      currentSlug = state.slug;
+      goTo(screen, false);
+    } else {
+      goTo('screen-dashboard', false);
+    }
+  } else if (screen === 'screen-pick-type') {
+    goTo('screen-pick-type', false);
+  } else if (screen === 'screen-landing') {
+    goTo('screen-landing', false);
+  } else if (screen === 'screen-login' || screen === 'screen-signup') {
+    goTo(screen, false);
+  } else {
+    goTo('screen-landing', false);
+  }
+
+  _suppressHistoryPush = false;
+});
+
+// Push initial state on page load
+window.addEventListener('load', () => {
+  const active = document.querySelector('.screen.active');
+  if (active) {
+    history.replaceState({ screen: active.id }, '', '');
+  }
+});
 
 // ── Password Visibility Toggle ──
 function togglePassword(inputId, btn) {
