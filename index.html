@@ -1671,29 +1671,24 @@ async function viewCurrentGallery() {
 
 
 // ── Setlist.fm Integration ──
-const SETLIST_API_KEY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler';
+const SETLIST_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler';
 
 async function fetchAndRenderSetlist(stub) {
-  console.log('fetchAndRenderSetlist called', stub?.artist, stub?.event_date);
-  // Only attempt for concert/music type events with an artist
+  // Only attempt if we have an artist and date
   if (!stub.artist || !stub.event_date) return;
 
   try {
-    // Search setlist.fm for the artist + date
-    const dateStr = stub.event_date; // YYYY-MM-DD
-    const [year, month, day] = dateStr.split('-');
+    const [year, month, day] = stub.event_date.split('-');
     const fmDate = `${day}-${month}-${year}`; // setlist.fm uses DD-MM-YYYY
 
-const res = await fetch(SETLIST_PROXY, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ artistName: stub.artist.trim(), date: fmDate })
-});
+    const res = await fetch(SETLIST_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ artistName: stub.artist.trim(), date: fmDate })
+    });
 
-    console.log('Proxy response status:', res.status);
     if (!res.ok) return;
     const data = await res.json();
-    console.log('Setlist response:', JSON.stringify(data).substring(0, 500));
     if (!data.setlist || data.setlist.length === 0) return;
 
     // Try to find the best match by venue if we have one
