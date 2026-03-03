@@ -137,6 +137,9 @@
   .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: var(--black); border-radius: 50%; animation: spin 0.7s linear infinite; margin-right: 8px; vertical-align: middle; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .locked-field { background: #0d0d0d !important; color: #555 !important; border-color: #1e1e1e !important; cursor: not-allowed !important; }
+  .locked-label { color: #555 !important; }
+
   .divider { border: none; border-top: 1px solid #1e1e1e; margin: 32px 0; }
 
   /* Dashboard */
@@ -381,7 +384,7 @@
         <h2 class="screen-title">Your <span class="gold">Stubs</span></h2>
         <p class="screen-desc" style="margin-bottom:0;">Manage your SmartStub galleries.</p>
       </div>
-      <button class="btn-primary" onclick="goTo('screen-event')">+ New Stub</button>
+      <button class="btn-primary" onclick="startNewStub()">+ New Stub</button>
     </div>
     <div id="stub-list-container">
       <div class="empty-state">
@@ -396,16 +399,32 @@
 <div id="screen-event" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 2 OF 4 — EVENT DETAILS</div>
+    <div class="step-indicator" id="event-step-indicator">STEP 2 OF 4 — EVENT DETAILS</div>
   </nav>
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content">
-    <h2 class="screen-title">Tell Us About <span class="gold">The Event</span></h2>
-    <p class="screen-desc">Add as much or as little detail as you like — all fields are optional.</p>
+    <h2 class="screen-title" id="event-screen-title">Tell Us About <span class="gold">The Event</span></h2>
+    <p class="screen-desc" id="event-screen-desc">Add as much or as little detail as you like — all fields are optional.</p>
+
+    <!-- Locked fields notice — hidden by default, shown when editing -->
+    <div id="locked-notice" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);padding:14px 18px;margin-bottom:24px;display:none;">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">🔒 Core Details Locked</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Event name, artist, and date are locked to this stub. All other details and photos can be updated freely.</p>
+    </div>
+
     <div class="form-grid">
-      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
-      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
-      <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
+      <div class="form-group full">
+        <label>Event / Concert Name</label>
+        <input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)">
+      </div>
+      <div class="form-group full">
+        <label>Artist / Headliner</label>
+        <input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)">
+      </div>
+      <div class="form-group">
+        <label>Event Date</label>
+        <input type="date" id="event-date">
+      </div>
       <div class="form-group"><label>Event Type</label>
         <select id="event-type">
           <option value="">Select type...</option>
@@ -580,6 +599,8 @@ let currentUser = null;
 let currentStubId = null;
 let currentSlug = null;
 let photos = [];
+let existingPhotos = [];
+let photosToDelete = [];
 const MAX_PHOTOS = 25;
 const MIN_PHOTOS = 1;
 
@@ -772,6 +793,7 @@ async function loadDashboard() {
       <div class="stub-list-actions">
         <button class="btn-secondary btn-small" onclick="openGalleryById('${stub.id}')">View Gallery</button>
         <button class="btn-primary btn-small" onclick="openNFCForStub('${stub.slug}')">Program NFC</button>
+        <button class="btn-secondary btn-small" onclick="editStub('${stub.id}')">Edit</button>
         <button class="btn-small" onclick="confirmDeleteStub('${stub.id}', '${stub.user_id}', '${stub.event_name || 'this stub'}')" style="background:transparent;border:1px solid #444;color:#888;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;padding:8px 14px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='#d13b2a';this.style.color='#d13b2a'" onmouseout="this.style.borderColor='#444';this.style.color='#888'">Delete</button>
       </div>
     </div>`).join('')}</div>`;
@@ -796,7 +818,7 @@ async function handleEventSave() {
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
 
-  const slug = generateSlug();
+  const slug = currentStubId ? currentSlug : generateSlug();
 
   const payload = {
     user_id: currentUser.id,
@@ -824,6 +846,10 @@ async function handleEventSave() {
 
   currentStubId = result.data.id;
   currentSlug = result.data.slug;
+
+  // Load existing photos if editing, then go to photo screen
+  await loadExistingPhotos();
+  document.getElementById('event-btn').innerHTML = 'Next: Upload Photos →';
   goTo('screen-photos');
 }
 
@@ -840,16 +866,33 @@ function handlePhotos(e) {
 function renderPhotoGrid() {
   const grid = document.getElementById('photo-grid');
   grid.innerHTML = '';
+
+  // Show existing photos from Supabase first
+  existingPhotos.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'photo-thumb';
+    div.style.position = 'relative';
+    div.innerHTML = `<img src="${p.url}" alt="Existing photo">
+      <div style="position:absolute;bottom:4px;left:4px;background:rgba(201,168,76,0.85);padding:2px 6px;font-size:9px;font-family:'Space Mono',monospace;letter-spacing:1px;color:#000;">SAVED</div>
+      <button class="remove-btn" onclick="removeExistingPhoto(${i})">✕</button>`;
+    grid.appendChild(div);
+  });
+
+  // Then show newly selected photos
   photos.forEach((p, i) => {
     const div = document.createElement('div');
     div.className = 'photo-thumb';
-    div.innerHTML = `<img src="${p.url}" alt="Photo ${i+1}">
+    div.style.position = 'relative';
+    div.innerHTML = `<img src="${p.url}" alt="New photo ${i+1}">
+      <div style="position:absolute;bottom:4px;left:4px;background:rgba(76,175,80,0.85);padding:2px 6px;font-size:9px;font-family:'Space Mono',monospace;letter-spacing:1px;color:#000;">NEW</div>
       <button class="remove-btn" onclick="removePhoto(${i})">✕</button>`;
     grid.appendChild(div);
   });
+
+  const total = existingPhotos.length + photos.length;
   const count = document.getElementById('photo-count');
-  count.innerHTML = photos.length > 0
-    ? `<span style="color:var(--gold)">${photos.length}</span> / ${MAX_PHOTOS} photos selected <span style="color:#4caf50">✓ ready to upload</span>`
+  count.innerHTML = total > 0
+    ? `<span style="color:var(--gold)">${total}</span> / ${MAX_PHOTOS} photos ${existingPhotos.length > 0 ? `(${existingPhotos.length} saved · ${photos.length} new)` : ''} <span style="color:#4caf50">✓ ready to upload</span>`
     : '';
 }
 
@@ -864,25 +907,32 @@ async function handlePhotoUpload() {
   const btn = document.getElementById('upload-btn');
   errEl.classList.remove('show');
 
-  if (photos.length < 1) return showError(errEl, 'Please select at least one photo.');
+  const total = existingPhotos.length + photos.length;
+  if (total < 1) return showError(errEl, 'Please select at least one photo.');
   if (!currentStubId) return showError(errEl, 'Event details not saved. Please go back and try again.');
 
   btn.disabled = true;
-  btn.innerHTML = `<span class="loading-spinner"></span>Uploading 0 of ${photos.length}...`;
+  btn.innerHTML = `<span class="loading-spinner"></span>Saving...`;
 
+  // Delete any photos the user removed during editing
+  if (photosToDelete.length > 0) {
+    await sb.storage.from('photos').remove(photosToDelete);
+  }
+
+  // Upload new photos
   let uploaded = 0;
   for (const photo of photos) {
     const ext = photo.file.name.split('.').pop();
     const path = `${currentUser.id}/${currentStubId}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
+    btn.innerHTML = `<span class="loading-spinner"></span>Uploading ${uploaded + 1} of ${photos.length}...`;
     const { error } = await sb.storage.from('photos').upload(path, photo.file, { upsert: true });
     if (!error) uploaded++;
-    btn.innerHTML = `<span class="loading-spinner"></span>Uploading ${uploaded} of ${photos.length}...`;
   }
 
   btn.disabled = false;
   btn.innerHTML = 'Upload & Continue →';
 
-  if (uploaded === 0) return showError(errEl, 'Upload failed. Please check your connection and try again.');
+  if (photos.length > 0 && uploaded === 0) return showError(errEl, 'Upload failed. Please check your connection and try again.');
 
   const galleryUrl = `thesmartstub.com/g/${currentSlug}`;
   document.getElementById('stub-url-display').textContent = galleryUrl;
@@ -1039,6 +1089,103 @@ async function executeDeleteStub() {
   }
 }
 
+// ── Start New Stub (clears all previous state) ──
+function startNewStub() {
+  currentStubId = null;
+  currentSlug = null;
+  photos = [];
+  existingPhotos = [];
+  photosToDelete = [];
+
+  // Clear all fields
+  ['event-name','event-artist','event-date','event-venue','event-city','event-section','event-seat','event-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+
+  // Unlock the core fields in case they were locked from a previous edit
+  ['event-name','event-artist','event-date'].forEach(id => {
+    const el = document.getElementById(id);
+    el.removeAttribute('readonly');
+    el.classList.remove('locked-field');
+  });
+
+  // Reset screen text
+  document.getElementById('locked-notice').style.display = 'none';
+  document.getElementById('event-screen-title').innerHTML = 'Tell Us About <span class="gold">The Event</span>';
+  document.getElementById('event-screen-desc').textContent = 'Add as much or as little detail as you like — all fields are optional.';
+  document.getElementById('event-btn').innerHTML = 'Next: Upload Photos →';
+
+  goTo('screen-event');
+}
+
+// ── Edit Stub ──
+async function editStub(stubId) {
+  const { data: stub, error } = await sb.from('stubs').select('*').eq('id', stubId).single();
+  if (error || !stub) return alert('Could not load stub details. Please try again.');
+
+  currentStubId = stub.id;
+  currentSlug = stub.slug;
+
+  // Populate all fields
+  document.getElementById('event-name').value = stub.event_name || '';
+  document.getElementById('event-artist').value = stub.artist || '';
+  document.getElementById('event-date').value = stub.event_date || '';
+  document.getElementById('event-venue').value = stub.venue || '';
+  document.getElementById('event-city').value = stub.city || '';
+  document.getElementById('event-note').value = stub.personal_note || '';
+
+  // Lock the three core identity fields
+  const lockedFields = ['event-name', 'event-artist', 'event-date'];
+  lockedFields.forEach(id => {
+    const el = document.getElementById(id);
+    el.setAttribute('readonly', true);
+    el.classList.add('locked-field');
+  });
+
+  // Show locked notice and update screen text
+  document.getElementById('locked-notice').style.display = 'block';
+  document.getElementById('event-screen-title').innerHTML = 'Edit Your <span class="gold">Stub</span>';
+  document.getElementById('event-screen-desc').textContent = 'Update your stub details and photos.';
+  document.getElementById('event-btn').innerHTML = 'Save Changes →';
+
+  goTo('screen-event');
+}
+
+// ── Load existing photos for editing ──
+async function loadExistingPhotos() {
+  existingPhotos = [];
+  photosToDelete = [];
+  photos = [];
+
+  if (!currentStubId || !currentUser) return;
+
+  const { data: files } = await sb.storage
+    .from('photos')
+    .list(`${currentUser.id}/${currentStubId}`);
+
+  if (!files || files.length === 0) return;
+
+  for (const file of files) {
+    const { data: urlData } = sb.storage
+      .from('photos')
+      .getPublicUrl(`${currentUser.id}/${currentStubId}/${file.name}`);
+    existingPhotos.push({
+      url: urlData.publicUrl,
+      path: `${currentUser.id}/${currentStubId}/${file.name}`,
+      name: file.name
+    });
+  }
+
+  renderPhotoGrid();
+}
+
+// ── Remove existing (already saved) photo ──
+function removeExistingPhoto(idx) {
+  const removed = existingPhotos.splice(idx, 1)[0];
+  photosToDelete.push(removed.path);
+  renderPhotoGrid();
+}
+
 // ── Back to Event: repopulate form with saved data ──
 async function goBackToEvent() {
   if (currentStubId) {
@@ -1052,6 +1199,8 @@ async function goBackToEvent() {
       document.getElementById('event-note').value = stub.personal_note || '';
     }
   }
+  photosToDelete = [];
+  photos = [];
   goTo('screen-event');
 }
 function openLightbox(src) {
