@@ -1634,7 +1634,9 @@ window.addEventListener('popstate', async (e) => {
   _suppressHistoryPush = true;
 
   if (screen === 'screen-dashboard') {
-    if (currentUser) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      currentUser = session.user;
       await loadDashboard();
       goTo('screen-dashboard', false);
     } else {
