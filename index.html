@@ -1671,7 +1671,7 @@ async function viewCurrentGallery() {
 
 
 // ── Setlist.fm Integration ──
-const SETLIST_API_KEY = 'gxG4KPk2SyaeVeB_iSqG9C9s3xUWYkt432G7';
+const SETLIST_API_KEY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler';
 
 async function fetchAndRenderSetlist(stub) {
   // Only attempt for concert/music type events with an artist
@@ -1685,15 +1685,11 @@ async function fetchAndRenderSetlist(stub) {
     const [year, month, day] = dateStr.split('-');
     const fmDate = `${day}-${month}-${year}`; // setlist.fm uses DD-MM-YYYY
 
-    const artistQuery = encodeURIComponent(stub.artist.trim());
-    const url = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${artistQuery}&date=${fmDate}&p=1`;
-
-    const res = await fetch(url, {
-      headers: {
-        'x-api-key': SETLIST_API_KEY,
-        'Accept': 'application/json'
-      }
-    });
+const res = await fetch(SETLIST_PROXY, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ artistName: stub.artist.trim(), date: fmDate })
+});
 
     if (!res.ok) return;
     const data = await res.json();
