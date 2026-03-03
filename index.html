@@ -1671,7 +1671,7 @@ async function viewCurrentGallery() {
 
 
 // ── Setlist.fm Integration ──
-const SETLIST_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/smart-handler-setlist.fm';
+const SETLIST_PROXY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/setlist-handler';
 
 async function fetchAndRenderSetlist(stub) {
   // Only attempt if we have an artist and date
@@ -1683,10 +1683,7 @@ async function fetchAndRenderSetlist(stub) {
 
     const res = await fetch(SETLIST_PROXY, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ artistName: stub.artist.trim(), date: fmDate })
     });
 
