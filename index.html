@@ -1691,6 +1691,7 @@ const res = await fetch(SETLIST_PROXY, {
 
     if (!res.ok) return;
     const data = await res.json();
+    console.log('Setlist response:', JSON.stringify(data).substring(0, 500));
     if (!data.setlist || data.setlist.length === 0) return;
 
     // Try to find the best match by venue if we have one
