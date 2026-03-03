@@ -213,9 +213,35 @@
 
   .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; align-items: center; justify-content: center; }
   .lightbox.open { display: flex; }
-  .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; }
-  .lightbox-close { position: absolute; top: 24px; right: 32px; background: none; border: none; color: var(--off-white); font-size: 32px; cursor: pointer; opacity: 0.6; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; object-fit: contain; transition: opacity 0.15s ease; pointer-events: none; }
+  .lightbox img.fading { opacity: 0; }
+  .lightbox-close { position: absolute; top: 24px; right: 32px; background: none; border: none; color: var(--off-white); font-size: 32px; cursor: pointer; opacity: 0.6; z-index: 10; }
   .lightbox-close:hover { opacity: 1; }
+  .lightbox-arrow {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    background: none; border: none;
+    color: var(--off-white);
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.4;
+    padding: 20px 24px;
+    transition: opacity 0.2s;
+    z-index: 10;
+    user-select: none;
+  }
+  .lightbox-arrow:hover { opacity: 1; }
+  .lightbox-arrow.prev { left: 16px; }
+  .lightbox-arrow.next { right: 16px; }
+  .lightbox-arrow.hidden { opacity: 0; pointer-events: none; }
+  .lightbox-counter {
+    position: absolute;
+    bottom: 24px; left: 50%; transform: translateX(-50%);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: rgba(255,255,255,0.3);
+  }
 
   .success-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); padding: 8px 16px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #4caf50; text-transform: uppercase; margin-bottom: 24px; }
 
@@ -1419,9 +1445,12 @@
 </div>
 
 <!-- LIGHTBOX -->
-<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+<div class="lightbox" id="lightbox" onclick="lightboxBgClick(event)">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-arrow prev" id="lb-prev" onclick="lightboxNav(-1)">&#8592;</button>
   <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-arrow next" id="lb-next" onclick="lightboxNav(1)">&#8594;</button>
+  <div class="lightbox-counter" id="lb-counter"></div>
 </div>
 
 <script>
@@ -2686,7 +2715,8 @@ async function renderGallery(stub) {
     }
 
     div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy">${captionHTML}`;
-    div.onclick = (e) => { if (e.target.tagName !== 'INPUT') openLightbox(urlData.publicUrl); };
+    const photoIndex = Array.from(grid.children).length;
+    div.onclick = (e) => { if (e.target.tagName !== 'INPUT') openLightbox(photoIndex); };
     grid.appendChild(div);
   }
 
@@ -2920,14 +2950,58 @@ function removeExistingPhoto(idx) {
 }
 
 // goBackToEvent replaced by goBackToEventCore/goBackToEventDetails
-function openLightbox(src) {
-  document.getElementById('lightbox-img').src = src;
-  document.getElementById('lightbox').classList.add('open');
+let lightboxUrls = [];
+let lightboxIndex = 0;
+
+function buildLightboxUrls() {
+  // Collect all photo URLs from the current gallery grid in order
+  lightboxUrls = Array.from(document.querySelectorAll('#gallery-photo-grid .gallery-photo img')).map(img => img.src);
 }
+
+function openLightbox(index) {
+  buildLightboxUrls();
+  if (!lightboxUrls.length) return;
+  lightboxIndex = index;
+  const img = document.getElementById('lightbox-img');
+  img.src = lightboxUrls[lightboxIndex];
+  document.getElementById('lightbox').classList.add('open');
+  updateLightboxNav();
+}
+
+function lightboxNav(dir) {
+  const img = document.getElementById('lightbox-img');
+  img.classList.add('fading');
+  setTimeout(() => {
+    lightboxIndex = (lightboxIndex + dir + lightboxUrls.length) % lightboxUrls.length;
+    img.src = lightboxUrls[lightboxIndex];
+    img.classList.remove('fading');
+    updateLightboxNav();
+  }, 150);
+}
+
+function updateLightboxNav() {
+  document.getElementById('lb-counter').textContent = `${lightboxIndex + 1} / ${lightboxUrls.length}`;
+  // Hide arrows if only one photo
+  const hide = lightboxUrls.length <= 1;
+  document.getElementById('lb-prev').classList.toggle('hidden', hide);
+  document.getElementById('lb-next').classList.toggle('hidden', hide);
+}
+
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+function lightboxBgClick(e) {
+  if (e.target === document.getElementById('lightbox')) closeLightbox();
+}
+
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('open')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+});
 
 // ── Drag & Drop ──
 const dz = document.getElementById('drop-zone');
