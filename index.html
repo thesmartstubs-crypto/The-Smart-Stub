@@ -274,6 +274,140 @@
     #screen-story [style*="padding:80px 64px"] { padding: 48px 24px !important; }
     #screen-story [style*="border-left:1px solid #1a1a1a"] { border-left: none !important; border-top: 1px solid #1a1a1a !important; }
   }
+
+  /* ── Setlist Card ── */
+  #setlist-section {
+    padding: 0 64px 48px;
+    display: none;
+  }
+  .setlist-card {
+    background: #0d0b08;
+    border: 1px solid #2a2210;
+    padding: 36px 40px;
+    position: relative;
+    overflow: hidden;
+    max-width: 720px;
+  }
+  .setlist-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .setlist-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .setlist-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .setlist-artist-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .setlist-tour-name {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+  .setlist-song-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .setlist-song-count span {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    color: var(--gold);
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .setlist-sets {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .setlist-set-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #4a4030;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .setlist-songs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2px;
+  }
+  .setlist-song {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 10px;
+    transition: background 0.15s;
+    border-radius: 1px;
+  }
+  .setlist-song:hover { background: rgba(201,168,76,0.05); }
+  .setlist-song-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #3a3020;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: right;
+  }
+  .setlist-song-title {
+    font-size: 13px;
+    color: var(--off-white);
+    line-height: 1.4;
+  }
+  .setlist-song-note {
+    font-size: 11px;
+    color: var(--muted);
+    font-style: italic;
+    margin-left: 4px;
+  }
+  .setlist-divider {
+    height: 1px;
+    background: repeating-linear-gradient(90deg, #2a2210 0, #2a2210 6px, transparent 6px, transparent 12px);
+    margin: 8px 0 16px;
+  }
+  .setlist-encore-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    border: 1px solid #3a2810;
+    padding: 2px 8px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 768px) {
+    #setlist-section { padding: 0 24px 40px; }
+    .setlist-card { padding: 24px 20px; }
+    .setlist-songs { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -893,6 +1027,10 @@
     <div id="g-note-container" style="margin-top:24px;padding:16px 20px;border-left:2px solid var(--gold);max-width:480px;position:relative;z-index:1;display:none;">
       <p id="g-note" style="font-size:14px;color:#b0aa9e;font-style:italic;line-height:1.7;"></p>
     </div>
+  </div>
+  <!-- Setlist section — populated dynamically -->
+  <div id="setlist-section">
+    <div class="setlist-card" id="setlist-card-inner"></div>
   </div>
   <div class="gallery-photos" id="gallery-photo-grid"></div>
   <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
@@ -1531,6 +1669,115 @@ async function viewCurrentGallery() {
   await openGalleryById(currentStubId);
 }
 
+
+// ── Setlist.fm Integration ──
+const SETLIST_API_KEY = 'gxG4KPk2SyaeVeB_iSqG9C9s3xUWYkt432G7';
+
+async function fetchAndRenderSetlist(stub) {
+  // Only attempt for concert/music type events with an artist
+  const eventType = (stub.event_type || '').toLowerCase();
+  const isMusicEvent = !eventType || eventType.includes('concert') || eventType.includes('music') || eventType.includes('festival') || eventType === '';
+  if (!isMusicEvent || !stub.artist || !stub.event_date) return;
+
+  try {
+    // Search setlist.fm for the artist + date
+    const dateStr = stub.event_date; // YYYY-MM-DD
+    const [year, month, day] = dateStr.split('-');
+    const fmDate = `${day}-${month}-${year}`; // setlist.fm uses DD-MM-YYYY
+
+    const artistQuery = encodeURIComponent(stub.artist.trim());
+    const url = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${artistQuery}&date=${fmDate}&p=1`;
+
+    const res = await fetch(url, {
+      headers: {
+        'x-api-key': SETLIST_API_KEY,
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.setlist || data.setlist.length === 0) return;
+
+    // Try to find the best match by venue if we have one
+    let setlist = data.setlist[0];
+    if (stub.venue && data.setlist.length > 1) {
+      const venueMatch = data.setlist.find(s =>
+        s.venue && s.venue.name && s.venue.name.toLowerCase().includes(stub.venue.toLowerCase().substring(0, 6))
+      );
+      if (venueMatch) setlist = venueMatch;
+    }
+
+    // Check there are actually songs
+    const allSongs = (setlist.sets?.set || []).flatMap(s => s.song || []);
+    if (allSongs.length === 0) return;
+
+    renderSetlistCard(setlist, stub);
+  } catch (e) {
+    // Silently fail — this is meant to be magic, not an error
+  }
+}
+
+function renderSetlistCard(setlist, stub) {
+  const section = document.getElementById('setlist-section');
+  const card = document.getElementById('setlist-card-inner');
+  if (!section || !card) return;
+
+  const sets = setlist.sets?.set || [];
+  const tourName = setlist.tour?.name || '';
+  const totalSongs = sets.flatMap(s => s.song || []).length;
+
+  let songsHTML = '';
+  let songCounter = 0;
+
+  sets.forEach((set, setIdx) => {
+    const songs = set.song || [];
+    if (songs.length === 0) return;
+
+    const isEncore = set.encore === 1 || set.encore === '1' || set.name?.toLowerCase().includes('encore');
+
+    if (setIdx > 0) {
+      songsHTML += `<div class="setlist-divider"></div>`;
+    }
+
+    if (isEncore) {
+      songsHTML += `<div class="setlist-encore-badge">Encore</div>`;
+    } else if (set.name) {
+      songsHTML += `<div class="setlist-set-label">${set.name}</div>`;
+    } else if (sets.length > 1 && setIdx === 0) {
+      songsHTML += `<div class="setlist-set-label">Main Set</div>`;
+    }
+
+    songsHTML += `<div class="setlist-songs">`;
+    songs.forEach(song => {
+      songCounter++;
+      const note = song.cover ? ` <span class="setlist-song-note">(${song.cover.name} cover)</span>` : (song.info ? ` <span class="setlist-song-note">${song.info}</span>` : '');
+      songsHTML += `
+        <div class="setlist-song">
+          <span class="setlist-song-num">${String(songCounter).padStart(2, '0')}</span>
+          <span class="setlist-song-title">${song.name || '—'}${note}</span>
+        </div>`;
+    });
+    songsHTML += `</div>`;
+  });
+
+  card.innerHTML = `
+    <div class="setlist-header">
+      <div>
+        <div class="setlist-label">&#9632; Setlist — Verified via Setlist.fm</div>
+        <div class="setlist-artist-name">${stub.artist}</div>
+        ${tourName ? `<div class="setlist-tour-name">${tourName}</div>` : ''}
+      </div>
+      <div class="setlist-song-count">
+        Songs played<span>${totalSongs}</span>
+      </div>
+    </div>
+    <div class="setlist-sets">${songsHTML}</div>
+  `;
+
+  section.style.display = 'block';
+}
+
 async function renderGallery(stub) {
   document.getElementById('g-event-name').textContent = stub.event_name || 'Untitled Event';
   document.getElementById('g-artist').textContent = stub.artist || '—';
@@ -1583,6 +1830,9 @@ async function renderGallery(stub) {
     div.onclick = () => openLightbox(urlData.publicUrl);
     grid.appendChild(div);
   }
+
+  // Fire setlist fetch — silently fills in if found
+  fetchAndRenderSetlist(stub);
 
   goTo('screen-gallery');
 }
