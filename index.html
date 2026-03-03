@@ -44,7 +44,7 @@
   .btn-secondary { background: transparent; color: var(--off-white); border: 1px solid #444; padding: 14px 32px; font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; border-radius: 8px; }
   .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
 
-  .stub-preview { position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(-8deg); width: 340px; }
+  .stub-preview { position: absolute; right: -20px; top: 50%; transform: translateY(-50%) rotate(-8deg); width: 340px; pointer-events: none; }
   .stub-card { background: var(--stub-bg); border: 1px solid #3a3228; padding: 32px; position: relative; border-radius: 10px; }
   .stub-card::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: repeating-linear-gradient(90deg, #3a3228 0, #3a3228 8px, transparent 8px, transparent 14px); }
   .stub-perf { position: absolute; left: -12px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; background: var(--black); border-radius: 50%; border: 1px solid #3a3228; }
@@ -1595,7 +1595,7 @@ updateOrderTotal();
 function logoClick() {
   if (currentUser) {
     goTo('screen-dashboard');
-    loadMy Stubs();
+    loadDashboard();
   } else {
     goTo('screen-landing');
   }
@@ -1641,7 +1641,7 @@ window.addEventListener('popstate', async (e) => {
     const { data: { session } } = await sb.auth.getSession();
     if (session) {
       currentUser = session.user;
-      await loadMy Stubs();
+      await loadDashboard();
       goTo('screen-dashboard', false);
     } else {
       goTo('screen-landing', false);
@@ -1747,7 +1747,7 @@ async function handleResetPassword() {
   if (error) return showError(errEl, error.message);
 
   goTo('screen-dashboard');
-  loadMy Stubs();
+  loadDashboard();
 }
 
 // ── Auth: Sign Up ──
@@ -1813,9 +1813,9 @@ async function handleLogin() {
   }
 
   currentUser = data.user;
-  updateMy StubsUser();
+  updateDashboardUser();
   goTo('screen-dashboard');
-  loadMy Stubs();
+  loadDashboard();
 }
 
 // ── Auth: Sign Out ──
@@ -1825,15 +1825,15 @@ async function handleSignout() {
   goTo('screen-landing');
 }
 
-function updateMy StubsUser() {
+function updateDashboardUser() {
   if (!currentUser) return;
   const meta = currentUser.user_metadata;
   const name = meta?.first_name ? `${meta.first_name} ${meta.last_name}` : currentUser.email;
   document.getElementById('dash-user-name').textContent = name;
 }
 
-// ── My Stubs: Load Stubs ──
-async function loadMy Stubs() {
+// ── Dashboard: Load Stubs ──
+async function loadDashboard() {
   if (!currentUser) return;
   const container = document.getElementById('stub-list-container');
   container.innerHTML = '<div style="color:var(--muted);font-family:\'Space Mono\',monospace;font-size:12px;padding:20px 0;">Loading your stubs...</div>';
@@ -2754,7 +2754,7 @@ async function renderGallery(stub) {
   const shareBtn = document.getElementById('share-btn');
   if (currentUser && currentUser.id === stub.user_id) {
     ctaBtn.textContent = '← My Stubs';
-    ctaBtn.onclick = () => { goTo('screen-dashboard'); loadMy Stubs(); };
+    ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
   } else {
     ctaBtn.textContent = 'Get Your SmartStub';
     ctaBtn.onclick = () => goTo('screen-landing');
@@ -3127,10 +3127,10 @@ function formatDate(dateStr) {
     const { data, error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
     if (!error && data.user) {
       currentUser = data.user;
-      updateMy StubsUser();
+      updateDashboardUser();
       window.history.replaceState(null, '', '/');
       goTo('screen-dashboard');
-      loadMy Stubs();
+      loadDashboard();
       return;
     }
   }
@@ -3173,9 +3173,9 @@ function formatDate(dateStr) {
   const { data: { session } } = await sb.auth.getSession();
   if (session?.user) {
     currentUser = session.user;
-    updateMy StubsUser();
+    updateDashboardUser();
     goTo('screen-dashboard');
-    loadMy Stubs();
+    loadDashboard();
   }
 })();
 </script>
