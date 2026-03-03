@@ -1675,9 +1675,7 @@ const SETLIST_API_KEY = 'https://ozzcuksblqeuljchchrv.supabase.co/functions/v1/s
 
 async function fetchAndRenderSetlist(stub) {
   // Only attempt for concert/music type events with an artist
-  const eventType = (stub.event_type || '').toLowerCase();
-  const isMusicEvent = !eventType || eventType.includes('concert') || eventType.includes('music') || eventType.includes('festival') || eventType === '';
-  if (!isMusicEvent || !stub.artist || !stub.event_date) return;
+  if (!stub.artist || !stub.event_date) return;
 
   try {
     // Search setlist.fm for the artist + date
