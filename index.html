@@ -240,7 +240,11 @@
     font-family: 'Space Mono', monospace;
     font-size: 10px;
     letter-spacing: 3px;
-    color: rgba(255,255,255,0.3);
+    color: var(--off-white);
+    background: rgba(0,0,0,0.55);
+    padding: 5px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
   }
 
   .success-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); padding: 8px 16px; font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: #4caf50; text-transform: uppercase; margin-bottom: 24px; }
@@ -1773,7 +1777,7 @@ async function loadDashboard() {
     return `
     <div class="stub-pin-wrapper">
       <div class="pushpin"><div class="pushpin-head"></div><div class="pushpin-needle"></div></div>
-      <div class="ticket-card" id="stub-item-${stub.id}">
+      <div class="ticket-card" id="stub-item-${stub.id}" onclick="openGalleryById('${stub.id}')" style="cursor:pointer;" title="View Gallery">
       <div class="ticket-top">
         <div class="ticket-badge">${badge}</div>
         <div class="ticket-name">${name}</div>
