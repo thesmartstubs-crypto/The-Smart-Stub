@@ -1146,7 +1146,7 @@
   <div class="content" style="max-width:860px;">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:32px;flex-wrap:wrap;gap:16px;">
       <div>
-        <h2 class="screen-title">Your <span class="gold">Stubs</span></h2>
+        <h2 class="screen-title">My <span class="gold">Stubs</span></h2>
         <p class="screen-desc" style="margin-bottom:0;">Manage your SmartStub galleries.</p>
       </div>
       <button class="btn-primary" onclick="startNewStub()">+ New Stub</button>
@@ -2749,12 +2749,14 @@ async function renderGallery(stub) {
   document.getElementById('gallery-share-url').textContent = `thesmartstub.com/g/${stub.slug}`;
   document.getElementById('gallery-url-share').style.display = 'none';
 
-  // Show back to dashboard button if owner is viewing their own gallery
+  // Show back to My Stubs button if owner is viewing their own gallery
   const ctaBtn = document.getElementById('gallery-cta-btn');
   const shareBtn = document.getElementById('share-btn');
+  const myStubsTopBtn = document.getElementById('gallery-mystubs-btn');
   if (currentUser && currentUser.id === stub.user_id) {
     ctaBtn.textContent = '← My Stubs';
     ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
+    if (myStubsTopBtn) myStubsTopBtn.style.display = 'block';
   } else {
     ctaBtn.textContent = 'Get Your SmartStub';
     ctaBtn.onclick = () => goTo('screen-landing');
