@@ -296,10 +296,10 @@
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
   <div class="content">
     <h2 class="screen-title">Tell Us About <span class="gold">The Event</span></h2>
-    <p class="screen-desc">This information will appear on your gallery when someone taps your SmartStub.</p>
+    <p class="screen-desc">Add as much or as little detail as you like — all fields are optional.</p>
     <div class="form-grid">
-      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour"></div>
-      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift"></div>
+      <div class="form-group full"><label>Event / Concert Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
+      <div class="form-group full"><label>Artist / Headliner</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
       <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
       <div class="form-group"><label>Event Type</label>
         <select id="event-type">
@@ -309,10 +309,10 @@
           <option>Conference / Expo</option><option>Other</option>
         </select>
       </div>
-      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden"></div>
-      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY"></div>
-      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3"></div>
-      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14–15"></div>
+      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden (optional)"></div>
+      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY (optional)"></div>
+      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3 (optional)"></div>
+      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14–15 (optional)"></div>
       <div class="form-group full"><label>Your Personal Note (optional)</label><textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..."></textarea></div>
     </div>
     <div id="event-error" class="error-msg"></div>
@@ -591,8 +591,6 @@ async function handleEventSave() {
   const btn = document.getElementById('event-btn');
 
   errEl.classList.remove('show');
-  if (!name) return showError(errEl, 'Please enter the event name.');
-  if (!venue) return showError(errEl, 'Please enter the venue name.');
 
   btn.disabled = true;
   btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
