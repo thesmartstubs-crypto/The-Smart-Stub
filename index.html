@@ -1814,6 +1814,9 @@
       <div class="gallery-meta-item"><div class="gallery-meta-label">Date</div><div class="gallery-meta-val" id="g-date">—</div></div>
       <div class="gallery-meta-item"><div class="gallery-meta-label">Venue</div><div class="gallery-meta-val" id="g-venue">—</div></div>
       <div class="gallery-meta-item"><div class="gallery-meta-label">City</div><div class="gallery-meta-val" id="g-city">—</div></div>
+      <div class="gallery-meta-item" id="g-section-item" style="display:none;"><div class="gallery-meta-label">Section</div><div class="gallery-meta-val" id="g-section">—</div></div>
+      <div class="gallery-meta-item" id="g-row-item" style="display:none;"><div class="gallery-meta-label">Row</div><div class="gallery-meta-val" id="g-row">—</div></div>
+      <div class="gallery-meta-item" id="g-seat-item" style="display:none;"><div class="gallery-meta-label">Seat(s)</div><div class="gallery-meta-val" id="g-seat">—</div></div>
         </div>
       </div>
     </div>
@@ -3929,6 +3932,19 @@ async function renderGallery(stub, showEditPanel = false) {
   document.getElementById('g-date').textContent = stub.event_date ? formatDate(stub.event_date) : '—';
   document.getElementById('g-venue').textContent = stub.venue || '—';
   document.getElementById('g-city').textContent = stub.city || '—';
+
+  // Section / Row / Seat — only show if populated
+  const showField = (itemId, valId, val) => {
+    const item = document.getElementById(itemId);
+    const el   = document.getElementById(valId);
+    if (item && el) {
+      if (val) { el.textContent = val; item.style.display = ''; }
+      else { item.style.display = 'none'; }
+    }
+  };
+  showField('g-section-item', 'g-section', stub.seat_section);
+  showField('g-row-item',     'g-row',     stub.seat_row);
+  showField('g-seat-item',    'g-seat',    stub.seat_number);
   document.getElementById('gallery-url-bar').textContent = `thesmartstub.com/g/${stub.slug}`;
 
   const noteEl = document.getElementById('g-note-container');
@@ -4291,6 +4307,15 @@ async function saveGalleryEdits() {
   set('g-event-name', updates.event_name);
   set('g-venue',      updates.venue);
   set('g-city',       updates.city);
+  // Update seat fields and toggle visibility
+  const showField = (itemId, valId, val) => {
+    const item = document.getElementById(itemId);
+    const el   = document.getElementById(valId);
+    if (item && el) { if (val) { el.textContent = val; item.style.display = ''; } else { item.style.display = 'none'; } }
+  };
+  showField('g-section-item', 'g-section', updates.seat_section);
+  showField('g-row-item',     'g-row',     updates.seat_row);
+  showField('g-seat-item',    'g-seat',    updates.seat_number);
   const noteEl  = document.getElementById('g-note');
   const noteCon = document.getElementById('g-note-container');
   if (noteEl && noteCon) {
