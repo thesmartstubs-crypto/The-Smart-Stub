@@ -356,8 +356,9 @@
     display: flex;
     flex-direction: row;
     width: 100%;
+    max-width: 680px;
     box-sizing: border-box;
-    min-height: 88px;
+    min-height: 110px;
     overflow: hidden;
     cursor: pointer;
     box-shadow: 3px 5px 16px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02);
@@ -398,7 +399,7 @@
   .ticket-main {
     flex: 1;
     min-width: 0;
-    padding: 10px 12px 10px 4px;
+    padding: 14px 12px 14px 4px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -469,13 +470,13 @@
 
   /* Right stub zone */
   .ticket-stub {
-    width: 90px;
+    width: 80px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 10px 10px;
+    padding: 12px 10px;
     gap: 5px;
     position: relative;
   }
@@ -528,7 +529,7 @@
     .top-bar { padding: 16px 24px; }
     .stub-pin-wrapper { padding: 22px 12px 10px; }
     .ticket-name { font-size: 17px; }
-    .ticket-stub { width: 74px; }
+    .ticket-stub { width: 68px; }
     #screen-story .content-grid { grid-template-columns: 1fr !important; }
     #screen-story [style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
     #screen-story [style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr !important; }
