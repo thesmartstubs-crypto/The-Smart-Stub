@@ -4331,7 +4331,7 @@ async function generateShareImage(stub) {
     const nameText = (stub.event_name || 'Untitled Event').toUpperCase();
     const nameLines = wrapText(ctx, nameText, textMaxW, 62, 'bold', '"Arial Black", Arial, sans-serif');
     let nameY = cardY + 100;
-    for (const line of nameLines.slice(0, 2)) {
+    for (const line of nameLines.lines.slice(0, 2)) {
       ctx.font = nameLines.font;
       ctx.textBaseline = 'top';
       ctx.fillText(line, textX, nameY);
