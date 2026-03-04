@@ -4503,22 +4503,44 @@ async function generateShareImage(stub) {
     // ── Download / Share ──
     const dataUrl = canvas.toDataURL('image/png');
 
-    // Try Web Share API (mobile — goes straight to share sheet → Instagram)
-    if (navigator.canShare && navigator.canShare({ files: [new File([], 'test.png', { type: 'image/png' })] })) {
+    try {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `smartstub-${stub.slug}.png`, { type: 'image/png' });
-      await navigator.share({ files: [file], title: stub.event_name || 'My SmartStub' });
-    } else {
-      // Desktop fallback — download the PNG
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = `smartstub-${stub.slug}.png`;
-      a.click();
+
+      // Try Web Share API with file (mobile → share sheet → Instagram)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: stub.event_name || 'My SmartStub' });
+      } else if (navigator.share) {
+        // Fallback: share without file (just title + url)
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = `smartstub-${stub.slug}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      } else {
+        // Desktop — direct download
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `smartstub-${stub.slug}.png`;
+        a.click();
+      }
+    } catch (shareErr) {
+      // Share was cancelled or failed — still offer download
+      console.warn('Share failed, falling back to download:', shareErr);
+      if (shareErr.name !== 'AbortError') {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = `smartstub-${stub.slug}.png`;
+        a.click();
+      }
     }
 
   } catch (err) {
     console.error('Share image error:', err);
-    alert('Could not generate share image. Please try again.');
+    alert(`Could not generate share image: ${err.message || err}`);
   } finally {
     btn.textContent = origText;
     btn.disabled = false;
@@ -4557,9 +4579,9 @@ function loadImage(url) {
   return new Promise(resolve => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    // Add cache-busting param to help CORS on Supabase storage
+    const timeout = setTimeout(() => resolve(null), 6000); // 6s timeout
+    img.onload = () => { clearTimeout(timeout); resolve(img); };
+    img.onerror = () => { clearTimeout(timeout); resolve(null); };
     img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
   });
 }
