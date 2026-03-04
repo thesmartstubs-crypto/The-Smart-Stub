@@ -517,42 +517,76 @@
 
   /* Delete button */
   .ticket-delete-btn {
-    background: rgba(0,0,0,0.25);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.35);
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: transparent;
     cursor: pointer;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
+    height: 24px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 5px;
     font-size: 11px;
     font-weight: bold;
-    line-height: 1;
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    transition: all 0.15s;
-    padding: 0;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+    white-space: nowrap;
+    padding: 0 6px;
+    overflow: hidden;
+    max-width: 24px;
+    transition: all 0.2s ease;
+    opacity: 0;
   }
-  .ticket-delete-btn:hover {
+  .ticket-delete-btn .delete-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(180,60,40,0.15);
+    border: 1px solid rgba(180,60,40,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .ticket-delete-btn .delete-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #c0392b;
+    max-width: 0;
+    overflow: hidden;
+    transition: max-width 0.2s ease;
+    white-space: nowrap;
+  }
+  /* Show on card hover */
+  .stub-pin-wrapper:hover .ticket-delete-btn {
+    opacity: 1;
+  }
+  /* Expand on button hover */
+  .stub-pin-wrapper:hover .ticket-delete-btn:hover {
+    background: rgba(192,57,43,0.1);
+    border: 1px solid rgba(192,57,43,0.3);
+    max-width: 120px;
+    padding: 0 8px 0 6px;
+  }
+  .stub-pin-wrapper:hover .ticket-delete-btn:hover .delete-icon {
     background: #c0392b;
     border-color: #c0392b;
     color: #fff;
+  }
+  .stub-pin-wrapper:hover .ticket-delete-btn:hover .delete-label {
+    max-width: 80px;
   }
 
-  /* Light mode delete button */
-  .stub-theme-light .ticket-delete-btn {
-    background: rgba(0,0,0,0.06);
-    border-color: rgba(0,0,0,0.15);
-    color: rgba(0,0,0,0.3);
-  }
-  .stub-theme-light .ticket-delete-btn:hover {
-    background: #c0392b;
-    border-color: #c0392b;
-    color: #fff;
-  }
+  /* Light mode delete */
+  .stub-theme-light .ticket-delete-btn .delete-icon { color: #c0392b; }
+  .stub-theme-light .stub-pin-wrapper:hover .ticket-delete-btn:hover { background: rgba(192,57,43,0.08); }
 
   /* Dark mode — brighter text colors */
   .ticket-badge    { color: #7a6a50; }
@@ -2538,7 +2572,7 @@ async function loadDashboard() {
           <div class="ticket-notch"></div>
         </div>
         <div class="ticket-stub">${stubZone}</div>
-        <button class="ticket-delete-btn" onclick="event.stopPropagation();confirmDeleteStub('${stub.id}','${stub.user_id}','${(stub.event_name||'this stub').replace(/'/g,'')}')" title="Delete">\u2715</button>
+        <button class="ticket-delete-btn" onclick="event.stopPropagation();confirmDeleteStub('${stub.id}','${stub.user_id}','${(stub.event_name||'this stub').replace(/'/g,'')}')" title="Delete stub"><span class="delete-icon">✕</span><span class="delete-label">Delete</span></button>
       </div>
     </div>`;
     } catch(cardErr) {
