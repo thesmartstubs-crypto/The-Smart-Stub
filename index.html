@@ -4316,50 +4316,60 @@ async function generateShareImage(stub) {
 
     // Main text content
     const textX = cardX + barW + 108;
-    const textMaxW = cardW - barW - 108 - 200; // leave room for stub zone
+    const perfX = cardX + cardW - 180;
+    const textMaxW = perfX - textX - 30; // hard stop before perforation
 
     // Event type badge
     ctx.fillStyle = '#a09080';
     ctx.font = '500 22px "Space Mono", monospace';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
-    ctx.fillText((meta.event_type || evType).toUpperCase(), textX, cardY + 80);
+    ctx.fillText((meta.event_type || evType).toUpperCase(), textX, cardY + 62);
 
-    // Event name — large Bebas-style bold
+    // Event name — large bold, wraps to 2 lines if needed
     ctx.fillStyle = '#1a1410';
-    ctx.font = 'bold 68px "Arial Black", "Arial", sans-serif';
-    ctx.textBaseline = 'top';
     const nameText = (stub.event_name || 'Untitled Event').toUpperCase();
-    const fittedName = fitText(ctx, nameText, textMaxW, 68, 'bold', '"Arial Black", Arial, sans-serif');
-    ctx.font = fittedName.font;
-    ctx.fillText(fittedName.text, textX, cardY + 130);
-
-    // Artist line
-    ctx.fillStyle = '#8a7a6a';
-    ctx.font = '500 24px "Space Mono", monospace';
-    ctx.textBaseline = 'top';
-    const artistText = (stub.artist || '').toUpperCase();
-    ctx.fillText(artistText.length > 38 ? artistText.slice(0, 38) + '…' : artistText, textX, cardY + 230);
-
-    // Detail fields row
-    const fields = [
-      { label: 'DATE',  val: stub.event_date ? formatDate(stub.event_date) : '—' },
-      { label: 'VENUE · CITY', val: [stub.venue, stub.city].filter(Boolean).join(' · ') || '—' },
-    ];
-    let fx = textX;
-    for (const f of fields) {
-      ctx.fillStyle = '#b0a090';
-      ctx.font = '500 18px "Space Mono", monospace';
+    const nameLines = wrapText(ctx, nameText, textMaxW, 62, 'bold', '"Arial Black", Arial, sans-serif');
+    let nameY = cardY + 100;
+    for (const line of nameLines.slice(0, 2)) {
+      ctx.font = nameLines.font;
       ctx.textBaseline = 'top';
-      ctx.fillText(f.label, fx, cardY + 290);
-      ctx.fillStyle = '#2a2010';
-      ctx.font = '500 26px "Space Mono", monospace';
-      ctx.fillText(f.val.length > 28 ? f.val.slice(0, 28) + '…' : f.val, fx, cardY + 318);
-      fx += 320;
+      ctx.fillText(line, textX, nameY);
+      nameY += nameLines.lineH;
     }
 
-    // Perforated divider — vertical dashed line
-    const perfX = cardX + cardW - 180;
+    // Artist line — below event name
+    const artistY = nameY + 10;
+    ctx.fillStyle = '#8a7a6a';
+    ctx.font = '500 22px "Space Mono", monospace';
+    ctx.textBaseline = 'top';
+    const artistText = (stub.artist || '').toUpperCase();
+    const artistLines = wrapText(ctx, artistText, textMaxW, 22, '500', '"Space Mono", monospace');
+    ctx.font = artistLines.font;
+    ctx.fillText(artistLines.lines[0] || '', textX, artistY);
+
+    // Detail fields — stacked vertically, each label+value pair on its own row
+    const detailFields = [
+      { label: 'DATE',  val: stub.event_date ? formatDate(stub.event_date) : '—' },
+      { label: 'VENUE', val: stub.venue || '—' },
+      { label: 'CITY',  val: stub.city  || '—' },
+    ];
+    let fy = artistY + 52;
+    const labelSize = 17, valSize = 24, rowH = 58;
+    for (const f of detailFields) {
+      if (fy + rowH > cardY + cardH - 24) break; // don't overflow card
+      ctx.fillStyle = '#b0a090';
+      ctx.font = `500 ${labelSize}px "Space Mono", monospace`;
+      ctx.textBaseline = 'top';
+      ctx.fillText(f.label, textX, fy);
+      ctx.fillStyle = '#2a2010';
+      ctx.font = `500 ${valSize}px "Space Mono", monospace`;
+      // Wrap value if too wide
+      const valLines = wrapText(ctx, f.val, textMaxW, valSize, '500', '"Space Mono", monospace');
+      ctx.font = valLines.font;
+      ctx.fillText(valLines.lines[0] || '', textX, fy + labelSize + 4);
+      fy += rowH;
+    }
     ctx.save();
     ctx.strokeStyle = '#d0c8b8';
     ctx.lineWidth = 2;
@@ -4565,6 +4575,34 @@ function fitText(ctx, text, maxW, startSize, weight, family) {
     ? text.slice(0, Math.floor(text.length * maxW / ctx.measureText(text).width) - 1) + '…'
     : text;
   return { font: `${weight} ${size}px ${family}`, text: display };
+}
+
+function wrapText(ctx, text, maxW, startSize, weight, family) {
+  // Try to fit on one line first, scale down if needed
+  let size = startSize;
+  while (size > Math.max(startSize * 0.6, 18)) {
+    ctx.font = `${weight} ${size}px ${family}`;
+    if (ctx.measureText(text).width <= maxW) {
+      return { font: `${weight} ${size}px ${family}`, lines: [text], lineH: size * 1.2 };
+    }
+    size -= 2;
+  }
+  // Word-wrap at current size
+  ctx.font = `${weight} ${size}px ${family}`;
+  const words = text.split(' ');
+  const lines = [];
+  let current = '';
+  for (const word of words) {
+    const test = current ? current + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  }
+  if (current) lines.push(current);
+  return { font: `${weight} ${size}px ${family}`, lines, lineH: size * 1.25 };
 }
 
 function toggleGalleryUrl() {
