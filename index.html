@@ -1398,25 +1398,73 @@
         <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;" id="create-anchor-label">Artist &amp; Date</div>
         <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#4a4030;">🔒 LOCKED AFTER SAVE</div>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label id="create-artist-label">Artist / Headliner</label>
-        <input type="text" id="create-artist" placeholder="e.g. Taylor Swift" oninput="onCreateArtistInput()" autocomplete="off">
+
+      <!-- NON-SPORTS: artist + date -->
+      <div id="create-anchor-music">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label id="create-artist-label">Artist / Headliner</label>
+          <input type="text" id="create-artist" placeholder="e.g. Taylor Swift" oninput="onCreateArtistInput()" autocomplete="off">
+        </div>
+        <div class="form-group" id="create-date-group" style="display:none; margin-bottom:16px;">
+          <label>Event Date</label>
+          <input type="date" id="create-date" onchange="onCreateDateChange()">
+        </div>
       </div>
-      <div class="form-group" id="create-date-group" style="display:none; margin-bottom:16px;">
-        <label>Event Date</label>
-        <input type="date" id="create-date" onchange="onCreateDateChange()">
-      </div>
-      <div id="create-opponent-group" style="display:none;" class="form-group">
-        <label>Opponent Team</label>
-        <input type="text" id="create-opponent" placeholder="e.g. New York Giants">
-      </div>
-      <div id="create-homeaway-group" style="display:none;" class="form-group">
-        <label>Home or Away?</label>
-        <select id="create-homeaway">
-          <option value="">Select...</option>
-          <option value="home">Home Game</option>
-          <option value="away">Away Game</option>
-        </select>
+
+      <!-- SPORTS: step-through flow -->
+      <div id="create-anchor-sports" style="display:none;">
+
+        <!-- Step A: Sport -->
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Sport / League</label>
+          <select id="sports-league-pick" onchange="onSportsLeaguePick()">
+            <option value="">Select league...</option>
+            <option value="nfl">NFL Football</option>
+            <option value="nba">NBA Basketball</option>
+            <option value="mlb">MLB Baseball</option>
+            <option value="nhl">NHL Hockey</option>
+            <option value="mls">MLS Soccer</option>
+            <option value="ncaafb">NCAA Football</option>
+            <option value="ncaamb">NCAA Basketball</option>
+            <option value="wnba">WNBA Basketball</option>
+          </select>
+        </div>
+
+        <!-- Step B: Team — revealed after league chosen -->
+        <div class="form-group" id="sports-team-group" style="display:none; margin-bottom:16px;">
+          <label id="sports-team-label">Your Team</label>
+          <div style="position:relative;">
+            <input type="text" id="sports-team-input" placeholder="Type to search teams..." oninput="onSportsTeamInput()" autocomplete="off" style="width:100%;">
+            <div id="sports-team-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:#1a1610; border:1px solid #3a3020; border-top:none; z-index:50; max-height:220px; overflow-y:auto;"></div>
+          </div>
+          <div id="sports-team-selected" style="display:none; margin-top:10px; padding:10px 14px; background:rgba(201,168,76,0.07); border:1px solid rgba(201,168,76,0.2); border-radius:6px; font-size:14px; color:var(--gold); font-family:'Space Mono',monospace; letter-spacing:1px;"></div>
+        </div>
+
+        <!-- Step C: Date — revealed after team chosen -->
+        <div class="form-group" id="sports-date-group" style="display:none; margin-bottom:16px;">
+          <label>Game Date</label>
+          <input type="date" id="sports-date-input" onchange="onSportsDateChange()">
+        </div>
+
+        <!-- Step D: Game confirmation card -->
+        <div id="sports-game-confirm" style="display:none; margin-top:4px;">
+          <div id="sports-lookup-row" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+            <span class="loading-spinner" id="sports-lookup-spinner" style="display:none;"></span>
+            <span id="sports-lookup-text">Looking up game...</span>
+          </div>
+          <div id="sports-confirm-card" style="display:none; background:#0e100e; border:1px solid #1e3020; border-radius:10px; padding:24px; margin-bottom:4px;">
+            <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#6a9a6a;text-transform:uppercase;margin-bottom:16px;">Game Found ✓</div>
+            <div id="sports-confirm-content" style="margin-bottom:20px;"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <button class="btn-primary" style="padding:12px 28px;font-size:12px;" onclick="confirmSportsGame(true)">Yes, that's it ✓</button>
+              <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="confirmSportsGame(false)">Not my game</button>
+            </div>
+          </div>
+          <div id="sports-no-game" style="display:none; font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px; margin-bottom:8px;">
+            No game found for that date — fill in the details below.
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -2204,6 +2252,20 @@ async function loadDashboard() {
 
 let createSetlistData = null;
 let createSetlistConfirmed = false;
+let sportsTeamData  = null; // { id, name, displayName, abbreviation, espnSlug }
+let sportsGameData  = null; // { opponent, venue, city, homeAway, date }
+
+// ── ESPN team rosters per league (fetched once) ──
+const ESPN_LEAGUE_MAP = {
+  nfl:    { sport:'football',    league:'nfl' },
+  nba:    { sport:'basketball',  league:'nba' },
+  mlb:    { sport:'baseball',    league:'mlb' },
+  nhl:    { sport:'hockey',      league:'nhl' },
+  mls:    { sport:'soccer',      league:'usa.1' },
+  ncaafb: { sport:'football',    league:'college-football' },
+  ncaamb: { sport:'basketball',  league:'mens-college-basketball' },
+  wnba:   { sport:'basketball',  league:'wnba' },
+};
 
 function resetCreateScreen() {
   currentEventType = null;
@@ -2221,8 +2283,22 @@ function resetCreateScreen() {
   const phaseAnchor = document.getElementById('create-phase-anchor');
   if (phaseType) { phaseType.style.opacity = ''; phaseType.style.pointerEvents = ''; }
   if (phaseAnchor) { phaseAnchor.style.opacity = ''; phaseAnchor.style.pointerEvents = ''; }
-  ['create-artist','create-date','create-opponent','event-venue','event-city',
-   'event-section','event-seat','event-note','create-name'].forEach(id => {
+  sportsTeamData = null;
+  sportsGameData = null;
+  const sportsLeague = document.getElementById('sports-league-pick');
+  const sportsTeamIn = document.getElementById('sports-team-input');
+  const sportsDateIn = document.getElementById('sports-date-input');
+  const sportsTeamSel = document.getElementById('sports-team-selected');
+  const sportsTeamGrp = document.getElementById('sports-team-group');
+  const sportsDateGrp = document.getElementById('sports-date-group');
+  const sportsConfirm = document.getElementById('sports-game-confirm');
+  if (sportsLeague)  sportsLeague.value = '';
+  if (sportsTeamIn)  sportsTeamIn.value = '';
+  if (sportsDateIn)  sportsDateIn.value = '';
+  if (sportsTeamSel) sportsTeamSel.style.display = 'none';
+  if (sportsTeamGrp) sportsTeamGrp.style.display = 'none';
+  if (sportsDateGrp) sportsDateGrp.style.display = 'none';
+  if (sportsConfirm) sportsConfirm.style.display  = 'none';
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const card = document.getElementById('create-confirm-card');
@@ -2270,6 +2346,27 @@ function revealAnchorPhase(type) {
   const nameLabel = document.getElementById('create-name-label');
   const nameGroup = document.getElementById('create-name-group');
   const theaterExtras = document.getElementById('create-theater-extras');
+
+  const musicAnchor  = document.getElementById('create-anchor-music');
+  const sportsAnchor = document.getElementById('create-anchor-sports');
+  if (type === 'sports') {
+    if (musicAnchor)  musicAnchor.style.display  = 'none';
+    if (sportsAnchor) sportsAnchor.style.display = 'block';
+    // Reset sports flow
+    document.getElementById('sports-league-pick').value = '';
+    document.getElementById('sports-team-group').style.display  = 'none';
+    document.getElementById('sports-date-group').style.display  = 'none';
+    document.getElementById('sports-game-confirm').style.display = 'none';
+    document.getElementById('sports-confirm-card').style.display = 'none';
+    document.getElementById('sports-no-game').style.display     = 'none';
+    document.getElementById('sports-team-input').value = '';
+    document.getElementById('sports-team-selected').style.display = 'none';
+    sportsTeamData = null;
+    sportsGameData = null;
+  } else {
+    if (musicAnchor)  musicAnchor.style.display  = 'block';
+    if (sportsAnchor) sportsAnchor.style.display = 'none';
+  }
 
   opponentGroup.style.display = 'none';
   homeawayGroup.style.display = 'none';
@@ -2322,12 +2419,9 @@ function revealAnchorPhase(type) {
   });
   document.getElementById('create-back-row').style.display = 'none';
 
-  // Sports: skip lookup, go straight to details after date
-  if (type === 'sports') {
-    revealDetailsPhase();
+  if (type !== 'sports') {
+    setTimeout(() => { const a = document.getElementById('create-artist'); if (a) { a.focus(); a.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 400);
   }
-
-  setTimeout(() => { const a = document.getElementById('create-artist'); if (a) { a.focus(); a.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 400);
 }
 
 function onCreateArtistInput() {
@@ -2438,6 +2532,207 @@ function confirmShow(confirmed) {
   revealDetailsPhase();
 }
 
+// ══════════════════════════════════════════════
+// SPORTS PROGRESSIVE FLOW
+// ══════════════════════════════════════════════
+
+let _sportsTeamCache = {}; // keyed by league
+
+async function onSportsLeaguePick() {
+  const league = document.getElementById('sports-league-pick').value;
+  if (!league) return;
+  currentSport = league;
+
+  const teamGroup = document.getElementById('sports-team-group');
+  const dateGroup = document.getElementById('sports-date-group');
+  const confirmEl = document.getElementById('sports-game-confirm');
+  teamGroup.style.display = 'none';
+  dateGroup.style.display = 'none';
+  if (confirmEl) confirmEl.style.display = 'none';
+  document.getElementById('sports-team-input').value = '';
+  document.getElementById('sports-team-selected').style.display = 'none';
+  document.getElementById('sports-team-dropdown').style.display = 'none';
+  sportsTeamData = null;
+  sportsGameData = null;
+
+  // Fetch teams list
+  const label = document.getElementById('sports-team-label');
+  if (label) label.textContent = league.startsWith('ncaa') ? 'Your School / Team' : 'Your Team';
+
+  teamGroup.style.display = 'flex';
+  setTimeout(() => teamGroup.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  document.getElementById('sports-team-input').focus();
+
+  if (!_sportsTeamCache[league]) {
+    await fetchSportsTeams(league);
+  }
+}
+
+async function fetchSportsTeams(league) {
+  const map = ESPN_LEAGUE_MAP[league];
+  if (!map) return;
+  try {
+    const url = `https://sports.core.api.espn.com/v2/sports/${map.sport}/leagues/${map.league}/teams?limit=200`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const items = data.items || [];
+    // Each item is a $ref — fetch all in parallel (batch to avoid flooding)
+    const batch = items.slice(0, 200);
+    const teams = await Promise.all(batch.map(async item => {
+      try {
+        const r = await fetch(item.$ref);
+        const t = await r.json();
+        return { id: t.id, name: t.name, displayName: t.displayName, abbreviation: t.abbreviation, shortDisplayName: t.shortDisplayName || t.abbreviation };
+      } catch { return null; }
+    }));
+    _sportsTeamCache[league] = teams.filter(Boolean).sort((a,b) => a.displayName.localeCompare(b.displayName));
+  } catch(e) {
+    _sportsTeamCache[league] = [];
+  }
+}
+
+function onSportsTeamInput() {
+  const val     = document.getElementById('sports-team-input').value.trim().toLowerCase();
+  const dd      = document.getElementById('sports-team-dropdown');
+  const teams   = _sportsTeamCache[currentSport] || [];
+
+  // Clear selected if user retypes
+  sportsTeamData = null;
+  document.getElementById('sports-team-selected').style.display = 'none';
+  document.getElementById('sports-date-group').style.display = 'none';
+  document.getElementById('sports-game-confirm').style.display = 'none';
+
+  if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+
+  const matches = teams.filter(t =>
+    t.displayName.toLowerCase().includes(val) ||
+    (t.shortDisplayName && t.shortDisplayName.toLowerCase().includes(val)) ||
+    (t.abbreviation && t.abbreviation.toLowerCase().includes(val))
+  ).slice(0, 10);
+
+  if (!matches.length) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = matches.map(t => `
+    <div onclick="selectSportsTeam(${JSON.stringify(t).replace(/"/g,'&quot;')})"
+         style="padding:12px 16px;cursor:pointer;font-size:14px;color:var(--off-white);border-bottom:1px solid #2a2020;transition:background 0.15s;"
+         onmouseover="this.style.background='rgba(201,168,76,0.08)'"
+         onmouseout="this.style.background=''">${t.displayName}</div>
+  `).join('');
+  dd.style.display = 'block';
+}
+
+function selectSportsTeam(team) {
+  sportsTeamData = team;
+  document.getElementById('sports-team-input').value = team.displayName;
+  document.getElementById('sports-team-dropdown').style.display = 'none';
+  const selected = document.getElementById('sports-team-selected');
+  selected.textContent = team.displayName;
+  selected.style.display = 'block';
+
+  // Reveal date picker
+  const dateGroup = document.getElementById('sports-date-group');
+  dateGroup.style.display = 'flex';
+  setTimeout(() => dateGroup.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+  document.getElementById('sports-date-input').focus();
+}
+
+async function onSportsDateChange() {
+  if (!sportsTeamData || !currentSport) return;
+  const date = document.getElementById('sports-date-input').value;
+  if (!date) return;
+
+  const confirmEl  = document.getElementById('sports-game-confirm');
+  const spinner    = document.getElementById('sports-lookup-spinner');
+  const lookupText = document.getElementById('sports-lookup-text');
+  const card       = document.getElementById('sports-confirm-card');
+  const noGame     = document.getElementById('sports-no-game');
+  const lookupRow  = document.getElementById('sports-lookup-row');
+
+  confirmEl.style.display = 'block';
+  card.style.display      = 'none';
+  noGame.style.display    = 'none';
+  lookupRow.style.display = 'flex';
+  spinner.style.display   = 'inline-block';
+  lookupText.textContent  = 'Looking up game...';
+  sportsGameData = null;
+
+  setTimeout(() => confirmEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
+
+  try {
+    // Use the sports-proxy to find the game — same endpoint used for scoreboard
+    const res = await fetch(SPORTS_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ sport: currentSport, team: sportsTeamData.displayName, date })
+    });
+
+    spinner.style.display  = 'none';
+    lookupRow.style.display = 'none';
+
+    if (!res.ok) throw new Error('no game');
+    const data = await res.json();
+    if (!data.found) throw new Error('no game');
+
+    // Extract venue/city/opponent/homeaway from response
+    const isHome   = data.home?.team?.toLowerCase().includes(sportsTeamData.displayName.toLowerCase()) ||
+                     data.home?.team?.toLowerCase().includes(sportsTeamData.shortDisplayName?.toLowerCase());
+    const opponent = isHome ? (data.away?.displayName || data.away?.team || '') : (data.home?.displayName || data.home?.team || '');
+    const homeAway = isHome ? 'home' : 'away';
+    const venue    = data.venue  || '';
+    const city     = data.city   || '';
+
+    sportsGameData = { opponent, homeAway, venue, city, date };
+
+    let html = '<div style="display:grid;gap:10px;">';
+    const row = (label, val) => val ? `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:72px;text-transform:uppercase;">${label}</span><span style="font-size:14px;color:var(--off-white);">${val}</span></div>` : '';
+    html += row('vs', opponent);
+    html += row('Location', homeAway === 'home' ? 'Home Game' : 'Away Game');
+    html += row('Venue', venue);
+    html += row('City', city);
+    html += '</div>';
+
+    document.getElementById('sports-confirm-content').innerHTML = html;
+    card.style.display = 'block';
+    card.style.opacity = '0'; card.style.transform = 'translateY(8px)';
+    requestAnimationFrame(() => {
+      card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      card.style.opacity = '1'; card.style.transform = 'translateY(0)';
+    });
+  } catch(e) {
+    spinner.style.display   = 'none';
+    lookupRow.style.display = 'none';
+    noGame.style.display    = 'block';
+    sportsGameData = null;
+    setTimeout(() => revealDetailsPhase(), 1200);
+  }
+}
+
+function confirmSportsGame(confirmed) {
+  document.getElementById('sports-confirm-card').style.display = 'none';
+  document.getElementById('sports-game-confirm').style.display = 'none';
+
+  if (confirmed && sportsGameData) {
+    const venueEl = document.getElementById('event-venue');
+    const cityEl  = document.getElementById('event-city');
+    const oppEl   = document.getElementById('create-opponent');
+    const haEl    = document.getElementById('create-homeaway');
+    if (venueEl) venueEl.value = sportsGameData.venue;
+    if (cityEl)  cityEl.value  = sportsGameData.city;
+    if (oppEl)   oppEl.value   = sportsGameData.opponent;
+    if (haEl)    haEl.value    = sportsGameData.homeAway;
+  }
+  revealDetailsPhase();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('sports-team-dropdown');
+  const input = document.getElementById('sports-team-input');
+  if (dd && input && !input.contains(e.target) && !dd.contains(e.target)) {
+    dd.style.display = 'none';
+  }
+});
+
 function revealDetailsPhase() {
   const phase = document.getElementById('create-phase-details');
   phase.style.display = 'block';
@@ -2461,9 +2756,17 @@ async function handleCreateSave() {
   const errEl = document.getElementById('create-details-error');
   if (errEl) errEl.classList.remove('show');
 
-  const artist  = document.getElementById('create-artist')?.value.trim() || '';
-  const date    = document.getElementById('create-date')?.value || '';
-  const name    = document.getElementById('create-name')?.value.trim() || '';
+  // For sports, artist = team name and date = game date
+  const isSports = currentEventType === 'sports';
+  const artist  = isSports
+    ? (sportsTeamData?.displayName || document.getElementById('sports-team-input')?.value.trim() || '')
+    : (document.getElementById('create-artist')?.value.trim() || '');
+  const date    = isSports
+    ? (document.getElementById('sports-date-input')?.value || '')
+    : (document.getElementById('create-date')?.value || '');
+  const name    = isSports
+    ? (sportsTeamData?.displayName || artist)
+    : (document.getElementById('create-name')?.value.trim() || '');
   const venue   = document.getElementById('event-venue')?.value.trim() || '';
   const city    = document.getElementById('event-city')?.value.trim() || '';
   const section = document.getElementById('event-section')?.value.trim() || '';
@@ -2471,7 +2774,7 @@ async function handleCreateSave() {
   const note    = document.getElementById('event-note')?.value.trim() || '';
 
   if (!artist) {
-    if (errEl) showError(errEl, 'Please enter an artist or performer name.');
+    if (errEl) showError(errEl, isSports ? 'Please select your team.' : 'Please enter an artist or performer name.');
     return;
   }
 
@@ -2480,9 +2783,9 @@ async function handleCreateSave() {
   const slug = generateSlug();
   const metadata = { event_type: currentEventType || 'other' };
   if (currentEventType === 'sports') {
-    metadata.sport    = currentSport;
-    metadata.opponent = document.getElementById('create-opponent')?.value.trim() || '';
-    metadata.home_away = document.getElementById('create-homeaway')?.value || '';
+    metadata.sport     = currentSport;
+    metadata.opponent  = sportsGameData?.opponent  || document.getElementById('create-opponent')?.value.trim() || '';
+    metadata.home_away = sportsGameData?.homeAway  || document.getElementById('create-homeaway')?.value || '';
   } else if (currentEventType === 'theater') {
     metadata.cast       = document.getElementById('theater-cast')?.value.trim() || '';
     metadata.director   = document.getElementById('theater-director')?.value.trim() || '';
