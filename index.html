@@ -3950,6 +3950,7 @@ async function renderGallery(stub, showEditPanel = false) {
   const editDetailsBtn = document.getElementById('gallery-edit-btn');
   const nfcBtn = document.getElementById('gallery-nfc-btn');
   if (currentUser && currentUser.id === stub.user_id) {
+    currentStubId = stub.id;
     ctaBtn.textContent = '← My Stubs';
     ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'block';
