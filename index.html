@@ -3501,13 +3501,25 @@ async function executeDeleteStub() {
   // Delete stub record from database
   await sb.from('stubs').delete().eq('id', deleteTargetId);
 
-  // Remove from UI instantly without reloading
+  // Clear global state so nothing can accidentally re-render the deleted stub
+  if (currentStubId === deleteTargetId) {
+    currentStubId = null;
+    currentSlug   = null;
+  }
+
+  // Remove card from UI instantly
   const el = document.getElementById(`stub-item-${deleteTargetId}`);
   if (el) el.remove();
 
   closeDeleteModal();
 
-  // If no stubs left show empty state
+  // Always stay on dashboard — replace history so back button doesn't re-trigger gallery
+  _suppressHistoryPush = true;
+  goTo('screen-dashboard', false);
+  history.replaceState({ screen: 'screen-dashboard' }, '', '');
+  _suppressHistoryPush = false;
+
+  // Show empty state if nothing left
   const list = document.querySelector('.stub-grid');
   if (list && list.children.length === 0) {
     document.getElementById('stub-list-container').innerHTML = `<div class="empty-state"><div class="empty-state-icon">🎟️</div><p class="empty-state-text">You haven't created any SmartStubs yet.<br>Click "New Stub" to get started.</p></div>`;
