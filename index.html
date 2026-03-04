@@ -1739,6 +1739,7 @@
         <button onclick="copyGalleryUrl()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:0;transition:color 0.2s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'" id="copy-btn">Copy</button>
       </div>
       <button class="btn-secondary" onclick="toggleGalleryUrl()" id="share-btn" style="font-size:11px;padding:10px 20px;">Share URL</button>
+      <button class="btn-secondary" id="gallery-edit-btn" style="display:none;font-size:11px;padding:10px 20px;">Edit Details</button>
       <button class="btn-primary" onclick="goTo('screen-landing')" id="gallery-cta-btn">Get Your SmartStub</button>
     </div>
   </div>
@@ -2650,44 +2651,86 @@ async function onSportsDateChange() {
   setTimeout(() => confirmEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
 
   try {
-    // Use the sports-proxy to find the game — same endpoint used for scoreboard
-    const res = await fetch(SPORTS_PROXY, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
-      body: JSON.stringify({ sport: currentSport, team: sportsTeamData.displayName, date })
-    });
+    const map = ESPN_LEAGUE_MAP[currentSport];
+    if (!map) throw new Error('no map');
 
-    spinner.style.display  = 'none';
-    lookupRow.style.display = 'none';
-
+    // ESPN scoreboard for that exact date
+    const dateStr = date.replace(/-/g, ''); // YYYYMMDD
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${map.sport}/${map.league}/scoreboard?dates=${dateStr}&limit=100`;
+    const res  = await fetch(url);
     if (!res.ok) throw new Error('no game');
     const data = await res.json();
-    if (!data.found) throw new Error('no game');
 
-    // Extract venue/city/opponent/homeaway from response
-    const isHome   = data.home?.team?.toLowerCase().includes(sportsTeamData.displayName.toLowerCase()) ||
-                     data.home?.team?.toLowerCase().includes(sportsTeamData.shortDisplayName?.toLowerCase());
-    const opponent = isHome ? (data.away?.displayName || data.away?.team || '') : (data.home?.displayName || data.home?.team || '');
-    const homeAway = isHome ? 'home' : 'away';
-    const venue    = data.venue  || '';
-    const city     = data.city   || '';
+    const events = data.events || [];
+    // Find the event involving our team
+    const teamName = sportsTeamData.displayName.toLowerCase();
+    const teamAbbr = (sportsTeamData.abbreviation || '').toLowerCase();
 
-    sportsGameData = { opponent, homeAway, venue, city, date };
+    const event = events.find(e => {
+      const comps = e.competitions?.[0]?.competitors || [];
+      return comps.some(c =>
+        c.team.displayName.toLowerCase().includes(teamName) ||
+        c.team.displayName.toLowerCase() === teamName ||
+        (teamAbbr && c.team.abbreviation?.toLowerCase() === teamAbbr)
+      );
+    });
 
-    let html = '<div style="display:grid;gap:10px;">';
-    const row = (label, val) => val ? `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:72px;text-transform:uppercase;">${label}</span><span style="font-size:14px;color:var(--off-white);">${val}</span></div>` : '';
-    html += row('vs', opponent);
-    html += row('Location', homeAway === 'home' ? 'Home Game' : 'Away Game');
-    html += row('Venue', venue);
-    html += row('City', city);
-    html += '</div>';
+    if (!event) throw new Error('no game');
+
+    const comp       = event.competitions[0];
+    const competitors = comp.competitors || [];
+    const homeComp   = competitors.find(c => c.homeAway === 'home');
+    const awayComp   = competitors.find(c => c.homeAway === 'away');
+    if (!homeComp || !awayComp) throw new Error('no game');
+
+    // Determine which side our team is on
+    const ourComp    = competitors.find(c =>
+      c.team.displayName.toLowerCase().includes(teamName) ||
+      (teamAbbr && c.team.abbreviation?.toLowerCase() === teamAbbr)
+    );
+    const isHome     = ourComp?.homeAway === 'home';
+    const opponentComp = isHome ? awayComp : homeComp;
+    const opponent   = opponentComp.team.displayName;
+    const homeAway   = isHome ? 'home' : 'away';
+
+    // Venue
+    const venueObj   = comp.venue || {};
+    const venue      = venueObj.fullName || venueObj.name || '';
+    const addr       = venueObj.address || {};
+    const city       = addr.city ? (addr.state ? `${addr.city}, ${addr.state}` : addr.city) : '';
+
+    // Game name/description for the header line
+    const awayName = awayComp.team.displayName;
+    const homeName = homeComp.team.displayName;
+    const gameLabel = `${awayName} @ ${homeName}`;
+
+    sportsGameData = { opponent, homeAway, venue, city, date,
+      homeTeam: homeName, awayTeam: awayName, gameLabel };
+
+    const row = (label, val) => val ? `
+      <div style="display:flex;gap:12px;align-items:baseline;">
+        <span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:72px;text-transform:uppercase;">${label}</span>
+        <span style="font-size:14px;color:var(--off-white);">${val}</span>
+      </div>` : '';
+
+    const html = `<div style="display:grid;gap:10px;">
+      <div style="font-size:16px;color:var(--gold);font-weight:600;margin-bottom:4px;">${gameLabel}</div>
+      ${row('Your Side', isHome ? '🏠 Home Game' : '✈️ Away Game')}
+      ${row('Venue', venue)}
+      ${row('City', city)}
+    </div>`;
 
     document.getElementById('sports-confirm-content').innerHTML = html;
-    card.style.display = 'block';
-    card.style.opacity = '0'; card.style.transform = 'translateY(8px)';
+
+    spinner.style.display   = 'none';
+    lookupRow.style.display = 'none';
+    card.style.display      = 'block';
+    card.style.opacity      = '0';
+    card.style.transform    = 'translateY(8px)';
     requestAnimationFrame(() => {
       card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-      card.style.opacity = '1'; card.style.transform = 'translateY(0)';
+      card.style.opacity    = '1';
+      card.style.transform  = 'translateY(0)';
     });
   } catch(e) {
     spinner.style.display   = 'none';
@@ -3587,7 +3630,7 @@ function toggleSetlist() {
   document.getElementById('setlist-card-inner').classList.toggle('expanded');
 }
 
-async function renderGallery(stub) {
+async function renderGallery(stub, showEditPanel = false) {
   // Reset enrichment sections on every load
   const setlistSection = document.getElementById('setlist-section');
   if (setlistSection) { setlistSection.style.display = 'none'; document.getElementById('setlist-card-inner').innerHTML = ''; }
@@ -3615,14 +3658,28 @@ async function renderGallery(stub) {
   const ctaBtn = document.getElementById('gallery-cta-btn');
   const shareBtn = document.getElementById('share-btn');
   const myStubsTopBtn = document.getElementById('gallery-mystubs-btn');
+  const editDetailsBtn = document.getElementById('gallery-edit-btn');
   if (currentUser && currentUser.id === stub.user_id) {
     ctaBtn.textContent = '← My Stubs';
     ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'block';
+    if (editDetailsBtn) {
+      editDetailsBtn.style.display = 'inline-block';
+      editDetailsBtn.onclick = () => {
+        const panel = document.getElementById('gallery-owner-actions');
+        if (panel) {
+          panel.style.display = 'flex';
+          populateGalleryEditPanel(stub);
+          setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+          editDetailsBtn.style.display = 'none';
+        }
+      };
+    }
   } else {
     ctaBtn.textContent = 'Get Your SmartStub';
     ctaBtn.onclick = () => goTo('screen-landing');
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'none';
+    if (editDetailsBtn) editDetailsBtn.style.display = 'none';
   }
 
   // Load photos from storage
@@ -3646,12 +3703,16 @@ async function renderGallery(stub) {
   // Show caption toggle bar only to owner
   if (isOwner) {
     toggleBar.classList.add('visible');
-    captionToggle.checked = true; // default on for owner
-    // Show and populate owner edit panel
+    captionToggle.checked = true;
     const ownerActions = document.getElementById('gallery-owner-actions');
     if (ownerActions) {
-      ownerActions.style.display = 'flex';
-      populateGalleryEditPanel(stub);
+      // Only show edit panel if explicitly requested (e.g. from editStub)
+      if (showEditPanel) {
+        ownerActions.style.display = 'flex';
+        populateGalleryEditPanel(stub);
+      } else {
+        ownerActions.style.display = 'none';
+      }
     }
   } else {
     toggleBar.classList.remove('visible');
@@ -3844,7 +3905,7 @@ async function editStub(stubId) {
   isEditing        = true;
   currentEventType = stub.metadata?.event_type || 'concert';
   currentSport     = stub.metadata?.sport || null;
-  await renderGallery(stub);
+  await renderGallery(stub, true);
   setTimeout(() => {
     const panel = document.getElementById('gallery-owner-actions');
     if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
