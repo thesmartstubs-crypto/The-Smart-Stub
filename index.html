@@ -2319,29 +2319,26 @@ function createSelectType(type) {
 }
 
 function revealAnchorPhase(type) {
-  const artistLabel = document.getElementById('create-artist-label');
-  const artistInput = document.getElementById('create-artist');
-  const anchorLabel = document.getElementById('create-anchor-label');
-  const opponentGroup = document.getElementById('create-opponent-group');
-  const homeawayGroup = document.getElementById('create-homeaway-group');
-  const nameLabel = document.getElementById('create-name-label');
-  const nameGroup = document.getElementById('create-name-group');
+  const artistLabel   = document.getElementById('create-artist-label');
+  const artistInput   = document.getElementById('create-artist');
+  const anchorLabel   = document.getElementById('create-anchor-label');
+  const nameLabel     = document.getElementById('create-name-label');
+  const nameGroup     = document.getElementById('create-name-group');
   const theaterExtras = document.getElementById('create-theater-extras');
+  const musicAnchor   = document.getElementById('create-anchor-music');
+  const sportsAnchor  = document.getElementById('create-anchor-sports');
 
-  const musicAnchor  = document.getElementById('create-anchor-music');
-  const sportsAnchor = document.getElementById('create-anchor-sports');
   if (type === 'sports') {
     if (musicAnchor)  musicAnchor.style.display  = 'none';
     if (sportsAnchor) sportsAnchor.style.display = 'block';
-    // Reset sports flow
+    // Reset sports step-through
     document.getElementById('sports-league-pick').value = '';
-    document.getElementById('sports-team-group').style.display  = 'none';
-    document.getElementById('sports-date-group').style.display  = 'none';
-    document.getElementById('sports-game-confirm').style.display = 'none';
-    document.getElementById('sports-confirm-card').style.display = 'none';
-    document.getElementById('sports-no-game').style.display     = 'none';
-    document.getElementById('sports-team-input').value = '';
-    document.getElementById('sports-team-selected').style.display = 'none';
+    ['sports-team-group','sports-date-group','sports-game-confirm',
+     'sports-confirm-card','sports-no-game'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    const ti = document.getElementById('sports-team-input');    if (ti) ti.value = '';
+    const ts = document.getElementById('sports-team-selected'); if (ts) ts.style.display = 'none';
     sportsTeamData = null;
     sportsGameData = null;
   } else {
@@ -2349,41 +2346,38 @@ function revealAnchorPhase(type) {
     if (sportsAnchor) sportsAnchor.style.display = 'none';
   }
 
-  opponentGroup.style.display = 'none';
-  homeawayGroup.style.display = 'none';
   if (theaterExtras) theaterExtras.style.display = 'none';
   if (nameGroup) nameGroup.style.display = 'flex';
 
   if (type === 'concert') {
-    anchorLabel.textContent = 'Artist & Date';
-    artistLabel.textContent = 'Artist / Headliner';
-    artistInput.placeholder = 'e.g. Taylor Swift';
-    if (nameLabel) nameLabel.textContent = 'Tour / Concert Name';
+    if (anchorLabel) anchorLabel.textContent = 'Artist & Date';
+    if (artistLabel) artistLabel.textContent = 'Artist / Headliner';
+    if (artistInput) artistInput.placeholder = 'e.g. Taylor Swift';
+    if (nameLabel)   nameLabel.textContent   = 'Tour / Concert Name';
   } else if (type === 'sports') {
-    anchorLabel.textContent = 'Team & Date';
-    if (nameGroup) nameGroup.style.display = 'none';
-    // sports step-through is handled inside create-anchor-sports — nothing else to do here
+    if (anchorLabel) anchorLabel.textContent = 'Team & Date';
+    if (nameGroup)   nameGroup.style.display = 'none';
   } else if (type === 'festival') {
-    anchorLabel.textContent = 'Festival & Date';
-    artistLabel.textContent = 'Festival Name';
-    artistInput.placeholder = 'e.g. Coachella 2025';
-    if (nameLabel) nameLabel.textContent = 'Headliner / Main Act';
+    if (anchorLabel) anchorLabel.textContent = 'Festival & Date';
+    if (artistLabel) artistLabel.textContent = 'Festival Name';
+    if (artistInput) artistInput.placeholder = 'e.g. Coachella 2025';
+    if (nameLabel)   nameLabel.textContent   = 'Headliner / Main Act';
   } else if (type === 'theater') {
-    anchorLabel.textContent = 'Show & Date';
-    artistLabel.textContent = 'Show Name';
-    artistInput.placeholder = 'e.g. Hamilton';
-    if (nameLabel) nameLabel.textContent = 'Theater / Venue';
+    if (anchorLabel) anchorLabel.textContent = 'Show & Date';
+    if (artistLabel) artistLabel.textContent = 'Show Name';
+    if (artistInput) artistInput.placeholder = 'e.g. Hamilton';
+    if (nameLabel)   nameLabel.textContent   = 'Theater / Venue';
     if (theaterExtras) theaterExtras.style.display = 'block';
   } else if (type === 'comedy') {
-    anchorLabel.textContent = 'Comedian & Date';
-    artistLabel.textContent = 'Comedian / Performer';
-    artistInput.placeholder = 'e.g. Dave Chappelle';
-    if (nameLabel) nameLabel.textContent = 'Tour / Show Name';
+    if (anchorLabel) anchorLabel.textContent = 'Comedian & Date';
+    if (artistLabel) artistLabel.textContent = 'Comedian / Performer';
+    if (artistInput) artistInput.placeholder = 'e.g. Dave Chappelle';
+    if (nameLabel)   nameLabel.textContent   = 'Tour / Show Name';
   } else {
-    anchorLabel.textContent = 'Performer & Date';
-    artistLabel.textContent = 'Artist / Performer';
-    artistInput.placeholder = 'e.g. Performer name';
-    if (nameLabel) nameLabel.textContent = 'Event Name';
+    if (anchorLabel) anchorLabel.textContent = 'Performer & Date';
+    if (artistLabel) artistLabel.textContent = 'Artist / Performer';
+    if (artistInput) artistInput.placeholder = 'e.g. Performer name';
+    if (nameLabel)   nameLabel.textContent   = 'Event Name';
   }
 
   const phase = document.getElementById('create-phase-anchor');
