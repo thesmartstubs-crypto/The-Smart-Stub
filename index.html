@@ -2415,7 +2415,7 @@ async function loadDashboard() {
     const metaForIcon = isSports ? { ...meta, artist: stub.artist } : meta;
 
     // Barcode SVG seeded by stub id
-    const barcodeSeeds = stub.id ? stub.id.replace(/-/g,'').slice(0,18) : '123456789012345678';
+    const barcodeSeeds = stub.id ? String(stub.id).replace(/-/g,'').slice(0,18) : '123456789012345678';
     const barHeights = Array.from({length: 18}, (_,i) => {
       const c = barcodeSeeds.charCodeAt(i % barcodeSeeds.length) || 50;
       return 12 + (c % 24);
