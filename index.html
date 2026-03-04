@@ -306,25 +306,24 @@
     margin-top: 24px;
     min-height: 280px;
   }
-  .stub-grid { display: flex; flex-wrap: wrap; gap: 0; margin: 0; }
+  .stub-grid { display: flex; flex-direction: column; gap: 0; margin: 0; }
   .stub-pin-wrapper {
-    padding: 28px 18px 16px;
+    padding: 22px 20px 10px;
     position: relative;
-    display: inline-block;
-    flex-shrink: 0;
+    display: block;
     transition: transform 0.2s ease, z-index 0s;
     z-index: 1;
   }
-  .stub-pin-wrapper:nth-child(5n+1) { transform: rotate(-3deg); }
-  .stub-pin-wrapper:nth-child(5n+2) { transform: rotate(2.2deg); }
-  .stub-pin-wrapper:nth-child(5n+3) { transform: rotate(-1.5deg); }
-  .stub-pin-wrapper:nth-child(5n+4) { transform: rotate(3.2deg); }
-  .stub-pin-wrapper:nth-child(5n+5) { transform: rotate(-0.8deg); }
-  .stub-pin-wrapper:hover { transform: rotate(0deg) scale(1.05) translateY(-8px) !important; z-index: 20; }
+  .stub-pin-wrapper:nth-child(5n+1) { transform: rotate(-0.5deg); }
+  .stub-pin-wrapper:nth-child(5n+2) { transform: rotate(0.4deg); }
+  .stub-pin-wrapper:nth-child(5n+3) { transform: rotate(-0.7deg); }
+  .stub-pin-wrapper:nth-child(5n+4) { transform: rotate(0.3deg); }
+  .stub-pin-wrapper:nth-child(5n+5) { transform: rotate(-0.4deg); }
+  .stub-pin-wrapper:hover { transform: rotate(0deg) translateY(-4px) !important; z-index: 20; }
 
   .pushpin {
     position: absolute;
-    top: 8px;
+    top: 4px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 5;
@@ -333,43 +332,187 @@
     align-items: center;
   }
   .pushpin-head {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: radial-gradient(circle at 38% 35%, #ff8a80, #c0392b);
     box-shadow: 0 2px 7px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,255,255,0.35);
   }
   .pushpin-needle {
-    width: 3px;
-    height: 7px;
+    width: 2px;
+    height: 8px;
     background: linear-gradient(to bottom, #999, #444);
     border-radius: 0 0 2px 2px;
   }
   .stub-pin-wrapper:nth-child(3n+2) .pushpin-head { background: radial-gradient(circle at 38% 35%, #90caf9, #1565c0); }
   .stub-pin-wrapper:nth-child(3n)   .pushpin-head { background: radial-gradient(circle at 38% 35%, #a5d6a7, #2e7d32); }
 
-  /* ── Ticket card grid ── */
-  .ticket-card { background: #181410; border: 1px solid #3a3228; position: relative; overflow: hidden; width: 272px; box-shadow: 4px 8px 22px rgba(0,0,0,0.65); transition: box-shadow 0.2s; border-radius: 10px; }
-  .stub-pin-wrapper:hover .ticket-card { box-shadow: 8px 16px 40px rgba(0,0,0,0.75), 0 0 0 1px rgba(201,168,76,0.25); }
-  .ticket-top { padding: 20px 22px 18px; }
-  .ticket-badge { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 3px; color: #3e3020; text-transform: uppercase; margin-bottom: 8px; }
-  .ticket-name { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2px; color: var(--gold); line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
-  .ticket-artist-line { font-family: 'Space Mono', monospace; font-size: 10px; color: #555; letter-spacing: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ticket-perf { display: flex; align-items: center; margin: 0 -1px; }
-  .ticket-notch { width: 16px; height: 16px; background: var(--black); border-radius: 50%; border: 1px solid #252015; flex-shrink: 0; }
-  .ticket-dots { flex: 1; height: 1px; background: repeating-linear-gradient(to right, #3a3228 0, #3a3228 5px, transparent 5px, transparent 10px); }
-  .ticket-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 14px 22px 16px; gap: 12px; }
-  .t-field { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
-  .t-label { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
-  .t-val { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--off-white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .ticket-footer { background: rgba(0,0,0,0.3); border-top: 1px solid #1e1a14; padding: 10px 22px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-  .ticket-url { font-family: 'Space Mono', monospace; font-size: 9px; color: #2e2a20; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-  .ticket-actions { display: flex; gap: 5px; flex-shrink: 0; }
-  .btn-icon { background: transparent; border: 1px solid #2a2a2a; color: #555; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; line-height: 1; transition: all 0.15s; padding: 0; border-radius: 6px; }
-  .btn-icon:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.07); }
-  .btn-icon.danger:hover { border-color: #d13b2a; color: #d13b2a; background: rgba(209,59,42,0.07); }
-  .btn-small { padding: 8px 16px; font-size: 11px; }
+  /* ── Horizontal ticket card ── */
+  .ticket-card {
+    background: #181410;
+    border: 1px solid #3a3228;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 88px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 3px 5px 16px rgba(0,0,0,0.7), 0 1px 0 rgba(255,255,255,0.03), inset 0 1px 0 rgba(255,255,255,0.02);
+    transition: box-shadow 0.2s, transform 0.15s;
+  }
+  .stub-pin-wrapper:hover .ticket-card {
+    box-shadow: 5px 10px 28px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.2);
+  }
 
+  /* Left color accent bar */
+  .ticket-accent-bar {
+    width: 7px;
+    min-height: 100%;
+    flex-shrink: 0;
+    border-radius: 10px 0 0 10px;
+  }
+
+  /* Icon badge zone */
+  .ticket-icon-zone {
+    width: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ticket-type-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  /* Main content zone */
+  .ticket-main {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px 10px 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+  }
+  .ticket-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 7px;
+    letter-spacing: 3px;
+    color: #4a3a20;
+    text-transform: uppercase;
+  }
+  .ticket-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    color: var(--gold);
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ticket-artist-line {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    color: #4a4030;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ticket-details-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 5px;
+    align-items: flex-end;
+  }
+  .t-field { display: flex; flex-direction: column; gap: 2px; overflow: hidden; min-width: 0; }
+  .t-label { font-family: 'Space Mono', monospace; font-size: 7px; letter-spacing: 2px; color: #3e3020; text-transform: uppercase; }
+  .t-val   { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--off-white); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.3px; }
+
+  /* Perforation divider — vertical */
+  .ticket-perf {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    flex-shrink: 0;
+    width: 16px;
+    align-self: stretch;
+  }
+  .ticket-notch {
+    width: 16px;
+    height: 16px;
+    background: var(--black);
+    border-radius: 50%;
+    border: 1px solid #1e1810;
+    flex-shrink: 0;
+    margin: -1px 0;
+  }
+  .ticket-dots {
+    flex: 1;
+    width: 1px;
+    background: repeating-linear-gradient(to bottom, #3a3228 0, #3a3228 4px, transparent 4px, transparent 8px);
+    margin: 0;
+  }
+
+  /* Right stub zone */
+  .ticket-stub {
+    width: 90px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 10px;
+    gap: 5px;
+    position: relative;
+  }
+  .ticket-stub-fields { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; }
+  .ticket-stub-field { text-align: center; }
+  .ticket-stub-field .t-label { text-align: center; }
+  .ticket-stub-field .t-val   { font-size: 11px; color: var(--gold); text-align: center; }
+  .ticket-barcode {
+    display: flex;
+    gap: 1.5px;
+    align-items: flex-end;
+    height: 40px;
+    padding: 0 4px;
+  }
+  .ticket-barcode-bar {
+    background: #3a3228;
+    border-radius: 1px;
+  }
+
+  /* Delete button */
+  .ticket-delete-btn {
+    background: none;
+    border: none;
+    color: #2a2218;
+    cursor: pointer;
+    padding: 3px 5px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    line-height: 1;
+    font-size: 11px;
+    position: absolute;
+    bottom: 4px;
+    right: 6px;
+  }
+  .ticket-delete-btn:hover { color: #c0392b; }
+
+  .btn-small { padding: 8px 16px; font-size: 11px; }
   .empty-state { text-align: center; padding: 60px 40px; border: 1px dashed rgba(201,168,76,0.25); background: rgba(0,0,0,0.35); border-radius: 2px; }
   .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
   .empty-state-text { color: var(--muted); font-size: 15px; line-height: 1.7; }
@@ -383,9 +526,9 @@
     .gallery-photos { padding: 24px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
     .progress-track { padding: 16px 24px 0; }
     .top-bar { padding: 16px 24px; }
-    .stub-grid { gap: 0; }
-    .stub-pin-wrapper { padding: 20px 10px 12px; }
-    .ticket-card { width: 240px; }
+    .stub-pin-wrapper { padding: 22px 12px 10px; }
+    .ticket-name { font-size: 17px; }
+    .ticket-stub { width: 74px; }
     #screen-story .content-grid { grid-template-columns: 1fr !important; }
     #screen-story [style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
     #screen-story [style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr !important; }
@@ -887,28 +1030,7 @@
   }
 
   /* ── Event Type Accents on Ticket Cards ── */
-  .ticket-accent-bar {
-    height: 12px;
-    width: 100%;
-    border-radius: 10px 10px 0 0;
-  }
-  .ticket-type-icon {
-    position: absolute;
-    top: 26px;
-    right: 16px;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.9;
-  }
-  .ticket-type-icon svg {
-    width: 22px;
-    height: 22px;
-  }
-  /* Per-type colors */
+  /* Per-type accent bar colors */
   .event-concert  .ticket-accent-bar { background: linear-gradient(90deg, #6c4db8, #9b72d0); }
   .event-concert  .ticket-type-icon  { background: rgba(108,77,184,0.15); }
   .event-sports   .ticket-accent-bar { background: linear-gradient(90deg, #1a6b3a, #2ecc71); }
@@ -1793,6 +1915,7 @@
       </div>
       <button class="btn-secondary" onclick="toggleGalleryUrl()" id="share-btn" style="font-size:11px;padding:10px 20px;">Share URL</button>
       <button class="btn-secondary" id="gallery-edit-btn" style="display:none;font-size:11px;padding:10px 20px;">Edit Details</button>
+      <button class="btn-secondary" id="gallery-nfc-btn" style="display:none;font-size:11px;padding:10px 20px;">📱 Write NFC</button>
       <button class="btn-primary" onclick="goTo('screen-landing')" id="gallery-cta-btn">Get Your SmartStub</button>
     </div>
   </div>
@@ -2289,37 +2412,58 @@ async function loadDashboard() {
       : '';
     const metaForIcon = isSports ? { ...meta, artist: stub.artist } : meta;
 
+    // Barcode SVG seeded by stub id
+    const barcodeSeeds = stub.id ? stub.id.replace(/-/g,'').slice(0,18) : '123456789012345678';
+    const barHeights = Array.from({length: 18}, (_,i) => {
+      const c = barcodeSeeds.charCodeAt(i % barcodeSeeds.length) || 50;
+      return 12 + (c % 24);
+    });
+    const barWidths = [2,1,3,1,2,2,1,3,1,2,2,1,3,1,2,1,3,2];
+    const barcodeSVG = '<svg width="64" height="38" viewBox="0 0 64 38"><g>' +
+      barHeights.map((h,i) => `<rect x="${i*3.4+2}" y="${38-h}" width="${barWidths[i]||2}" height="${h}" fill="#3a3228" rx="0.5"/>`).join('') +
+      '</g></svg>';
+
+    // Seat fields
+    const section = meta.section || '';
+    const row     = meta.row     || '';
+    const seat    = meta.seat    || '';
+    const hasSeat = section || row || seat;
+    const stubZone = hasSeat
+      ? '<div class="ticket-stub-fields">' +
+          (section ? `<div class="ticket-stub-field"><div class="t-label">Sect</div><div class="t-val">${section}</div></div>` : '') +
+          (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
+          (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
+          '</div>'
+      : `<div style="opacity:0.45;">${barcodeSVG}</div>`;
+
+    // Venue + city on one line
+    const venueCity = [stub.venue, stub.city].filter(v => v && v !== '\u2014').join(' \u00b7 ') || '\u2014';
+
     return `
     <div class="stub-pin-wrapper">
       <div class="pushpin"><div class="pushpin-head"></div><div class="pushpin-needle"></div></div>
-      <div class="ticket-card ${getEventTypeClass(meta.event_type)}" id="stub-item-${stub.id}" onclick="openGalleryById('${stub.id}')" style="cursor:pointer;" title="View Gallery">
-      <div class="ticket-accent-bar" ${accentStyle}></div>
-      <div class="ticket-type-icon" ${iconBgStyle}>${getEventTypeIcon(meta.event_type, metaForIcon)}</div>
-      <div class="ticket-top">
-        <div class="ticket-badge">${badge}</div>
-        <div class="ticket-name">${name}</div>
-        <div class="ticket-artist-line">${artist}</div>
-      </div>
-      <div class="ticket-perf">
-        <div class="ticket-notch"></div>
-        <div class="ticket-dots"></div>
-        <div class="ticket-notch"></div>
-      </div>
-      <div class="ticket-meta">
-        <div class="t-field"><div class="t-label">Date</div><div class="t-val">${evDate}</div></div>
-        <div class="t-field"><div class="t-label">Venue</div><div class="t-val">${venue}</div></div>
-        <div class="t-field"><div class="t-label">City</div><div class="t-val">${city}</div></div>
-      </div>
-      <div class="ticket-footer">
-        <div class="ticket-url">thesmartstub.com/g/${stub.slug}</div>
-        <div class="ticket-actions">
-          <button class="btn-icon" onclick="openGalleryById('${stub.id}')" title="View Gallery"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-          <button class="btn-icon" onclick="openNFCForStub('${stub.slug}')" title="Program NFC"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></button>
-          <button class="btn-icon" onclick="editStub('${stub.id}')" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-          <button class="btn-icon danger" onclick="confirmDeleteStub('${stub.id}','${stub.user_id}','${(stub.event_name||'this stub').replace(/'/g,'')}')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      <div class="ticket-card ${getEventTypeClass(meta.event_type)}" id="stub-item-${stub.id}" onclick="openGalleryById('${stub.id}')" title="View Gallery">
+        <div class="ticket-accent-bar" ${accentStyle}></div>
+        <div class="ticket-icon-zone">
+          <div class="ticket-type-icon" ${iconBgStyle}>${getEventTypeIcon(meta.event_type, metaForIcon)}</div>
         </div>
+        <div class="ticket-main">
+          <div class="ticket-badge">${badge}</div>
+          <div class="ticket-name">${name}</div>
+          <div class="ticket-artist-line">${artist}</div>
+          <div class="ticket-details-row">
+            <div class="t-field"><div class="t-label">Date</div><div class="t-val">${evDate}</div></div>
+            <div class="t-field" style="min-width:0;flex:1;"><div class="t-label">Venue \u00b7 City</div><div class="t-val">${venueCity}</div></div>
+          </div>
+        </div>
+        <div class="ticket-perf">
+          <div class="ticket-notch"></div>
+          <div class="ticket-dots"></div>
+          <div class="ticket-notch"></div>
+        </div>
+        <div class="ticket-stub">${stubZone}</div>
+        <button class="ticket-delete-btn" onclick="event.stopPropagation();confirmDeleteStub('${stub.id}','${stub.user_id}','${(stub.event_name||'this stub').replace(/'/g,'')}')" title="Delete">\u2715</button>
       </div>
-    </div>
     </div>`;
   }).join('')}</div>`;
 }
@@ -3782,10 +3926,15 @@ async function renderGallery(stub, showEditPanel = false) {
   const shareBtn = document.getElementById('share-btn');
   const myStubsTopBtn = document.getElementById('gallery-mystubs-btn');
   const editDetailsBtn = document.getElementById('gallery-edit-btn');
+  const nfcBtn = document.getElementById('gallery-nfc-btn');
   if (currentUser && currentUser.id === stub.user_id) {
     ctaBtn.textContent = '← My Stubs';
     ctaBtn.onclick = () => { goTo('screen-dashboard'); loadDashboard(); };
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'block';
+    if (nfcBtn) {
+      nfcBtn.style.display = 'inline-block';
+      nfcBtn.onclick = () => openNFCForStub(stub.slug);
+    }
     if (editDetailsBtn) {
       editDetailsBtn.style.display = 'inline-block';
       editDetailsBtn.onclick = () => {
@@ -3804,6 +3953,7 @@ async function renderGallery(stub, showEditPanel = false) {
     ctaBtn.onclick = () => goTo('screen-landing');
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'none';
     if (editDetailsBtn) editDetailsBtn.style.display = 'none';
+    if (nfcBtn) nfcBtn.style.display = 'none';
   }
 
   // Load photos from storage
