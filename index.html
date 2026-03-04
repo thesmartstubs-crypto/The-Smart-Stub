@@ -3440,48 +3440,11 @@ async function executeDeleteStub() {
 // ── Start New Stub (clears all previous state) ──
 function startNewStub() {
   currentStubId = null;
-  currentSlug = null;
-  isEditing = false;
-  photos = [];
+  currentSlug   = null;
+  isEditing     = false;
+  photos        = [];
   existingPhotos = [];
   photosToDelete = [];
-
-  // Clear all fields
-  ['event-name','event-artist','event-date','event-venue','event-city','event-section','event-seat','event-note'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-
-  // Unlock the core fields in case they were locked from a previous edit
-  ['event-name','event-artist','event-date'].forEach(id => {
-    const el = document.getElementById(id);
-    el.removeAttribute('readonly');
-    el.classList.remove('locked-field');
-  });
-
-  // Reset screen text
-  // Reset notices and locks
-  const pn = document.getElementById('permanent-notice');
-  const ln = document.getElementById('locked-notice');
-  if (pn) pn.style.display = 'block';
-  if (ln) ln.style.display = 'none';
-  ['event-name','event-artist','event-date','event-type'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.removeAttribute('readonly'); el.classList.remove('locked-field'); }
-  });
-  document.getElementById('event-screen-title').innerHTML = 'The Core <span class="gold">Details</span>';
-  document.getElementById('event-screen-desc').textContent = 'These details will be permanently locked to this stub once saved.';
-  document.getElementById('event-btn').innerHTML = 'Continue →';
-  // Reset event type picker
-  currentEventType = null;
-  currentSport = null;
-  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
-  document.getElementById('sport-select-row').classList.remove('visible');
-  document.getElementById('pick-sport').value = '';
-  document.getElementById('event-opponent').value = '';
-  document.getElementById('event-homeaway').value = '';
-  const tcEl = document.getElementById('theater-cast'); if (tcEl) tcEl.value = '';
-  const tdEl = document.getElementById('theater-director'); if (tdEl) tdEl.value = '';
-  const tpEl = document.getElementById('theater-production'); if (tpEl) tpEl.value = '';
   resetCreateScreen();
   goTo('screen-create');
 }
