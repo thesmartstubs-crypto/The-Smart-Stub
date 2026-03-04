@@ -2426,14 +2426,12 @@ async function loadDashboard() {
       '</g></svg>';
 
     // Seat fields
-    const section = meta.section || '';
-    const row     = meta.row     || '';
-    const seat    = meta.seat    || '';
-    const hasSeat = section || row || seat;
+    const section = stub.seat_section || '';
+    const seat    = stub.seat_number  || '';
+    const hasSeat = section || seat;
     const stubZone = hasSeat
       ? '<div class="ticket-stub-fields">' +
-          (section ? `<div class="ticket-stub-field"><div class="t-label">Sect</div><div class="t-val">${section}</div></div>` : '') +
-          (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
+          (section ? `<div class="ticket-stub-field"><div class="t-label">Sect/Row</div><div class="t-val">${section}</div></div>` : '') +
           (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
           '</div>'
       : `<div style="opacity:0.45;">${barcodeSVG}</div>`;
@@ -4247,6 +4245,8 @@ async function saveGalleryEdits() {
     venue:         get('gedit-venue'),
     city:          get('gedit-city'),
     personal_note: get('gedit-note'),
+    seat_section:  get('gedit-section'),
+    seat_number:   get('gedit-seat'),
   };
 
   const { data: existing } = await sb.from('stubs').select('metadata').eq('id', currentStubId).single();
