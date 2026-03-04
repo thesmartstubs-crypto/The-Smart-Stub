@@ -843,15 +843,19 @@
   }
   .ticket-type-icon {
     position: absolute;
-    top: 14px;
+    top: 26px;
     right: 16px;
-    width: 28px;
-    height: 28px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.85;
+    opacity: 0.9;
+  }
+  .ticket-type-icon svg {
+    width: 22px;
+    height: 22px;
   }
   /* Per-type colors */
   .event-concert  .ticket-accent-bar { background: linear-gradient(90deg, #6c4db8, #9b72d0); }
@@ -1502,7 +1506,7 @@
   <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div></div>
   <div class="content" style="max-width:900px;">
     <h2 class="screen-title">Upload Your <span class="gold">Memories</span></h2>
-    <p class="screen-desc">Select between 10 and 25 photos from this event. JPEG or PNG, up to 20MB each.</p>
+    <p class="screen-desc">Select up to 25 photos from this event. JPEG or PNG, up to 20MB each.</p>
     <div class="photo-upload-zone" onclick="document.getElementById('photo-input').click()" id="drop-zone">
       <input type="file" id="photo-input" multiple accept="image/*" style="display:none" onchange="handlePhotos(event)">
       <div class="upload-icon">📸</div>
