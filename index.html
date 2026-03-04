@@ -3507,9 +3507,12 @@ async function executeDeleteStub() {
     currentSlug   = null;
   }
 
-  // Remove card from UI instantly
+  // Remove the full pin wrapper (parent of the card), not just the inner card
   const el = document.getElementById(`stub-item-${deleteTargetId}`);
-  if (el) el.remove();
+  if (el) {
+    const wrapper = el.closest('.stub-pin-wrapper');
+    (wrapper || el).remove();
+  }
 
   closeDeleteModal();
 
