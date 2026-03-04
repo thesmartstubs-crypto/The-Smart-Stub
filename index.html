@@ -1679,11 +1679,15 @@
           <input type="text" id="event-city" placeholder="e.g. New York, NY">
         </div>
         <div class="form-group">
-          <label>Section / Row</label>
-          <input type="text" id="event-section" placeholder="e.g. Floor B / Row 3">
+          <label>Section</label>
+          <input type="text" id="event-section" placeholder="e.g. Floor B">
         </div>
         <div class="form-group">
-          <label>Seat Number</label>
+          <label>Row</label>
+          <input type="text" id="event-row" placeholder="e.g. 3">
+        </div>
+        <div class="form-group">
+          <label>Seat(s)</label>
           <input type="text" id="event-seat" placeholder="e.g. 14–15">
         </div>
       </div>
@@ -1868,11 +1872,15 @@
           <input type="text" id="gedit-city" placeholder="e.g. New York, NY">
         </div>
         <div class="form-group">
-          <label>Section / Row</label>
-          <input type="text" id="gedit-section" placeholder="e.g. Floor B / Row 3">
+          <label>Section</label>
+          <input type="text" id="gedit-section" placeholder="e.g. Floor B">
         </div>
         <div class="form-group">
-          <label>Seat Number</label>
+          <label>Row</label>
+          <input type="text" id="gedit-row" placeholder="e.g. 3">
+        </div>
+        <div class="form-group">
+          <label>Seat(s)</label>
           <input type="text" id="gedit-seat" placeholder="e.g. 14–15">
         </div>
         <div id="gedit-theater-extras" style="display:none; grid-column:1/-1; display:none;">
@@ -2427,11 +2435,13 @@ async function loadDashboard() {
 
     // Seat fields
     const section = stub.seat_section || '';
+    const row     = stub.seat_row     || '';
     const seat    = stub.seat_number  || '';
-    const hasSeat = section || seat;
+    const hasSeat = section || row || seat;
     const stubZone = hasSeat
       ? '<div class="ticket-stub-fields">' +
-          (section ? `<div class="ticket-stub-field"><div class="t-label">Sect/Row</div><div class="t-val">${section}</div></div>` : '') +
+          (section ? `<div class="ticket-stub-field"><div class="t-label">Sect</div><div class="t-val">${section}</div></div>` : '') +
+          (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
           (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
           '</div>'
       : `<div style="opacity:0.45;">${barcodeSVG}</div>`;
@@ -2523,7 +2533,7 @@ function resetCreateScreen() {
 
   // Clear text inputs
   ['create-artist','create-date','event-venue','event-city',
-   'event-section','event-seat','event-note','create-name'].forEach(id => {
+   'event-section','event-row','event-seat','event-note','create-name'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
 
@@ -3069,6 +3079,7 @@ async function handleCreateSave() {
   const venue   = document.getElementById('event-venue')?.value.trim() || '';
   const city    = document.getElementById('event-city')?.value.trim() || '';
   const section = document.getElementById('event-section')?.value.trim() || '';
+  const row     = document.getElementById('event-row')?.value.trim() || '';
   const seat    = document.getElementById('event-seat')?.value.trim() || '';
   const note    = document.getElementById('event-note')?.value.trim() || '';
 
@@ -3097,6 +3108,9 @@ async function handleCreateSave() {
     artist,
     event_date: date || null,
     venue, city,
+    seat_section: section,
+    seat_row:     row,
+    seat_number:  seat,
     personal_note: note,
     slug,
     metadata
@@ -4210,6 +4224,7 @@ function populateGalleryEditPanel(stub) {
   set('gedit-venue',   stub.venue);
   set('gedit-city',    stub.city);
   set('gedit-section', stub.seat_section || '');
+  set('gedit-row',     stub.seat_row     || '');
   set('gedit-seat',    stub.seat_number  || '');
   set('gedit-note',    stub.personal_note);
 
@@ -4246,6 +4261,7 @@ async function saveGalleryEdits() {
     city:          get('gedit-city'),
     personal_note: get('gedit-note'),
     seat_section:  get('gedit-section'),
+    seat_row:      get('gedit-row'),
     seat_number:   get('gedit-seat'),
   };
 
