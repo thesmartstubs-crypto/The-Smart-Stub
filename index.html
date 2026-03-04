@@ -4269,7 +4269,7 @@ async function generateShareImage(stub) {
     }
 
     // ── TOP SECTION: Ticket card (top ~42% of image) ──
-    const cardX = 60, cardY = 80, cardW = W - 120, cardH = 460;
+    const cardX = 48, cardY = 48, cardW = W - 96, cardH = 460;
     const r = 20;
 
     // Card shadow
@@ -4424,8 +4424,8 @@ async function generateShareImage(stub) {
     }
 
     // ── MOSAIC SECTION (middle ~46% of image) ──
-    const mosaicY = cardY + cardH + 40;
-    const mosaicH = H - mosaicY - 120;
+    const mosaicY = cardY + cardH + 24;
+    const mosaicH = H - mosaicY - 72;
     const gap = 8;
 
     // Collect photo URLs from the gallery grid
@@ -4440,13 +4440,13 @@ async function generateShareImage(stub) {
         // Layout: up to 3 cols, fill rows
         const cols = Math.min(valid.length, 3);
         const rows = Math.ceil(valid.length / cols);
-        const cellW = (W - 120 - gap * (cols - 1)) / cols;
+        const cellW = (W - 96 - gap * (cols - 1)) / cols;
         const cellH = (mosaicH - gap * (rows - 1)) / rows;
 
         valid.forEach((img, i) => {
           const col = i % cols;
           const row = Math.floor(i / cols);
-          const cx = 60 + col * (cellW + gap);
+          const cx = 48 + col * (cellW + gap);
           const cy = mosaicY + row * (cellH + gap);
 
           // Clip to rounded rect
@@ -4471,7 +4471,7 @@ async function generateShareImage(stub) {
     } else {
       // No photos — placeholder message area
       ctx.fillStyle = 'rgba(0,0,0,0.06)';
-      roundRect(ctx, 60, mosaicY, W - 120, mosaicH, 16);
+      roundRect(ctx, 48, mosaicY, W - 96, mosaicH, 16);
       ctx.fill();
       ctx.fillStyle = '#a09080';
       ctx.font = '500 28px "Space Mono", monospace';
@@ -4481,24 +4481,24 @@ async function generateShareImage(stub) {
     }
 
     // ── FOOTER branding ──
-    const footY = H - 80;
+    const footY = H - 44;
 
     // SmartStubs wordmark
     ctx.fillStyle = '#1a1410';
-    ctx.font = 'bold 32px "Arial", sans-serif';
+    ctx.font = 'bold 26px "Arial", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Smart', 60, footY);
+    ctx.fillText('Smart', 48, footY);
     const smartW = ctx.measureText('Smart').width;
     ctx.fillStyle = c1;
-    ctx.fillText('Stubs', 60 + smartW, footY);
+    ctx.fillText('Stubs', 48 + smartW, footY);
 
     // Gallery URL
     ctx.fillStyle = '#a09080';
-    ctx.font = '500 22px "Space Mono", monospace';
+    ctx.font = '500 19px "Space Mono", monospace';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillText(`thesmartstub.com/g/${stub.slug}`, W - 60, footY);
+    ctx.fillText(`thesmartstub.com/g/${stub.slug}`, W - 48, footY);
 
     // ── Download / Share ──
     const dataUrl = canvas.toDataURL('image/png');
