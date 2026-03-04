@@ -2552,7 +2552,7 @@ async function fetchSportsTeams(league) {
     mlb: ['Arizona Diamondbacks','Atlanta Braves','Baltimore Orioles','Boston Red Sox','Chicago Cubs','Chicago White Sox','Cincinnati Reds','Cleveland Guardians','Colorado Rockies','Detroit Tigers','Houston Astros','Kansas City Royals','Los Angeles Angels','Los Angeles Dodgers','Miami Marlins','Milwaukee Brewers','Minnesota Twins','New York Mets','New York Yankees','Oakland Athletics','Philadelphia Phillies','Pittsburgh Pirates','San Diego Padres','San Francisco Giants','Seattle Mariners','St. Louis Cardinals','Tampa Bay Rays','Texas Rangers','Toronto Blue Jays','Washington Nationals'],
     nhl: ['Anaheim Ducks','Arizona Coyotes','Boston Bruins','Buffalo Sabres','Calgary Flames','Carolina Hurricanes','Chicago Blackhawks','Colorado Avalanche','Columbus Blue Jackets','Dallas Stars','Detroit Red Wings','Edmonton Oilers','Florida Panthers','Los Angeles Kings','Minnesota Wild','Montreal Canadiens','Nashville Predators','New Jersey Devils','New York Islanders','New York Rangers','Ottawa Senators','Philadelphia Flyers','Pittsburgh Penguins','San Jose Sharks','Seattle Kraken','St. Louis Blues','Tampa Bay Lightning','Toronto Maple Leafs','Utah Hockey Club','Vancouver Canucks','Vegas Golden Knights','Washington Capitals','Winnipeg Jets'],
     mls: ['Atlanta United','Austin FC','Charlotte FC','Chicago Fire','FC Cincinnati','FC Dallas','Houston Dynamo','Inter Miami CF','LA Galaxy','LAFC','Minnesota United','Nashville SC','New England Revolution','New York City FC','New York Red Bulls','Orlando City SC','Philadelphia Union','Portland Timbers','Real Salt Lake','Seattle Sounders','Sporting Kansas City','St. Louis City SC','Toronto FC','Vancouver Whitecaps','Columbus Crew','Colorado Rapids','D.C. United','San Jose Earthquakes'],
-    ncaafb: ['Alabama Crimson Tide','Auburn Tigers','Clemson Tigers','Florida Gators','Florida State Seminoles','Georgia Bulldogs','LSU Tigers','Michigan Wolverines','Michigan State Spartans','Notre Dame Fighting Irish','Ohio State Buckeyes','Oklahoma Sooners','Oregon Ducks','Penn State Nittany Lions','Texas Longhorns','Texas A&M Aggies','USC Trojans','Washington Huskies','Wisconsin Badgers','Tennessee Volunteers','Miami Hurricanes','Nebraska Cornhuskers'],
+    ncaafb: ['Air Force Falcons','Akron Zips','Alabama Crimson Tide','Appalachian State Mountaineers','Arizona Wildcats','Arizona State Sun Devils','Arkansas Razorbacks','Arkansas State Red Wolves','Army Black Knights','Auburn Tigers','Ball State Cardinals','Baylor Bears','Boise State Broncos','Boston College Eagles','Buffalo Bulls','BYU Cougars','California Golden Bears','Central Michigan Chippewas','Cincinnati Bearcats','Clemson Tigers','Coastal Carolina Chanticleers','Colorado Buffaloes','Colorado State Rams','Connecticut Huskies','Duke Blue Devils','East Carolina Pirates','Eastern Michigan Eagles','Florida Gators','Florida State Seminoles','Fresno State Bulldogs','Georgia Bulldogs','Georgia Tech Yellow Jackets','Hawaii Rainbow Warriors','Houston Cougars','Illinois Fighting Illini','Indiana Hoosiers','Iowa Hawkeyes','Iowa State Cyclones','Kansas Jayhawks','Kansas State Wildcats','Kent State Golden Flashes','Kentucky Wildcats','Liberty Flames','Louisiana Ragin Cajuns','Louisiana Monroe Warhawks','Louisiana Tech Bulldogs','Louisville Cardinals','LSU Tigers','Marshall Thundering Herd','Maryland Terrapins','Memphis Tigers','Miami Hurricanes','Miami Ohio RedHawks','Michigan Wolverines','Michigan State Spartans','Middle Tennessee Blue Raiders','Minnesota Golden Gophers','Mississippi State Bulldogs','Missouri Tigers','Navy Midshipmen','NC State Wolfpack','Nebraska Cornhuskers','Nevada Wolf Pack','Nevada Las Vegas Rebels','New Mexico Lobos','New Mexico State Aggies','North Carolina Tar Heels','North Texas Mean Green','Northern Illinois Huskies','Northwestern Wildcats','Notre Dame Fighting Irish','Ohio Bobcats','Ohio State Buckeyes','Oklahoma Sooners','Oklahoma State Cowboys','Ole Miss Rebels','Oregon Ducks','Oregon State Beavers','Penn State Nittany Lions','Pittsburgh Panthers','Purdue Boilermakers','Rice Owls','Rutgers Scarlet Knights','San Diego State Aztecs','San Jose State Spartans','SMU Mustangs','South Alabama Jaguars','South Carolina Gamecocks','South Florida Bulls','Southern Miss Golden Eagles','Stanford Cardinal','Syracuse Orange','TCU Horned Frogs','Temple Owls','Tennessee Volunteers','Texas Longhorns','Texas AM Aggies','Texas State Bobcats','Texas Tech Red Raiders','Toledo Rockets','Troy Trojans','Tulane Green Wave','Tulsa Golden Hurricane','UAB Blazers','UCF Knights','UCLA Bruins','UMass Minutemen','UNLV Rebels','USC Trojans','Utah Utes','Utah State Aggies','UTEP Miners','UTSA Roadrunners','Vanderbilt Commodores','Virginia Cavaliers','Virginia Tech Hokies','Wake Forest Demon Deacons','Washington Huskies','Washington State Cougars','Western Kentucky Hilltoppers','Western Michigan Broncos','Wisconsin Badgers','Wyoming Cowboys'],
     ncaamb: ['Arizona Wildcats','Arkansas Razorbacks','Baylor Bears','Cincinnati Bearcats','Connecticut Huskies','Duke Blue Devils','Florida Gators','Georgetown Hoyas','Gonzaga Bulldogs','Houston Cougars','Illinois Fighting Illini','Indiana Hoosiers','Iowa Hawkeyes','Kansas Jayhawks','Kentucky Wildcats','Louisville Cardinals','Marquette Golden Eagles','Maryland Terrapins','Memphis Tigers','Michigan Wolverines','Michigan State Spartans','North Carolina Tar Heels','Ohio State Buckeyes','Oklahoma Sooners','Oregon Ducks','Purdue Boilermakers','St. John\'s Red Storm','Syracuse Orange','Tennessee Volunteers','Texas Longhorns','UCLA Bruins','Villanova Wildcats','Virginia Cavaliers','Wisconsin Badgers'],
     wnba: ['Atlanta Dream','Chicago Sky','Connecticut Sun','Dallas Wings','Indiana Fever','Las Vegas Aces','Los Angeles Sparks','Minnesota Lynx','New York Liberty','Phoenix Mercury','Seattle Storm','Washington Mystics'],
   };
@@ -2565,7 +2565,12 @@ async function fetchSportsTeams(league) {
 
   // Then try ESPN for richer data (single endpoint, no $ref chasing)
   try {
-    const url = `https://site.api.espn.com/apis/site/v2/sports/${map.sport}/${map.league}/teams?limit=200`;
+    // College football: filter to FBS (group=80) to keep list manageable
+    const isCollegeFB = league === 'ncaafb';
+    const isCollegeBB = league === 'ncaamb';
+    const limitParam  = (isCollegeFB || isCollegeBB) ? 500 : 200;
+    const groupParam  = isCollegeFB ? '&groups=80' : '';
+    const url = `https://site.api.espn.com/apis/site/v2/sports/${map.sport}/${map.league}/teams?limit=${limitParam}${groupParam}`;
     const res  = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
@@ -2724,6 +2729,8 @@ async function onSportsDateChange() {
 
     spinner.style.display   = 'none';
     lookupRow.style.display = 'none';
+
+    // Show confirm card — do NOT reveal details phase yet, wait for user to confirm
     card.style.display      = 'block';
     card.style.opacity      = '0';
     card.style.transform    = 'translateY(8px)';
@@ -2732,6 +2739,7 @@ async function onSportsDateChange() {
       card.style.opacity    = '1';
       card.style.transform  = 'translateY(0)';
     });
+    // Do NOT call revealDetailsPhase here — wait for user to confirm
   } catch(e) {
     spinner.style.display   = 'none';
     lookupRow.style.display = 'none';
@@ -3431,11 +3439,21 @@ function renderScoreboardCard(game, sport, stub) {
 
   section.style.display = 'block';
 
-  // Apply team colors and logo to gallery hero
-  // Use the stub's team for color theme — check both home and away
-  const userTeamIsHome = game.home.name.toLowerCase().includes(stub?.artist?.toLowerCase()?.split(' ').pop() || '');
+  // Apply team colors and logo — use the stored home_away metadata, falling back to name match
+  const storedHomeAway = stub?.metadata?.home_away;
+  let userTeamIsHome;
+  if (storedHomeAway === 'home') {
+    userTeamIsHome = true;
+  } else if (storedHomeAway === 'away') {
+    userTeamIsHome = false;
+  } else {
+    // Fallback: try full name match first, then last-word match
+    const artistLower = (stub?.artist || '').toLowerCase();
+    userTeamIsHome = game.home.name.toLowerCase() === artistLower ||
+                     game.home.name.toLowerCase().includes(artistLower) ||
+                     artistLower.includes(game.home.name.toLowerCase());
+  }
   const userTeam = userTeamIsHome ? game.home : game.away;
-  const otherTeam = userTeamIsHome ? game.away : game.home;
   applyTeamTheme(userTeam.name, userTeam.logo);
 }
 
@@ -4025,6 +4043,12 @@ async function loadExistingPhotos() {
   existingPhotos = [];
   photosToDelete = [];
   photos = [];
+
+  // Always clear the DOM grid immediately so stale photos never show
+  const grid = document.getElementById('photo-grid');
+  const count = document.getElementById('photo-count');
+  if (grid)  grid.innerHTML  = '';
+  if (count) count.innerHTML = '';
 
   if (!currentStubId || !currentUser) return;
 
