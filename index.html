@@ -385,8 +385,6 @@
   .stub-theme-light .ticket-notch    { background: #e8e0d0; border-color: #ccc4b4; }
   .stub-theme-light .ticket-dots     { background: repeating-linear-gradient(to bottom, #ccc4b4 0, #ccc4b4 4px, transparent 4px, transparent 8px); }
   .stub-theme-light .ticket-stub-field .t-val { color: #5a3a10; }
-  .stub-theme-light .ticket-delete-btn { color: #ccc4b4; }
-  .stub-theme-light .ticket-delete-btn:hover { color: #c0392b; }
   .stub-theme-light .ticket-barcode svg rect { fill: #ccc4b4; }
 
   /* Left color accent bar */
@@ -519,20 +517,48 @@
 
   /* Delete button */
   .ticket-delete-btn {
-    background: none;
-    border: none;
-    color: #2a2218;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.35);
     cursor: pointer;
-    padding: 3px 5px;
-    border-radius: 4px;
-    transition: color 0.15s;
-    line-height: 1;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
     position: absolute;
-    bottom: 4px;
-    right: 6px;
+    bottom: 8px;
+    right: 8px;
+    transition: all 0.15s;
+    padding: 0;
   }
-  .ticket-delete-btn:hover { color: #c0392b; }
+  .ticket-delete-btn:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: #fff;
+  }
+
+  /* Light mode delete button */
+  .stub-theme-light .ticket-delete-btn {
+    background: rgba(0,0,0,0.06);
+    border-color: rgba(0,0,0,0.15);
+    color: rgba(0,0,0,0.3);
+  }
+  .stub-theme-light .ticket-delete-btn:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+    color: #fff;
+  }
+
+  /* Dark mode — brighter text colors */
+  .ticket-badge    { color: #7a6a50; }
+  .ticket-artist-line { color: #7a7060; }
+  .t-label         { color: #6a5a40; }
+  .t-val           { color: #d4c9b5; }
 
   .btn-small { padding: 8px 16px; font-size: 11px; }
   .empty-state { text-align: center; padding: 60px 40px; border: 1px dashed rgba(201,168,76,0.25); background: rgba(0,0,0,0.35); border-radius: 2px; }
