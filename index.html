@@ -2272,39 +2272,40 @@ function resetCreateScreen() {
   currentSport = null;
   createSetlistData = null;
   createSetlistConfirmed = false;
+  sportsTeamData = null;
+  sportsGameData = null;
+
   document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
   document.getElementById('create-phase-anchor').style.display = 'none';
   document.getElementById('create-phase-confirm').style.display = 'none';
   document.getElementById('create-phase-details').style.display = 'none';
   document.getElementById('create-back-row').style.display = 'block';
   document.getElementById('sport-select-row').classList.remove('visible');
+
   // Restore interactivity if coming from edit mode
-  const phaseType = document.getElementById('create-phase-type');
+  const phaseType   = document.getElementById('create-phase-type');
   const phaseAnchor = document.getElementById('create-phase-anchor');
-  if (phaseType) { phaseType.style.opacity = ''; phaseType.style.pointerEvents = ''; }
+  if (phaseType)   { phaseType.style.opacity   = ''; phaseType.style.pointerEvents   = ''; }
   if (phaseAnchor) { phaseAnchor.style.opacity = ''; phaseAnchor.style.pointerEvents = ''; }
-  sportsTeamData = null;
-  sportsGameData = null;
-  const sportsLeague = document.getElementById('sports-league-pick');
-  const sportsTeamIn = document.getElementById('sports-team-input');
-  const sportsDateIn = document.getElementById('sports-date-input');
-  const sportsTeamSel = document.getElementById('sports-team-selected');
-  const sportsTeamGrp = document.getElementById('sports-team-group');
-  const sportsDateGrp = document.getElementById('sports-date-group');
-  const sportsConfirm = document.getElementById('sports-game-confirm');
-  if (sportsLeague)  sportsLeague.value = '';
-  if (sportsTeamIn)  sportsTeamIn.value = '';
-  if (sportsDateIn)  sportsDateIn.value = '';
-  if (sportsTeamSel) sportsTeamSel.style.display = 'none';
-  if (sportsTeamGrp) sportsTeamGrp.style.display = 'none';
-  if (sportsDateGrp) sportsDateGrp.style.display = 'none';
-  if (sportsConfirm) sportsConfirm.style.display  = 'none';
+
+  // Clear text inputs
+  ['create-artist','create-date','event-venue','event-city',
+   'event-section','event-seat','event-note','create-name'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  const card = document.getElementById('create-confirm-card');
-  if (card) card.style.display = 'none';
+
+  // Clear sports-specific inputs
+  const ids = ['sports-league-pick','sports-team-input','sports-date-input'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['sports-team-selected','sports-team-group','sports-date-group','sports-game-confirm',
+   'sports-confirm-card','sports-no-game'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+
+  const card    = document.getElementById('create-confirm-card');
   const saveBtn = document.getElementById('create-save-btn');
-  if (saveBtn) saveBtn.innerHTML = 'Next: Upload Photos →';
+  if (card)    card.style.display   = 'none';
+  if (saveBtn) saveBtn.innerHTML    = 'Next: Upload Photos →';
 }
 
 function createSelectType(type) {
@@ -2312,30 +2313,10 @@ function createSelectType(type) {
   document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
   const tile = document.getElementById('tile-' + type);
   if (tile) tile.classList.add('selected');
-  const sportRow = document.getElementById('sport-select-row');
-  if (type === 'sports') {
-    sportRow.classList.add('visible');
-    // Sport picker onChange will call revealAnchorPhase
-  } else {
-    sportRow.classList.remove('visible');
-    document.getElementById('pick-sport').value = '';
-    currentSport = null;
-    revealAnchorPhase(type);
-  }
+  // Hide the old sport-select-row (legacy, not used in new flow)
+  document.getElementById('sport-select-row').classList.remove('visible');
+  revealAnchorPhase(type);
 }
-
-// Wire up sport picker after DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  const pickSport = document.getElementById('pick-sport');
-  if (pickSport) {
-    pickSport.addEventListener('change', () => {
-      if (pickSport.value && currentEventType === 'sports') {
-        currentSport = pickSport.value;
-        revealAnchorPhase('sports');
-      }
-    });
-  }
-});
 
 function revealAnchorPhase(type) {
   const artistLabel = document.getElementById('create-artist-label');
@@ -2380,11 +2361,8 @@ function revealAnchorPhase(type) {
     if (nameLabel) nameLabel.textContent = 'Tour / Concert Name';
   } else if (type === 'sports') {
     anchorLabel.textContent = 'Team & Date';
-    artistLabel.textContent = 'Your Team';
-    artistInput.placeholder = 'e.g. New England Patriots';
-    opponentGroup.style.display = 'flex';
-    homeawayGroup.style.display = 'flex';
     if (nameGroup) nameGroup.style.display = 'none';
+    // sports step-through is handled inside create-anchor-sports — nothing else to do here
   } else if (type === 'festival') {
     anchorLabel.textContent = 'Festival & Date';
     artistLabel.textContent = 'Festival Name';
