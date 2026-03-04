@@ -2011,6 +2011,7 @@
       <button class="btn-secondary" onclick="toggleGalleryUrl()" id="share-btn" style="font-size:11px;padding:10px 20px;">Share URL</button>
       <button class="btn-secondary" id="gallery-edit-btn" style="display:none;font-size:11px;padding:10px 20px;">Edit Details</button>
       <button class="btn-secondary" id="gallery-nfc-btn" style="display:none;font-size:11px;padding:10px 20px;">📱 Write NFC</button>
+      <button class="btn-secondary" id="gallery-share-img-btn" style="display:none;font-size:11px;padding:10px 20px;">📸 Share to Instagram</button>
       <button class="btn-primary" onclick="goTo('screen-landing')" id="gallery-cta-btn">Get Your SmartStub</button>
     </div>
   </div>
@@ -4072,6 +4073,11 @@ async function renderGallery(stub, showEditPanel = false) {
       nfcBtn.style.display = 'inline-block';
       nfcBtn.onclick = () => openNFCForStub(stub.slug);
     }
+    const shareImgBtn = document.getElementById('gallery-share-img-btn');
+    if (shareImgBtn) {
+      shareImgBtn.style.display = 'inline-block';
+      shareImgBtn.onclick = () => generateShareImage(stub);
+    }
     if (editDetailsBtn) {
       editDetailsBtn.style.display = 'inline-block';
       editDetailsBtn.onclick = () => {
@@ -4091,6 +4097,8 @@ async function renderGallery(stub, showEditPanel = false) {
     if (myStubsTopBtn) myStubsTopBtn.style.display = 'none';
     if (editDetailsBtn) editDetailsBtn.style.display = 'none';
     if (nfcBtn) nfcBtn.style.display = 'none';
+    const shareImgBtn = document.getElementById('gallery-share-img-btn');
+    if (shareImgBtn) shareImgBtn.style.display = 'none';
   }
 
   // Load photos from storage
@@ -4216,6 +4224,349 @@ function toggleCaptions(show) {
 }
 
 // ── Gallery URL Share ──
+// ── Instagram Share Image Generator ──
+async function generateShareImage(stub) {
+  const btn = document.getElementById('gallery-share-img-btn');
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Generating...';
+  btn.disabled = true;
+
+  try {
+    // Canvas dimensions — Instagram portrait 4:5
+    const W = 1080, H = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // ── Determine accent colors ──
+    const meta = stub.metadata || {};
+    const evType = (meta.event_type || 'other').toLowerCase();
+    const isSports = evType === 'sports';
+    const teamColors = isSports ? getTeamColors(stub.artist || '') : null;
+
+    const accentColors = {
+      concert:  ['#6c4db8', '#9b72d0'],
+      sports:   teamColors || ['#1a6b3a', '#2ecc71'],
+      theater:  ['#b8960a', '#f5c518'],
+      festival: ['#c45e10', '#f08030'],
+      comedy:   ['#a82030', '#e03050'],
+      other:    ['#8a7040', '#d4b896'],
+    };
+    const [c1, c2] = accentColors[evType] || accentColors.other;
+
+    // ── Background — warm off-white like light ticket mode ──
+    ctx.fillStyle = '#f5f0e8';
+    ctx.fillRect(0, 0, W, H);
+
+    // Subtle texture overlay — fine dot grid
+    ctx.fillStyle = 'rgba(0,0,0,0.025)';
+    for (let x = 0; x < W; x += 20) {
+      for (let y = 0; y < H; y += 20) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // ── TOP SECTION: Ticket card (top ~42% of image) ──
+    const cardX = 60, cardY = 80, cardW = W - 120, cardH = 460;
+    const r = 20;
+
+    // Card shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.18)';
+    ctx.shadowBlur = 40;
+    ctx.shadowOffsetX = 6;
+    ctx.shadowOffsetY = 10;
+    roundRect(ctx, cardX, cardY, cardW, cardH, r);
+    ctx.fillStyle = '#faf6ee';
+    ctx.fill();
+    ctx.restore();
+
+    // Card border
+    ctx.strokeStyle = '#e0d8c8';
+    ctx.lineWidth = 1.5;
+    roundRect(ctx, cardX, cardY, cardW, cardH, r);
+    ctx.stroke();
+
+    // Left accent bar
+    const barW = 28;
+    ctx.save();
+    const barGrad = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH);
+    barGrad.addColorStop(0, c1);
+    barGrad.addColorStop(1, c2);
+    ctx.fillStyle = barGrad;
+    roundRectLeft(ctx, cardX, cardY, barW, cardH, r);
+    ctx.fill();
+    ctx.restore();
+
+    // Event type emoji badge circle
+    const badgeX = cardX + barW + 52, badgeY = cardY + cardH / 2;
+    ctx.save();
+    ctx.fillStyle = c1 + '22';
+    ctx.beginPath();
+    ctx.arc(badgeX, badgeY, 36, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    const emoji = getEventTypeIcon(evType, { ...meta, artist: stub.artist }).replace(/<[^>]+>/g, '').trim();
+    ctx.font = '36px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, badgeX, badgeY + 2);
+
+    // Main text content
+    const textX = cardX + barW + 108;
+    const textMaxW = cardW - barW - 108 - 200; // leave room for stub zone
+
+    // Event type badge
+    ctx.fillStyle = '#a09080';
+    ctx.font = '500 22px "Space Mono", monospace';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText((meta.event_type || evType).toUpperCase(), textX, cardY + 80);
+
+    // Event name — large Bebas-style bold
+    ctx.fillStyle = '#1a1410';
+    ctx.font = 'bold 68px "Arial Black", "Arial", sans-serif';
+    ctx.textBaseline = 'top';
+    const nameText = (stub.event_name || 'Untitled Event').toUpperCase();
+    const fittedName = fitText(ctx, nameText, textMaxW, 68, 'bold', '"Arial Black", Arial, sans-serif');
+    ctx.font = fittedName.font;
+    ctx.fillText(fittedName.text, textX, cardY + 130);
+
+    // Artist line
+    ctx.fillStyle = '#8a7a6a';
+    ctx.font = '500 24px "Space Mono", monospace';
+    ctx.textBaseline = 'top';
+    const artistText = (stub.artist || '').toUpperCase();
+    ctx.fillText(artistText.length > 38 ? artistText.slice(0, 38) + '…' : artistText, textX, cardY + 230);
+
+    // Detail fields row
+    const fields = [
+      { label: 'DATE',  val: stub.event_date ? formatDate(stub.event_date) : '—' },
+      { label: 'VENUE · CITY', val: [stub.venue, stub.city].filter(Boolean).join(' · ') || '—' },
+    ];
+    let fx = textX;
+    for (const f of fields) {
+      ctx.fillStyle = '#b0a090';
+      ctx.font = '500 18px "Space Mono", monospace';
+      ctx.textBaseline = 'top';
+      ctx.fillText(f.label, fx, cardY + 290);
+      ctx.fillStyle = '#2a2010';
+      ctx.font = '500 26px "Space Mono", monospace';
+      ctx.fillText(f.val.length > 28 ? f.val.slice(0, 28) + '…' : f.val, fx, cardY + 318);
+      fx += 320;
+    }
+
+    // Perforated divider — vertical dashed line
+    const perfX = cardX + cardW - 180;
+    ctx.save();
+    ctx.strokeStyle = '#d0c8b8';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8, 8]);
+    ctx.beginPath();
+    ctx.moveTo(perfX, cardY + 20);
+    ctx.lineTo(perfX, cardY + cardH - 20);
+    ctx.stroke();
+    ctx.restore();
+
+    // Notch circles on perf line
+    ctx.fillStyle = '#f5f0e8';
+    ctx.strokeStyle = '#e0d8c8';
+    ctx.lineWidth = 1.5;
+    for (const ny of [cardY, cardY + cardH]) {
+      ctx.beginPath();
+      ctx.arc(perfX, ny, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    // Stub zone — seat info or barcode
+    const stubX = perfX + 20, stubMidY = cardY + cardH / 2;
+    const stubW = cardX + cardW - stubX - 20;
+    const section = stub.seat_section, row = stub.seat_row, seat = stub.seat_number;
+
+    if (section || row || seat) {
+      let sy = stubMidY - ((section ? 1 : 0) + (row ? 1 : 0) + (seat ? 1 : 0)) * 44 / 2;
+      for (const [lbl, val] of [['SECT', section], ['ROW', row], ['SEAT', seat]]) {
+        if (!val) continue;
+        ctx.fillStyle = '#a09080';
+        ctx.font = '500 17px "Space Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(lbl, stubX + stubW / 2, sy);
+        ctx.fillStyle = '#1a1410';
+        ctx.font = 'bold 28px "Space Mono", monospace';
+        ctx.fillText(val, stubX + stubW / 2, sy + 20);
+        sy += 68;
+      }
+    } else {
+      // Decorative barcode
+      const bx = stubX + 10, by = stubMidY - 40;
+      const barHeights = [32,22,40,18,36,24,42,20,38,16,34,28,44,18,36,22,40,24];
+      const barWidths  = [5,3,8,3,5,5,3,8,3,5,5,3,8,3,5,3,8,5];
+      let bxOff = 0;
+      for (let i = 0; i < barHeights.length; i++) {
+        ctx.fillStyle = 'rgba(160,140,120,0.5)';
+        ctx.fillRect(bx + bxOff, by + (44 - barHeights[i]), barWidths[i], barHeights[i]);
+        bxOff += barWidths[i] + 3;
+      }
+    }
+
+    // ── MOSAIC SECTION (middle ~46% of image) ──
+    const mosaicY = cardY + cardH + 40;
+    const mosaicH = H - mosaicY - 120;
+    const gap = 8;
+
+    // Collect photo URLs from the gallery grid
+    const photoImgs = Array.from(document.querySelectorAll('#gallery-photo-grid .gallery-photo img'));
+    const photoUrls = photoImgs.map(img => img.src).slice(0, 6); // max 6
+
+    if (photoUrls.length > 0) {
+      const loaded = await Promise.all(photoUrls.map(url => loadImage(url)));
+      const valid = loaded.filter(Boolean);
+
+      if (valid.length > 0) {
+        // Layout: up to 3 cols, fill rows
+        const cols = Math.min(valid.length, 3);
+        const rows = Math.ceil(valid.length / cols);
+        const cellW = (W - 120 - gap * (cols - 1)) / cols;
+        const cellH = (mosaicH - gap * (rows - 1)) / rows;
+
+        valid.forEach((img, i) => {
+          const col = i % cols;
+          const row = Math.floor(i / cols);
+          const cx = 60 + col * (cellW + gap);
+          const cy = mosaicY + row * (cellH + gap);
+
+          // Clip to rounded rect
+          ctx.save();
+          roundRect(ctx, cx, cy, cellW, cellH, 12);
+          ctx.clip();
+
+          // Cover fit
+          const scale = Math.max(cellW / img.width, cellH / img.height);
+          const dw = img.width * scale, dh = img.height * scale;
+          const dx = cx + (cellW - dw) / 2, dy = cy + (cellH - dh) / 2;
+          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.restore();
+
+          // Subtle border
+          ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+          ctx.lineWidth = 1;
+          roundRect(ctx, cx, cy, cellW, cellH, 12);
+          ctx.stroke();
+        });
+      }
+    } else {
+      // No photos — placeholder message area
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      roundRect(ctx, 60, mosaicY, W - 120, mosaicH, 16);
+      ctx.fill();
+      ctx.fillStyle = '#a09080';
+      ctx.font = '500 28px "Space Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('No photos yet', W / 2, mosaicY + mosaicH / 2);
+    }
+
+    // ── FOOTER branding ──
+    const footY = H - 80;
+
+    // SmartStubs wordmark
+    ctx.fillStyle = '#1a1410';
+    ctx.font = 'bold 32px "Arial", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Smart', 60, footY);
+    const smartW = ctx.measureText('Smart').width;
+    ctx.fillStyle = c1;
+    ctx.fillText('Stubs', 60 + smartW, footY);
+
+    // Gallery URL
+    ctx.fillStyle = '#a09080';
+    ctx.font = '500 22px "Space Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`thesmartstub.com/g/${stub.slug}`, W - 60, footY);
+
+    // ── Download / Share ──
+    const dataUrl = canvas.toDataURL('image/png');
+
+    // Try Web Share API (mobile — goes straight to share sheet → Instagram)
+    if (navigator.canShare && navigator.canShare({ files: [new File([], 'test.png', { type: 'image/png' })] })) {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `smartstub-${stub.slug}.png`, { type: 'image/png' });
+      await navigator.share({ files: [file], title: stub.event_name || 'My SmartStub' });
+    } else {
+      // Desktop fallback — download the PNG
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = `smartstub-${stub.slug}.png`;
+      a.click();
+    }
+
+  } catch (err) {
+    console.error('Share image error:', err);
+    alert('Could not generate share image. Please try again.');
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+// Canvas helpers
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function roundRectLeft(ctx, x, y, w, h, r) {
+  // Only rounds the left side corners
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w, y);
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function loadImage(url) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    // Add cache-busting param to help CORS on Supabase storage
+    img.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now();
+  });
+}
+
+function fitText(ctx, text, maxW, startSize, weight, family) {
+  let size = startSize;
+  while (size > 28) {
+    ctx.font = `${weight} ${size}px ${family}`;
+    if (ctx.measureText(text).width <= maxW) break;
+    size -= 4;
+  }
+  const display = ctx.measureText(text).width > maxW
+    ? text.slice(0, Math.floor(text.length * maxW / ctx.measureText(text).width) - 1) + '…'
+    : text;
+  return { font: `${weight} ${size}px ${family}`, text: display };
+}
+
 function toggleGalleryUrl() {
   const el = document.getElementById('gallery-url-share');
   const btn = document.getElementById('share-btn');
