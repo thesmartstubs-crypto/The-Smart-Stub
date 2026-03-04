@@ -2660,7 +2660,15 @@ function selectSportsTeam(team) {
   document.getElementById('sports-date-input').focus();
 }
 
-async function onSportsDateChange() {
+let _sportsDateTimer = null;
+let _sportsLookupGen = 0; // increments each lookup; stale results are ignored
+function onSportsDateChange() {
+  clearTimeout(_sportsDateTimer);
+  _sportsDateTimer = setTimeout(_doSportsDateLookup, 400);
+}
+
+async function _doSportsDateLookup() {
+  const gen = ++_sportsLookupGen; // capture this lookup's generation
   if (!sportsTeamData || !currentSport) return;
   const date = document.getElementById('sports-date-input').value;
   if (!date) return;
@@ -2754,6 +2762,9 @@ async function onSportsDateChange() {
 
     document.getElementById('sports-confirm-content').innerHTML = html;
 
+    // Ignore if a newer lookup has already started
+    if (gen !== _sportsLookupGen) return;
+
     spinner.style.display   = 'none';
     lookupRow.style.display = 'none';
 
@@ -2771,11 +2782,12 @@ async function onSportsDateChange() {
     setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
     // Do NOT call revealDetailsPhase here — wait for user to confirm
   } catch(e) {
+    if (gen !== _sportsLookupGen) return;
     spinner.style.display   = 'none';
     lookupRow.style.display = 'none';
     noGame.style.display    = 'block';
     sportsGameData = null;
-    setTimeout(() => revealDetailsPhase(), 1200);
+    setTimeout(() => { if (gen === _sportsLookupGen) revealDetailsPhase(); }, 1200);
   }
 }
 
