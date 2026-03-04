@@ -391,7 +391,7 @@
 
   /* Left color accent bar */
   .ticket-accent-bar {
-    width: 7px;
+    width: 18px;
     min-height: 100%;
     flex-shrink: 0;
     border-radius: 10px 0 0 10px;
@@ -1514,9 +1514,9 @@
         <p class="screen-desc" style="margin-bottom:0;">Manage your SmartStub galleries.</p>
       </div>
       <button class="btn-primary" onclick="startNewStub()">+ New Stub</button>
-      <button class="btn-secondary" id="stub-theme-toggle" onclick="toggleStubTheme()" style="padding:8px 14px;font-size:11px;" title="Toggle ticket color">🎟️ White Tickets</button>
+      <button class="btn-secondary" id="stub-theme-toggle" onclick="toggleStubTheme()" style="padding:8px 14px;font-size:11px;" title="Toggle ticket color">🌙 Dark Mode</button>
     </div>
-    <div id="stub-list-container" class="corkboard">
+    <div id="stub-list-container" class="corkboard stub-theme-light">
       <div class="empty-state">
         <div class="empty-state-icon">🎟️</div>
         <p class="empty-state-text">You haven't created any SmartStubs yet.<br>Click "New Stub" to get started.</p>
@@ -2410,17 +2410,17 @@ function getEventTypeIcon(evType, meta) {
   return `<span style="font-size:18px;line-height:1;">${emoji}</span>`;
 }
 
-let _stubThemeLight = false;
+let _stubThemeLight = true;
 function toggleStubTheme() {
   _stubThemeLight = !_stubThemeLight;
   const container = document.getElementById('stub-list-container');
   const btn = document.getElementById('stub-theme-toggle');
   if (_stubThemeLight) {
     container.classList.add('stub-theme-light');
-    btn.textContent = '🌑 Dark Tickets';
+    btn.textContent = '🌙 Dark Mode';
   } else {
     container.classList.remove('stub-theme-light');
-    btn.textContent = '🎟️ White Tickets';
+    btn.textContent = '☀️ Light Mode';
   }
 }
 
