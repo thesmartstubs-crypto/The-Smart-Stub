@@ -1616,6 +1616,70 @@
     </label>
   </div>
   <div class="gallery-photos" id="gallery-photo-grid"></div>
+
+  <!-- Owner-only: Add Photos + Edit Details -->
+  <div id="gallery-owner-actions" style="display:none; padding:32px 64px; border-top:1px solid #1a1a1a; gap:32px; flex-direction:column;">
+
+    <!-- Add Photos -->
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;">Add More Photos</div>
+      <input type="file" id="gallery-add-photo-input" accept="image/jpeg,image/png,image/heic" multiple style="display:none;" onchange="handleGalleryAddPhotos(this)">
+      <button class="btn-secondary" onclick="document.getElementById('gallery-add-photo-input').click()" style="font-size:12px;padding:12px 24px;">+ Add Photos</button>
+      <div id="gallery-add-status" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:12px;display:none;"></div>
+    </div>
+
+    <!-- Edit Details -->
+    <div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:20px;">Edit Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:560px;">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label id="gedit-name-label">Tour / Event Name</label>
+          <input type="text" id="gedit-name" placeholder="e.g. The Eras Tour">
+        </div>
+        <div class="form-group">
+          <label>Venue</label>
+          <input type="text" id="gedit-venue" placeholder="e.g. Madison Square Garden">
+        </div>
+        <div class="form-group">
+          <label>City, State</label>
+          <input type="text" id="gedit-city" placeholder="e.g. New York, NY">
+        </div>
+        <div class="form-group">
+          <label>Section / Row</label>
+          <input type="text" id="gedit-section" placeholder="e.g. Floor B / Row 3">
+        </div>
+        <div class="form-group">
+          <label>Seat Number</label>
+          <input type="text" id="gedit-seat" placeholder="e.g. 14–15">
+        </div>
+        <div id="gedit-theater-extras" style="display:none; grid-column:1/-1; display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>Lead Cast</label><input type="text" id="gedit-cast" placeholder="e.g. Aaron Tveit, Sutton Foster"></div>
+            <div class="form-group"><label>Director</label><input type="text" id="gedit-director" placeholder="e.g. Bartlett Sher"></div>
+            <div class="form-group" style="grid-column:1/-1;"><label>Production Company</label><input type="text" id="gedit-production" placeholder="e.g. Lincoln Center Theater"></div>
+          </div>
+        </div>
+        <div id="gedit-sports-extras" style="display:none; grid-column:1/-1;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group"><label>Opponent Team</label><input type="text" id="gedit-opponent" placeholder="e.g. New York Giants"></div>
+            <div class="form-group"><label>Home or Away?</label>
+              <select id="gedit-homeaway"><option value="">Select...</option><option value="home">Home Game</option><option value="away">Away Game</option></select>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="grid-column:1/-1;">
+          <label>Personal Note <span style="color:var(--muted);font-size:9px;letter-spacing:1px;">(OPTIONAL)</span></label>
+          <textarea id="gedit-note" placeholder="Write a short memory or note..." style="min-height:80px;"></textarea>
+        </div>
+      </div>
+      <div id="gedit-error" class="error-msg" style="margin-top:8px;max-width:560px;"></div>
+      <div style="display:flex;gap:12px;margin-top:20px;align-items:center;">
+        <button class="btn-primary" id="gedit-save-btn" onclick="saveGalleryEdits()" style="font-size:13px;">Save Changes</button>
+        <div id="gedit-saved-msg" style="font-family:'Space Mono',monospace;font-size:11px;color:#4a8a4a;letter-spacing:2px;display:none;">✓ SAVED</div>
+      </div>
+    </div>
+
+  </div>
   <div style="padding:40px 64px;border-top:1px solid #1a1a1a;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px;">
     <div>
       <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;">Memory preserved with</div>
@@ -3289,8 +3353,16 @@ async function renderGallery(stub) {
   if (isOwner) {
     toggleBar.classList.add('visible');
     captionToggle.checked = true; // default on for owner
+    // Show and populate owner edit panel
+    const ownerActions = document.getElementById('gallery-owner-actions');
+    if (ownerActions) {
+      ownerActions.style.display = 'flex';
+      populateGalleryEditPanel(stub);
+    }
   } else {
     toggleBar.classList.remove('visible');
+    const ownerActions = document.getElementById('gallery-owner-actions');
+    if (ownerActions) ownerActions.style.display = 'none';
   }
 
   for (const file of files) {
@@ -3458,65 +3530,124 @@ function startNewStub() {
 async function editStub(stubId) {
   const { data: stub, error } = await sb.from('stubs').select('*').eq('id', stubId).single();
   if (error || !stub) return alert('Could not load stub details. Please try again.');
-
-  currentStubId = stub.id;
-  currentSlug   = stub.slug;
-  isEditing     = true;
+  currentStubId    = stub.id;
+  currentSlug      = stub.slug;
+  isEditing        = true;
   currentEventType = stub.metadata?.event_type || 'concert';
   currentSport     = stub.metadata?.sport || null;
+  await renderGallery(stub);
+  setTimeout(() => {
+    const panel = document.getElementById('gallery-owner-actions');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 500);
+}
 
-  resetCreateScreen();
+function populateGalleryEditPanel(stub) {
+  const meta   = stub.metadata || {};
+  const evType = meta.event_type || 'concert';
+  const labels = { concert:'Tour / Concert Name', festival:'Festival / Headliner', theater:'Show Name', comedy:'Tour / Show Name', sports:'Game / Event Name', other:'Event Name' };
+  const nameLabel = document.getElementById('gedit-name-label');
+  if (nameLabel) nameLabel.textContent = labels[evType] || 'Event Name';
 
-  // Select the type tile
-  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
-  const tile = document.getElementById('tile-' + currentEventType);
-  if (tile) tile.classList.add('selected');
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('gedit-name',    stub.event_name);
+  set('gedit-venue',   stub.venue);
+  set('gedit-city',    stub.city);
+  set('gedit-section', stub.seat_section || '');
+  set('gedit-seat',    stub.seat_number  || '');
+  set('gedit-note',    stub.personal_note);
 
-  // Reveal anchor phase pre-filled (dimmed — locked)
-  revealAnchorPhase(currentEventType);
-  const artistEl = document.getElementById('create-artist');
-  const dateEl   = document.getElementById('create-date');
-  const dateGrp  = document.getElementById('create-date-group');
-  if (artistEl) artistEl.value = stub.artist || '';
-  if (dateEl)   dateEl.value   = stub.event_date || '';
-  if (dateGrp)  dateGrp.style.display = 'flex';
-
-  // Dim locked sections
-  const phaseType   = document.getElementById('create-phase-type');
-  const phaseAnchor = document.getElementById('create-phase-anchor');
-  if (phaseType)   { phaseType.style.opacity = '0.45'; phaseType.style.pointerEvents = 'none'; }
-  if (phaseAnchor) { phaseAnchor.style.opacity = '0.45'; phaseAnchor.style.pointerEvents = 'none'; }
-
-  // Reveal details pre-filled
-  revealDetailsPhase();
-  const nameEl  = document.getElementById('create-name');
-  const venueEl = document.getElementById('event-venue');
-  const cityEl  = document.getElementById('event-city');
-  const noteEl  = document.getElementById('event-note');
-  if (nameEl)  nameEl.value  = stub.event_name || '';
-  if (venueEl) venueEl.value = stub.venue || '';
-  if (cityEl)  cityEl.value  = stub.city  || '';
-  if (noteEl)  noteEl.value  = stub.personal_note || '';
-
-  if (currentEventType === 'sports') {
-    const oppEl = document.getElementById('create-opponent');
-    const haEl  = document.getElementById('create-homeaway');
-    if (oppEl) oppEl.value = stub.metadata?.opponent  || '';
-    if (haEl)  haEl.value  = stub.metadata?.home_away || '';
+  const theaterEl = document.getElementById('gedit-theater-extras');
+  if (theaterEl) {
+    theaterEl.style.display = evType === 'theater' ? 'block' : 'none';
+    set('gedit-cast',       meta.cast);
+    set('gedit-director',   meta.director);
+    set('gedit-production', meta.production);
   }
+  const sportsEl = document.getElementById('gedit-sports-extras');
+  if (sportsEl) {
+    sportsEl.style.display = evType === 'sports' ? 'block' : 'none';
+    set('gedit-opponent', meta.opponent);
+    const haEl = document.getElementById('gedit-homeaway');
+    if (haEl) haEl.value = meta.home_away || '';
+  }
+}
+
+async function saveGalleryEdits() {
+  const btn      = document.getElementById('gedit-save-btn');
+  const errEl    = document.getElementById('gedit-error');
+  const savedMsg = document.getElementById('gedit-saved-msg');
+  errEl.classList.remove('show');
+  savedMsg.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
+
+  const get = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  const updates = {
+    event_name:    get('gedit-name'),
+    venue:         get('gedit-venue'),
+    city:          get('gedit-city'),
+    personal_note: get('gedit-note'),
+  };
+
+  const { data: existing } = await sb.from('stubs').select('metadata').eq('id', currentStubId).single();
+  const metadata = existing?.metadata || {};
   if (currentEventType === 'theater') {
-    const castEl = document.getElementById('theater-cast');
-    const dirEl  = document.getElementById('theater-director');
-    const prodEl = document.getElementById('theater-production');
-    if (castEl) castEl.value = stub.metadata?.cast        || '';
-    if (dirEl)  dirEl.value  = stub.metadata?.director    || '';
-    if (prodEl) prodEl.value = stub.metadata?.production  || '';
+    metadata.cast       = get('gedit-cast');
+    metadata.director   = get('gedit-director');
+    metadata.production = get('gedit-production');
+  }
+  if (currentEventType === 'sports') {
+    metadata.opponent  = get('gedit-opponent');
+    const haEl = document.getElementById('gedit-homeaway');
+    metadata.home_away = haEl ? haEl.value : '';
+  }
+  updates.metadata = metadata;
+
+  const { error } = await sb.from('stubs').update(updates).eq('id', currentStubId);
+  btn.disabled = false;
+  btn.innerHTML = 'Save Changes';
+
+  if (error) { showError(errEl, 'Could not save. Please try again.'); return; }
+
+  // Update gallery header live without full reload
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+  set('g-event-name', updates.event_name);
+  set('g-venue',      updates.venue);
+  set('g-city',       updates.city);
+  const noteEl  = document.getElementById('g-note');
+  const noteCon = document.getElementById('g-note-container');
+  if (noteEl && noteCon) {
+    if (updates.personal_note) { noteEl.textContent = `"${updates.personal_note}"`; noteCon.style.display = 'block'; }
+    else noteCon.style.display = 'none';
   }
 
-  const saveBtn = document.getElementById('create-save-btn');
-  if (saveBtn) saveBtn.innerHTML = 'Save Changes →';
+  savedMsg.style.display = 'block';
+  setTimeout(() => { savedMsg.style.display = 'none'; }, 2500);
+}
 
-  goTo('screen-create');
+async function handleGalleryAddPhotos(input) {
+  const files = Array.from(input.files);
+  if (!files.length || !currentStubId || !currentUser) return;
+  const statusEl = document.getElementById('gallery-add-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = `Uploading ${files.length} photo${files.length > 1 ? 's' : ''}...`;
+  let uploaded = 0;
+  for (const file of files) {
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const name = `${Date.now()}-${Math.random().toString(36).slice(2,7)}.${ext}`;
+    const { error } = await sb.storage.from('photos').upload(
+      `${currentUser.id}/${currentStubId}/${name}`, file, { contentType: file.type }
+    );
+    if (!error) uploaded++;
+  }
+  statusEl.textContent = `✓ ${uploaded} photo${uploaded > 1 ? 's' : ''} added`;
+  input.value = '';
+  // Reload gallery grid
+  const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
+  if (stub) await renderGallery(stub);
+  setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
 }
 
 // ── Load existing photos for editing ──
