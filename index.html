@@ -542,6 +542,32 @@
   }
   .event-type-tile.selected .event-type-tile-label { color: var(--gold); }
 
+  /* Sport league icon tiles */
+  .sport-league-tile {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    padding: 14px 8px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .sport-league-tile:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+  .sport-league-tile.selected { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+  .sport-league-tile span { font-size: 26px; line-height: 1; }
+  .sport-league-tile div {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .sport-league-tile.selected div { color: var(--gold); }
+
   /* Sport selector row */
   .sport-select-row {
     display: none;
@@ -1415,19 +1441,21 @@
       <div id="create-anchor-sports" style="display:none;">
 
         <!-- Step A: Sport -->
-        <div class="form-group" style="margin-bottom:16px;">
-          <label>Sport / League</label>
-          <select id="sports-league-pick" onchange="onSportsLeaguePick()">
-            <option value="">Select league...</option>
-            <option value="nfl">NFL Football</option>
-            <option value="nba">NBA Basketball</option>
-            <option value="mlb">MLB Baseball</option>
-            <option value="nhl">NHL Hockey</option>
-            <option value="mls">MLS Soccer</option>
-            <option value="ncaafb">NCAA Football</option>
-            <option value="ncaamb">NCAA Basketball</option>
-            <option value="wnba">WNBA Basketball</option>
-          </select>
+        <!-- Step A: Sport icon grid -->
+        <div style="margin-bottom:16px;">
+          <label style="margin-bottom:12px;display:block;">Select Your Sport</label>
+          <div id="sports-league-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+            <div class="sport-league-tile" id="league-tile-nfl"    onclick="onSportsLeaguePick('nfl')">    <span>🏈</span><div>NFL</div></div>
+            <div class="sport-league-tile" id="league-tile-nba"    onclick="onSportsLeaguePick('nba')">    <span>🏀</span><div>NBA</div></div>
+            <div class="sport-league-tile" id="league-tile-mlb"    onclick="onSportsLeaguePick('mlb')">    <span>⚾</span><div>MLB</div></div>
+            <div class="sport-league-tile" id="league-tile-nhl"    onclick="onSportsLeaguePick('nhl')">    <span>🏒</span><div>NHL</div></div>
+            <div class="sport-league-tile" id="league-tile-mls"    onclick="onSportsLeaguePick('mls')">    <span>⚽</span><div>MLS</div></div>
+            <div class="sport-league-tile" id="league-tile-ncaafb" onclick="onSportsLeaguePick('ncaafb')"> <span>🏈</span><div>NCAA FB</div></div>
+            <div class="sport-league-tile" id="league-tile-ncaamb" onclick="onSportsLeaguePick('ncaamb')"> <span>🏀</span><div>NCAA BB</div></div>
+            <div class="sport-league-tile" id="league-tile-wnba"   onclick="onSportsLeaguePick('wnba')">   <span>🏀</span><div>WNBA</div></div>
+          </div>
+          <!-- Hidden select kept for legacy value reading -->
+          <select id="sports-league-pick" style="display:none;"></select>
         </div>
 
         <!-- Step B: Team — revealed after league chosen -->
@@ -2360,6 +2388,7 @@ function revealAnchorPhase(type) {
     if (musicAnchor)  musicAnchor.style.display  = 'none';
     if (sportsAnchor) sportsAnchor.style.display = 'block';
     // Reset sports step-through
+    document.querySelectorAll('.sport-league-tile').forEach(t => t.classList.remove('selected'));
     document.getElementById('sports-league-pick').value = '';
     ['sports-team-group','sports-date-group','sports-game-confirm',
      'sports-confirm-card','sports-no-game'].forEach(id => {
@@ -2419,7 +2448,13 @@ function revealAnchorPhase(type) {
   });
   document.getElementById('create-back-row').style.display = 'none';
 
-  if (type !== 'sports') {
+  if (type === 'sports') {
+    // Scroll to the league grid so user sees the sport tiles immediately
+    setTimeout(() => {
+      const grid = document.getElementById('sports-league-grid');
+      if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 400);
+  } else {
     setTimeout(() => { const a = document.getElementById('create-artist'); if (a) { a.focus(); a.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 400);
   }
 }
@@ -2538,10 +2573,14 @@ function confirmShow(confirmed) {
 
 let _sportsTeamCache = {}; // keyed by league
 
-async function onSportsLeaguePick() {
-  const league = document.getElementById('sports-league-pick').value;
+async function onSportsLeaguePick(league) {
   if (!league) return;
   currentSport = league;
+
+  // Update tile selected state
+  document.querySelectorAll('.sport-league-tile').forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById('league-tile-' + league);
+  if (tile) tile.classList.add('selected');
 
   const teamGroup = document.getElementById('sports-team-group');
   const dateGroup = document.getElementById('sports-date-group');
@@ -2555,12 +2594,11 @@ async function onSportsLeaguePick() {
   sportsTeamData = null;
   sportsGameData = null;
 
-  // Fetch teams list
   const label = document.getElementById('sports-team-label');
   if (label) label.textContent = league.startsWith('ncaa') ? 'Your School / Team' : 'Your Team';
 
   teamGroup.style.display = 'flex';
-  setTimeout(() => teamGroup.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  setTimeout(() => teamGroup.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
   document.getElementById('sports-team-input').focus();
 
   if (!_sportsTeamCache[league]) {
