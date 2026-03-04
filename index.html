@@ -1351,27 +1351,27 @@
       <p class="screen-desc" style="margin-bottom:28px;">Pick your event type to get started.</p>
       <div class="event-type-grid" id="event-type-tiles">
         <div class="event-type-tile" onclick="createSelectType('concert')" id="tile-concert">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span style="font-size:32px;line-height:1;">🎶</span>
           <div class="event-type-tile-label">Concert</div>
         </div>
         <div class="event-type-tile" onclick="createSelectType('sports')" id="tile-sports">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>
+          <span style="font-size:32px;line-height:1;">🏆</span>
           <div class="event-type-tile-label">Sports</div>
         </div>
         <div class="event-type-tile" onclick="createSelectType('festival')" id="tile-festival">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span style="font-size:32px;line-height:1;">🎪</span>
           <div class="event-type-tile-label">Festival</div>
         </div>
         <div class="event-type-tile" onclick="createSelectType('theater')" id="tile-theater">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>
+          <span style="font-size:32px;line-height:1;">🎭</span>
           <div class="event-type-tile-label">Theater</div>
         </div>
         <div class="event-type-tile" onclick="createSelectType('comedy')" id="tile-comedy">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          <span style="font-size:32px;line-height:1;">🎤</span>
           <div class="event-type-tile-label">Comedy</div>
         </div>
         <div class="event-type-tile" onclick="createSelectType('other')" id="tile-other">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span style="font-size:32px;line-height:1;">🎟️</span>
           <div class="event-type-tile-label">Other</div>
         </div>
       </div>
@@ -2185,25 +2185,19 @@ function getSportIcon(sport) {
 
 function getEventTypeIcon(evType, meta) {
   const t = (evType || '').toLowerCase();
-  const icons = {
-    concert:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-    theater:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>',
-    festival: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-    comedy:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
-  };
-  const defaultColors = {
-    concert: '#9b72d0', sports: '#2ecc71', theater: '#f5c518',
-    festival: '#f08030', comedy: '#e03050',
-  };
 
   if (t === 'sports' && meta) {
-    const sport = meta.sport || '';
-    return getSportIcon(sport);
+    return getSportIcon(meta.sport || '');
   }
 
-  const svg   = icons[t] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-  const color = defaultColors[t] || '#d4b896';
-  return `<div style="color:${color};">${svg}</div>`;
+  const emoji = {
+    concert:  '🎶',
+    festival: '🎪',
+    theater:  '🎭',
+    comedy:   '🎤',
+  }[t] || '🎟️';
+
+  return `<span style="font-size:18px;line-height:1;">${emoji}</span>`;
 }
 
 async function loadDashboard() {
