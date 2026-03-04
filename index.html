@@ -69,6 +69,9 @@
   label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); }
   input, select, textarea { background: #161210; border: 1px solid #2e2820; color: var(--off-white); padding: 14px 16px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; width: 100%; border-radius: 8px; }
   input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+  input[type="date"] { color-scheme: dark; }
+  input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); opacity: 0.8; cursor: pointer; }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
   input::placeholder { color: #444; }
   select option { background: #111; }
   textarea { resize: vertical; min-height: 80px; }
@@ -1508,11 +1511,6 @@
     </div>
     <div class="photo-grid" id="photo-grid"></div>
     <div class="photo-count" id="photo-count"></div>
-    <hr class="divider">
-    <div style="background:#111;border:1px solid #2a2a2a;padding:20px;">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:12px;">Gallery Cover Photo</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Your first selected photo will be used as the gallery cover. Remove and re-add to reorder.</p>
-    </div>
     <div id="photos-error" class="error-msg"></div>
     <div class="form-actions">
       <button class="btn-primary" id="upload-btn" onclick="handlePhotoUpload()">Upload & Continue →</button>
@@ -2261,14 +2259,17 @@ function revealAnchorPhase(type) {
     revealDetailsPhase();
   }
 
-  setTimeout(() => { const a = document.getElementById('create-artist'); if (a) a.focus(); }, 400);
+  setTimeout(() => { const a = document.getElementById('create-artist'); if (a) { a.focus(); a.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 400);
 }
 
 function onCreateArtistInput() {
   const artist = document.getElementById('create-artist').value.trim();
   const dateGroup = document.getElementById('create-date-group');
   if (artist.length >= 2) {
-    dateGroup.style.display = 'flex';
+    if (dateGroup.style.display === 'none') {
+      dateGroup.style.display = 'flex';
+      setTimeout(() => dateGroup.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+    }
   } else {
     dateGroup.style.display = 'none';
     document.getElementById('create-phase-confirm').style.display = 'none';
