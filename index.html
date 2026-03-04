@@ -2392,7 +2392,9 @@ async function loadDashboard() {
     return;
   }
 
+  try {
   container.innerHTML = `<div class="stub-grid">${data.map((stub, i) => {
+    try {
     const evDate = stub.event_date ? formatDate(stub.event_date) : '\u2014';
     const venue  = stub.venue  || '\u2014';
     const city   = stub.city   || '\u2014';
@@ -2465,7 +2467,15 @@ async function loadDashboard() {
         <button class="ticket-delete-btn" onclick="event.stopPropagation();confirmDeleteStub('${stub.id}','${stub.user_id}','${(stub.event_name||'this stub').replace(/'/g,'')}')" title="Delete">\u2715</button>
       </div>
     </div>`;
+    } catch(cardErr) {
+      console.error('Card render error for stub', stub.id, cardErr);
+      return '';
+    }
   }).join('')}</div>`;
+  } catch(err) {
+    console.error('Dashboard render error:', err);
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><p class="empty-state-text">Error loading stubs. Please refresh the page.<br><small style="color:#555;">${err.message}</small></p></div>`;
+  }
 }
 
 // ── Event Screen 1: Core Details — Continue ──
