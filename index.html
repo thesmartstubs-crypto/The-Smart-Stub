@@ -4283,7 +4283,7 @@ async function saveGalleryEdits() {
   btn.disabled = false;
   btn.innerHTML = 'Save Changes';
 
-  if (error) { showError(errEl, 'Could not save. Please try again.'); return; }
+  if (error) { console.error('Save error:', error, 'stubId:', currentStubId, 'updates:', updates); showError(errEl, 'Could not save. Please try again.'); return; }
 
   // Update gallery header live without full reload
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
