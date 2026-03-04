@@ -1324,133 +1324,169 @@
 
 <!-- ── EVENT DETAILS ── -->
 <!-- ── PICK EVENT TYPE (Step 2 of 6) ── -->
-<div id="screen-pick-type" class="screen">
+<!-- ── UNIFIED CREATE STUB SCREEN ── -->
+<div id="screen-create" class="screen">
   <nav class="top-bar">
     <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 2 OF 6 — WHAT KIND OF EVENT?</div>
+    <div class="step-indicator" id="create-step-indicator">NEW STUB</div>
   </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
-  <div class="content" style="max-width:640px;">
-    <h2 class="screen-title">What Kind of <span class="gold">Event?</span></h2>
-    <p class="screen-desc">This helps us tailor your stub and find the right details automatically.</p>
-    <div class="event-type-grid" id="event-type-tiles">
-      <div class="event-type-tile" onclick="selectEventType('concert')" id="tile-concert">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        <div class="event-type-tile-label">Concert</div>
-      </div>
-      <div class="event-type-tile" onclick="selectEventType('sports')" id="tile-sports">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 21v-4"/><path d="M6 3h12l2 7c0 3.31-2.69 6-6 6H10C6.69 16 4 13.31 4 10L6 3z"/><path d="M4 10H2"/><path d="M22 10h-2"/></svg>
-        <div class="event-type-tile-label">Sports Game</div>
-      </div>
-      <div class="event-type-tile" onclick="selectEventType('festival')" id="tile-festival">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        <div class="event-type-tile-label">Festival</div>
-      </div>
-      <div class="event-type-tile" onclick="selectEventType('theater')" id="tile-theater">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>
-        <div class="event-type-tile-label">Theater</div>
-      </div>
-      <div class="event-type-tile" onclick="selectEventType('comedy')" id="tile-comedy">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
-        <div class="event-type-tile-label">Comedy</div>
-      </div>
-      <div class="event-type-tile" onclick="selectEventType('other')" id="tile-other">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <div class="event-type-tile-label">Other</div>
-      </div>
-    </div>
-    <!-- Sport selector — shown only when Sports is selected -->
-    <div class="sport-select-row" id="sport-select-row">
-      <label>Which Sport?</label>
-      <select id="pick-sport">
-        <option value="">Select sport...</option>
-        <option value="nfl">NFL Football</option>
-        <option value="nba">NBA Basketball</option>
-        <option value="mlb">MLB Baseball</option>
-        <option value="nhl">NHL Hockey</option>
-        <option value="mls">MLS Soccer</option>
-        <option value="ncaafb">NCAA Football</option>
-        <option value="ncaamb">NCAA Basketball</option>
-        <option value="wnba">WNBA Basketball</option>
-      </select>
-    </div>
-    <div id="pick-type-error" class="error-msg"></div>
-    <div class="form-actions" style="margin-top:40px;">
-      <button class="btn-primary" id="pick-type-btn" onclick="handlePickType()">Continue &rarr;</button>
-      <button class="back-btn" onclick="goTo('screen-dashboard')">&larr; Back</button>
-    </div>
+  <div class="progress-track">
+    <div class="progress-seg done"></div>
+    <div class="progress-seg active" id="create-prog-2"></div>
+    <div class="progress-seg" id="create-prog-3"></div>
+    <div class="progress-seg" id="create-prog-4"></div>
   </div>
-</div>
+  <div class="content" style="max-width:600px; padding-bottom:80px;">
 
-<div id="screen-event" class="screen">
-  <nav class="top-bar">
-    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator" id="event-step-indicator">STEP 2 OF 5 — CORE DETAILS</div>
-  </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
-  <div class="content" style="max-width:600px;">
-    <h2 class="screen-title" id="event-screen-title">The Core <span class="gold">Details</span></h2>
-    <p class="screen-desc" id="event-screen-desc">These details will be permanently locked to this stub once saved.</p>
-    <div id="permanent-notice" style="background:rgba(201,168,76,0.05);border:1px solid #2a2410;padding:14px 18px;margin-bottom:24px;">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#8a7040;text-transform:uppercase;margin-bottom:6px;">&#9888; Cannot be changed later</div>
-      <p style="font-size:13px;color:#6a6050;line-height:1.6;">These four fields are permanently tied to this stub once saved. Everything on the next screen can be updated any time.</p>
-    </div>
-    <div id="locked-notice" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);padding:14px 18px;margin-bottom:24px;">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:6px;">&#128274; These Fields Are Locked</div>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;">Event name, artist, date and type are permanently tied to this stub and cannot be changed.</p>
+    <!-- PHASE 1: Event Type -->
+    <div id="create-phase-type">
+      <h2 class="screen-title" style="margin-bottom:8px;">What Are You <span class="gold">Memorializing?</span></h2>
+      <p class="screen-desc" style="margin-bottom:28px;">Pick your event type to get started.</p>
+      <div class="event-type-grid" id="event-type-tiles">
+        <div class="event-type-tile" onclick="createSelectType('concert')" id="tile-concert">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <div class="event-type-tile-label">Concert</div>
+        </div>
+        <div class="event-type-tile" onclick="createSelectType('sports')" id="tile-sports">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 21v-4"/><path d="M6 3h12l2 7c0 3.31-2.69 6-6 6H10C6.69 16 4 13.31 4 10L6 3z"/><path d="M4 10H2"/><path d="M22 10h-2"/></svg>
+          <div class="event-type-tile-label">Sports</div>
+        </div>
+        <div class="event-type-tile" onclick="createSelectType('festival')" id="tile-festival">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <div class="event-type-tile-label">Festival</div>
+        </div>
+        <div class="event-type-tile" onclick="createSelectType('theater')" id="tile-theater">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>
+          <div class="event-type-tile-label">Theater</div>
+        </div>
+        <div class="event-type-tile" onclick="createSelectType('comedy')" id="tile-comedy">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          <div class="event-type-tile-label">Comedy</div>
+        </div>
+        <div class="event-type-tile" onclick="createSelectType('other')" id="tile-other">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="event-type-tile-label">Other</div>
+        </div>
+      </div>
+      <div class="sport-select-row" id="sport-select-row" style="margin-top:20px;">
+        <label>Which Sport?</label>
+        <select id="pick-sport">
+          <option value="">Select sport...</option>
+          <option value="nfl">NFL Football</option>
+          <option value="nba">NBA Basketball</option>
+          <option value="mlb">MLB Baseball</option>
+          <option value="nhl">NHL Hockey</option>
+          <option value="mls">MLS Soccer</option>
+          <option value="ncaafb">NCAA Football</option>
+          <option value="ncaamb">NCAA Basketball</option>
+          <option value="wnba">WNBA Basketball</option>
+        </select>
+      </div>
+      <div id="create-type-error" class="error-msg"></div>
     </div>
 
-    <div class="form-grid">
-      <div class="form-group full"><label id="label-event-name">Event Name</label><input type="text" id="event-name" placeholder="e.g. The Eras Tour (optional)"></div>
-      <div class="form-group full"><label id="label-event-artist">Artist / Performer</label><input type="text" id="event-artist" placeholder="e.g. Taylor Swift (optional)"></div>
-      <div class="form-group full" id="opponent-group" style="display:none;"><label>Opponent Team</label><input type="text" id="event-opponent" placeholder="e.g. New York Giants (optional)"></div>
-      <!-- Theater-specific fields -->
-      <div class="form-group full" id="theater-cast-group" style="display:none;"><label>Lead Cast (optional)</label><input type="text" id="theater-cast" placeholder="e.g. Aaron Tveit, Sutton Foster"></div>
-      <div class="form-group full" id="theater-director-group" style="display:none;"><label>Director (optional)</label><input type="text" id="theater-director" placeholder="e.g. Bartlett Sher"></div>
-      <div class="form-group full" id="theater-production-group" style="display:none;"><label>Production Company (optional)</label><input type="text" id="theater-production" placeholder="e.g. Lincoln Center Theater"></div>
-      <div class="form-group"><label>Event Date</label><input type="date" id="event-date"></div>
-      <div class="form-group" id="homeaway-group" style="display:none;"><label>Home or Away?</label>
-        <select id="event-homeaway">
+    <!-- PHASE 2: Anchor fields — revealed after type selected -->
+    <div id="create-phase-anchor" style="display:none; margin-top:32px; padding-top:32px; border-top:1px solid #1e1a14;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;" id="create-anchor-label">Artist &amp; Date</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:#4a4030;">🔒 LOCKED AFTER SAVE</div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label id="create-artist-label">Artist / Headliner</label>
+        <input type="text" id="create-artist" placeholder="e.g. Taylor Swift" oninput="onCreateArtistInput()" autocomplete="off">
+      </div>
+      <div class="form-group" id="create-date-group" style="display:none; margin-bottom:16px;">
+        <label>Event Date</label>
+        <input type="date" id="create-date" onchange="onCreateDateChange()">
+      </div>
+      <div id="create-opponent-group" style="display:none;" class="form-group">
+        <label>Opponent Team</label>
+        <input type="text" id="create-opponent" placeholder="e.g. New York Giants">
+      </div>
+      <div id="create-homeaway-group" style="display:none;" class="form-group">
+        <label>Home or Away?</label>
+        <select id="create-homeaway">
           <option value="">Select...</option>
           <option value="home">Home Game</option>
           <option value="away">Away Game</option>
         </select>
       </div>
     </div>
-    <div id="event-error" class="error-msg"></div>
-    <div class="form-actions">
-      <button class="btn-primary" id="event-btn" onclick="handleEventCoreNext()">Continue &rarr;</button>
-      <button class="back-btn" id="event-back-btn" onclick="goTo('screen-pick-type')">&larr; Back</button>
-    </div>
-  </div>
-</div>
 
-<!-- ── EVENT FINE DETAILS (Step 3 of 5) ── -->
-<div id="screen-event-details" class="screen">
-  <nav class="top-bar">
-    <div class="logo" onclick="logoClick()" style="cursor:pointer;">Smart<span>Stubs</span></div>
-    <div class="step-indicator">STEP 4 OF 6 &mdash; EVENT DETAILS</div>
-  </nav>
-  <div class="progress-track"><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg done"></div><div class="progress-seg active"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
-  <div class="content" style="max-width:600px;">
-    <h2 class="screen-title" id="event-details-title">The Fine <span class="gold">Details</span></h2>
-    <p class="screen-desc">Add your venue, seat info, and a personal note. All of these can be updated any time.</p>
-    <div style="background:rgba(76,175,80,0.05);border:1px solid #1a2e1a;padding:14px 18px;margin-bottom:24px;">
-      <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#4a8a4a;text-transform:uppercase;margin-bottom:6px;">&#10003; Always Editable</div>
-      <p style="font-size:13px;color:#4a6a4a;line-height:1.6;">Everything on this screen can be changed later from your My Stubs page at any time.</p>
+    <!-- PHASE 3: Setlist.fm confirmation card -->
+    <div id="create-phase-confirm" style="display:none; margin-top:28px;">
+      <div id="create-lookup-status" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span class="loading-spinner" id="create-lookup-spinner" style="display:none;"></span>
+        <span id="create-lookup-text">Searching for your show...</span>
+      </div>
+      <div id="create-confirm-card" style="display:none; background:#111008; border:1px solid #3a3020; border-radius:10px; padding:24px; margin-bottom:20px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:16px;">Is this your show?</div>
+        <div id="create-confirm-content" style="margin-bottom:20px;"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn-primary" style="padding:12px 28px;font-size:12px;" onclick="confirmShow(true)">Yes, that's it ✓</button>
+          <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="confirmShow(false)">Not my show</button>
+        </div>
+      </div>
     </div>
-    <div class="form-grid">
-      <div class="form-group"><label>Venue Name</label><input type="text" id="event-venue" placeholder="e.g. Madison Square Garden (optional)"></div>
-      <div class="form-group"><label>City, State</label><input type="text" id="event-city" placeholder="e.g. New York, NY (optional)"></div>
-      <div class="form-group"><label>Section / Row</label><input type="text" id="event-section" placeholder="e.g. Floor B / Row 3 (optional)"></div>
-      <div class="form-group"><label>Seat Number</label><input type="text" id="event-seat" placeholder="e.g. 14&#8211;15 (optional)"></div>
-      <div class="form-group full"><label>Your Personal Note (optional)</label><textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..."></textarea></div>
+
+    <!-- PHASE 4: Optional details — revealed after confirm or skip -->
+    <div id="create-phase-details" style="display:none; margin-top:28px; padding-top:28px; border-top:1px solid #1e1a14;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:#6a9a6a;text-transform:uppercase;">✓ Always Editable</div>
+        <button onclick="skipToPhotos()" style="background:none;border:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);cursor:pointer;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.color='var(--off-white)'" onmouseout="this.style.color='var(--muted)'">Skip to Photos →</button>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;" id="create-name-group">
+        <label id="create-name-label">Tour / Event Name</label>
+        <input type="text" id="create-name" placeholder="e.g. The Eras Tour">
+      </div>
+      <div class="form-grid" style="margin-bottom:16px;">
+        <div class="form-group">
+          <label>Venue</label>
+          <input type="text" id="event-venue" placeholder="e.g. Madison Square Garden">
+        </div>
+        <div class="form-group">
+          <label>City, State</label>
+          <input type="text" id="event-city" placeholder="e.g. New York, NY">
+        </div>
+        <div class="form-group">
+          <label>Section / Row</label>
+          <input type="text" id="event-section" placeholder="e.g. Floor B / Row 3">
+        </div>
+        <div class="form-group">
+          <label>Seat Number</label>
+          <input type="text" id="event-seat" placeholder="e.g. 14–15">
+        </div>
+      </div>
+      <div id="create-theater-extras" style="display:none;">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Lead Cast</label>
+          <input type="text" id="theater-cast" placeholder="e.g. Aaron Tveit, Sutton Foster">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Director</label>
+          <input type="text" id="theater-director" placeholder="e.g. Bartlett Sher">
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Production Company</label>
+          <input type="text" id="theater-production" placeholder="e.g. Lincoln Center Theater">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Personal Note <span style="color:var(--muted);font-size:9px;letter-spacing:1px;">(OPTIONAL)</span></label>
+        <textarea id="event-note" placeholder="Write a short memory or note to attach to this stub..." style="min-height:80px;"></textarea>
+      </div>
+      <div id="create-details-error" class="error-msg"></div>
+      <div class="form-actions">
+        <button class="btn-primary" id="create-save-btn" onclick="handleCreateSave()">Next: Upload Photos →</button>
+        <button class="back-btn" onclick="goTo('screen-dashboard')">← Cancel</button>
+      </div>
     </div>
-    <div id="event-details-error" class="error-msg"></div>
-    <div class="form-actions">
-      <button class="btn-primary" id="event-details-btn" onclick="handleEventDetailsSave()">Next: Upload Photos &rarr;</button>
-      <button class="back-btn" onclick="goBackToEventCore()">&larr; Back</button>
+
+    <!-- Back link shown before type is selected -->
+    <div id="create-back-row" style="margin-top:32px;">
+      <button class="back-btn" onclick="goTo('screen-dashboard')">← Back to Dashboard</button>
     </div>
+
   </div>
 </div>
 
@@ -1777,17 +1813,18 @@ let _suppressHistoryPush = false;
 
 function goTo(screenId, pushState = true) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(screenId).classList.add('active');
+  const target = document.getElementById(screenId);
+  if (!target) return;
+  target.classList.add('active');
   window.scrollTo(0, 0);
 
   if (pushState && !_suppressHistoryPush) {
-    // Store screen + any relevant state
     const state = { screen: screenId };
     if (screenId === 'screen-gallery' && currentSlug) state.slug = currentSlug;
-    if (screenId === 'screen-event' || screenId === 'screen-event-details' || 
-        screenId === 'screen-photos' || screenId === 'screen-nfc') {
+    if (['screen-create','screen-event','screen-event-details',
+         'screen-photos','screen-nfc'].includes(screenId)) {
       state.stubId = currentStubId;
-      state.slug = currentSlug;
+      state.slug   = currentSlug;
     }
     history.pushState(state, '', '');
   }
@@ -1836,8 +1873,8 @@ window.addEventListener('popstate', async (e) => {
     } else {
       goTo('screen-dashboard', false);
     }
-  } else if (screen === 'screen-pick-type') {
-    goTo('screen-pick-type', false);
+  } else if (screen === 'screen-pick-type' || screen === 'screen-create') {
+    goTo('screen-create', false);
   } else if (screen === 'screen-landing') {
     goTo('screen-landing', false);
   } else if (screen === 'screen-login' || screen === 'screen-signup') {
@@ -2095,183 +2132,346 @@ async function loadDashboard() {
 // ── Event Screen 1: Core Details — Continue ──
 
 // ── Event Type Picker ──
-function selectEventType(type) {
+// ══════════════════════════════════════════════
+// UNIFIED CREATE FLOW — Progressive Reveal
+// ══════════════════════════════════════════════
+
+let createSetlistData = null;
+let createSetlistConfirmed = false;
+
+function resetCreateScreen() {
+  currentEventType = null;
+  currentSport = null;
+  createSetlistData = null;
+  createSetlistConfirmed = false;
+  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
+  document.getElementById('create-phase-anchor').style.display = 'none';
+  document.getElementById('create-phase-confirm').style.display = 'none';
+  document.getElementById('create-phase-details').style.display = 'none';
+  document.getElementById('create-back-row').style.display = 'block';
+  document.getElementById('sport-select-row').classList.remove('visible');
+  // Restore interactivity if coming from edit mode
+  const phaseType = document.getElementById('create-phase-type');
+  const phaseAnchor = document.getElementById('create-phase-anchor');
+  if (phaseType) { phaseType.style.opacity = ''; phaseType.style.pointerEvents = ''; }
+  if (phaseAnchor) { phaseAnchor.style.opacity = ''; phaseAnchor.style.pointerEvents = ''; }
+  ['create-artist','create-date','create-opponent','event-venue','event-city',
+   'event-section','event-seat','event-note','create-name'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const card = document.getElementById('create-confirm-card');
+  if (card) card.style.display = 'none';
+  const saveBtn = document.getElementById('create-save-btn');
+  if (saveBtn) saveBtn.innerHTML = 'Next: Upload Photos →';
+}
+
+function createSelectType(type) {
   currentEventType = type;
-  // Update tile selection
   document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
   const tile = document.getElementById('tile-' + type);
   if (tile) tile.classList.add('selected');
-  // Show sport selector if sports
   const sportRow = document.getElementById('sport-select-row');
   if (type === 'sports') {
     sportRow.classList.add('visible');
+    // Sport picker onChange will call revealAnchorPhase
   } else {
     sportRow.classList.remove('visible');
     document.getElementById('pick-sport').value = '';
     currentSport = null;
+    revealAnchorPhase(type);
   }
-  document.getElementById('pick-type-error').classList.remove('show');
 }
 
-function handlePickType() {
-  const errEl = document.getElementById('pick-type-error');
-  if (!currentEventType) return showError(errEl, 'Please select an event type.');
-  if (currentEventType === 'sports') {
-    currentSport = document.getElementById('pick-sport').value;
-    if (!currentSport) return showError(errEl, 'Please select a sport.');
+// Wire up sport picker after DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const pickSport = document.getElementById('pick-sport');
+  if (pickSport) {
+    pickSport.addEventListener('change', () => {
+      if (pickSport.value && currentEventType === 'sports') {
+        currentSport = pickSport.value;
+        revealAnchorPhase('sports');
+      }
+    });
   }
-  // Adapt the core details screen labels & fields based on type
-  adaptEventScreen(currentEventType);
-  goTo('screen-event');
-}
+});
 
-function adaptEventScreen(type) {
-  const nameLabel = document.getElementById('label-event-name');
-  const artistLabel = document.getElementById('label-event-artist');
-  const artistInput = document.getElementById('event-artist');
-  const nameInput = document.getElementById('event-name');
-  const opponentGroup = document.getElementById('opponent-group');
-  const homeawayGroup = document.getElementById('homeaway-group');
-  const stepIndicator = document.getElementById('event-step-indicator');
+function revealAnchorPhase(type) {
+  const artistLabel = document.getElementById('create-artist-label');
+  const artistInput = document.getElementById('create-artist');
+  const anchorLabel = document.getElementById('create-anchor-label');
+  const opponentGroup = document.getElementById('create-opponent-group');
+  const homeawayGroup = document.getElementById('create-homeaway-group');
+  const nameLabel = document.getElementById('create-name-label');
+  const nameGroup = document.getElementById('create-name-group');
+  const theaterExtras = document.getElementById('create-theater-extras');
 
-  const theaterCastGroup = document.getElementById('theater-cast-group');
-  const theaterDirectorGroup = document.getElementById('theater-director-group');
-  const theaterProductionGroup = document.getElementById('theater-production-group');
-  // Reset all conditional groups
   opponentGroup.style.display = 'none';
   homeawayGroup.style.display = 'none';
-  if (theaterCastGroup) theaterCastGroup.style.display = 'none';
-  if (theaterDirectorGroup) theaterDirectorGroup.style.display = 'none';
-  if (theaterProductionGroup) theaterProductionGroup.style.display = 'none';
+  if (theaterExtras) theaterExtras.style.display = 'none';
+  if (nameGroup) nameGroup.style.display = 'flex';
 
   if (type === 'concert') {
-    nameLabel.textContent = 'Concert / Tour Name';
-    nameInput.placeholder = 'e.g. The Eras Tour (optional)';
+    anchorLabel.textContent = 'Artist & Date';
     artistLabel.textContent = 'Artist / Headliner';
     artistInput.placeholder = 'e.g. Taylor Swift';
+    if (nameLabel) nameLabel.textContent = 'Tour / Concert Name';
   } else if (type === 'sports') {
-    nameLabel.textContent = 'Event / Game Name (optional)';
-    nameInput.placeholder = 'e.g. Wild Card Game (optional)';
+    anchorLabel.textContent = 'Team & Date';
     artistLabel.textContent = 'Your Team';
     artistInput.placeholder = 'e.g. New England Patriots';
     opponentGroup.style.display = 'flex';
     homeawayGroup.style.display = 'flex';
+    if (nameGroup) nameGroup.style.display = 'none';
   } else if (type === 'festival') {
-    nameLabel.textContent = 'Festival Name';
-    nameInput.placeholder = 'e.g. Coachella 2024';
-    artistLabel.textContent = 'Headliner / Main Act';
-    artistInput.placeholder = 'e.g. Beyoncé (optional)';
+    anchorLabel.textContent = 'Festival & Date';
+    artistLabel.textContent = 'Festival Name';
+    artistInput.placeholder = 'e.g. Coachella 2025';
+    if (nameLabel) nameLabel.textContent = 'Headliner / Main Act';
   } else if (type === 'theater') {
-    nameLabel.textContent = 'Show Name';
-    nameInput.placeholder = 'e.g. Hamilton';
-    artistLabel.textContent = 'Theater / Venue';
-    artistInput.placeholder = 'e.g. Richard Rodgers Theatre';
-    if (theaterCastGroup) theaterCastGroup.style.display = 'flex';
-    if (theaterDirectorGroup) theaterDirectorGroup.style.display = 'flex';
-    if (theaterProductionGroup) theaterProductionGroup.style.display = 'flex';
+    anchorLabel.textContent = 'Show & Date';
+    artistLabel.textContent = 'Show Name';
+    artistInput.placeholder = 'e.g. Hamilton';
+    if (nameLabel) nameLabel.textContent = 'Theater / Venue';
+    if (theaterExtras) theaterExtras.style.display = 'block';
   } else if (type === 'comedy') {
-    nameLabel.textContent = 'Show / Tour Name (optional)';
-    nameInput.placeholder = 'e.g. The Come Back Tour (optional)';
+    anchorLabel.textContent = 'Comedian & Date';
     artistLabel.textContent = 'Comedian / Performer';
     artistInput.placeholder = 'e.g. Dave Chappelle';
+    if (nameLabel) nameLabel.textContent = 'Tour / Show Name';
   } else {
-    nameLabel.textContent = 'Event Name';
-    nameInput.placeholder = 'e.g. Event name (optional)';
+    anchorLabel.textContent = 'Performer & Date';
     artistLabel.textContent = 'Artist / Performer';
-    artistInput.placeholder = 'e.g. Performer name (optional)';
+    artistInput.placeholder = 'e.g. Performer name';
+    if (nameLabel) nameLabel.textContent = 'Event Name';
   }
-  if (stepIndicator) stepIndicator.textContent = 'STEP 3 OF 6 — CORE DETAILS';
+
+  const phase = document.getElementById('create-phase-anchor');
+  phase.style.display = 'block';
+  phase.style.opacity = '0';
+  phase.style.transform = 'translateY(12px)';
+  requestAnimationFrame(() => {
+    phase.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    phase.style.opacity = '1';
+    phase.style.transform = 'translateY(0)';
+  });
+  document.getElementById('create-back-row').style.display = 'none';
+
+  // Sports: skip lookup, go straight to details after date
+  if (type === 'sports') {
+    revealDetailsPhase();
+  }
+
+  setTimeout(() => { const a = document.getElementById('create-artist'); if (a) a.focus(); }, 400);
 }
 
-async function handleEventCoreNext() {
-  const errEl = document.getElementById('event-error');
-  const btn = document.getElementById('event-btn');
-  errEl.classList.remove('show');
-  if (isEditing) {
-    await loadFineDetailsForEdit();
-    goTo('screen-event-details');
+function onCreateArtistInput() {
+  const artist = document.getElementById('create-artist').value.trim();
+  const dateGroup = document.getElementById('create-date-group');
+  if (artist.length >= 2) {
+    dateGroup.style.display = 'flex';
+  } else {
+    dateGroup.style.display = 'none';
+    document.getElementById('create-phase-confirm').style.display = 'none';
+    document.getElementById('create-phase-details').style.display = 'none';
+  }
+}
+
+async function onCreateDateChange() {
+  const artist = document.getElementById('create-artist').value.trim();
+  const date = document.getElementById('create-date').value;
+  if (!artist || !date) return;
+
+  const confirmPhase = document.getElementById('create-phase-confirm');
+  const confirmCard = document.getElementById('create-confirm-card');
+  const lookupStatus = document.getElementById('create-lookup-status');
+  const lookupText = document.getElementById('create-lookup-text');
+  const spinner = document.getElementById('create-lookup-spinner');
+  const canLookup = ['concert', 'festival', 'comedy'].includes(currentEventType);
+
+  confirmPhase.style.display = 'block';
+  confirmCard.style.display = 'none';
+  lookupStatus.style.display = 'flex';
+
+  if (!canLookup) {
+    lookupStatus.style.display = 'none';
+    revealDetailsPhase();
     return;
   }
-  const name = document.getElementById('event-name').value.trim();
-  const artist = document.getElementById('event-artist').value.trim();
-  const date = document.getElementById('event-date').value;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
-  const slug = generateSlug();
-  // Build metadata based on event type
-  const metadata = { event_type: currentEventType || 'other' };
-  if (currentEventType === 'sports') {
-    metadata.sport = currentSport;
-    metadata.opponent = document.getElementById('event-opponent')?.value.trim() || '';
-    metadata.home_away = document.getElementById('event-homeaway')?.value || '';
-  } else if (currentEventType === 'theater') {
-    metadata.cast = document.getElementById('theater-cast')?.value.trim() || '';
-    metadata.director = document.getElementById('theater-director')?.value.trim() || '';
-    metadata.production = document.getElementById('theater-production')?.value.trim() || '';
+
+  lookupText.textContent = 'Searching for your show...';
+  spinner.style.display = 'inline-block';
+
+  try {
+    const [year, month, day] = date.split('-');
+    const fmDate = `${day}-${month}-${year}`;
+    const res = await fetch(SETLIST_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ artistName: artist, date: fmDate })
+    });
+    spinner.style.display = 'none';
+    if (!res.ok) throw new Error('no results');
+    const data = await res.json();
+    if (!data.setlist || data.setlist.length === 0) throw new Error('no results');
+
+    const setlist = data.setlist[0];
+    createSetlistData = setlist;
+    const venueName = setlist.venue?.name || '';
+    const cityName  = setlist.venue?.city?.name || '';
+    const stateCode = setlist.venue?.city?.stateCode || setlist.venue?.city?.country?.code || '';
+    const tourName  = setlist.tour?.name || '';
+    const songCount = (setlist.sets?.set || []).flatMap(s => s.song || []).length;
+
+    let html = '<div style="display:grid;gap:10px;">';
+    if (venueName) html += `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:60px;">VENUE</span><span style="font-size:14px;color:var(--off-white);">${venueName}</span></div>`;
+    if (cityName)  html += `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:60px;">CITY</span><span style="font-size:14px;color:var(--off-white);">${cityName}${stateCode ? ', '+stateCode : ''}</span></div>`;
+    if (tourName)  html += `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:60px;">TOUR</span><span style="font-size:14px;color:var(--gold);">${tourName}</span></div>`;
+    if (songCount > 0) html += `<div style="display:flex;gap:12px;align-items:baseline;"><span style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);min-width:60px;">SETLIST</span><span style="font-size:14px;color:var(--off-white);">${songCount} songs found</span></div>`;
+    html += '</div>';
+
+    document.getElementById('create-confirm-content').innerHTML = html;
+    lookupStatus.style.display = 'none';
+    confirmCard.style.display = 'block';
+    confirmCard.style.opacity = '0';
+    confirmCard.style.transform = 'translateY(8px)';
+    requestAnimationFrame(() => {
+      confirmCard.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      confirmCard.style.opacity = '1';
+      confirmCard.style.transform = 'translateY(0)';
+    });
+  } catch(e) {
+    spinner.style.display = 'none';
+    lookupText.textContent = 'No show found — fill in the details below.';
+    setTimeout(() => {
+      lookupStatus.style.display = 'none';
+      revealDetailsPhase();
+    }, 1400);
   }
-  const result = await sb.from('stubs').insert({
-    user_id: currentUser.id, event_name: name, artist, event_date: date || null, slug, metadata
-  }).select().single();
-  btn.disabled = false;
-  btn.innerHTML = 'Continue →';
-  if (result.error) return showError(errEl, 'Could not save event details. Please try again.');
-  currentStubId = result.data.id;
-  currentSlug = result.data.slug;
-  ['event-venue','event-city','event-section','event-seat','event-note'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  goTo('screen-event-details');
 }
 
-// ── Event Screen 2: Fine Details — Save ──
-async function handleEventDetailsSave() {
-  const venue = document.getElementById('event-venue').value.trim();
-  const city = document.getElementById('event-city').value.trim();
-  const note = document.getElementById('event-note').value.trim();
-  const errEl = document.getElementById('event-details-error');
-  const btn = document.getElementById('event-details-btn');
-  errEl.classList.remove('show');
-  if (!currentStubId) return showError(errEl, 'Something went wrong. Please go back and try again.');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loading-spinner"></span>Saving...';
-  const result = await sb.from('stubs').update({ venue, city, personal_note: note })
-    .eq('id', currentStubId).select().single();
-  btn.disabled = false;
-  btn.innerHTML = 'Next: Upload Photos →';
-  if (result.error) return showError(errEl, 'Could not save details. Please try again.');
+function confirmShow(confirmed) {
+  if (confirmed && createSetlistData) {
+    const s = createSetlistData;
+    const venue = s.venue?.name || '';
+    const city  = s.venue?.city?.name || '';
+    const state = s.venue?.city?.stateCode || '';
+    const tour  = s.tour?.name || '';
+    const venueEl = document.getElementById('event-venue');
+    const cityEl  = document.getElementById('event-city');
+    const nameEl  = document.getElementById('create-name');
+    if (venueEl) venueEl.value = venue;
+    if (cityEl)  cityEl.value  = city + (state ? ', '+state : '');
+    if (nameEl && tour) nameEl.value = tour;
+    createSetlistConfirmed = true;
+  }
+  document.getElementById('create-confirm-card').style.display = 'none';
+  document.getElementById('create-phase-confirm').style.display = 'none';
+  revealDetailsPhase();
+}
+
+function revealDetailsPhase() {
+  const phase = document.getElementById('create-phase-details');
+  phase.style.display = 'block';
+  phase.style.opacity = '0';
+  phase.style.transform = 'translateY(12px)';
+  requestAnimationFrame(() => {
+    phase.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+    phase.style.opacity = '1';
+    phase.style.transform = 'translateY(0)';
+  });
+  document.getElementById('create-prog-3').classList.add('active');
+  setTimeout(() => phase.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+}
+
+async function skipToPhotos() {
+  await handleCreateSave();
+}
+
+async function handleCreateSave() {
+  const btn = document.getElementById('create-save-btn');
+  const errEl = document.getElementById('create-details-error');
+  if (errEl) errEl.classList.remove('show');
+
+  const artist  = document.getElementById('create-artist')?.value.trim() || '';
+  const date    = document.getElementById('create-date')?.value || '';
+  const name    = document.getElementById('create-name')?.value.trim() || '';
+  const venue   = document.getElementById('event-venue')?.value.trim() || '';
+  const city    = document.getElementById('event-city')?.value.trim() || '';
+  const section = document.getElementById('event-section')?.value.trim() || '';
+  const seat    = document.getElementById('event-seat')?.value.trim() || '';
+  const note    = document.getElementById('event-note')?.value.trim() || '';
+
+  if (!artist) {
+    if (errEl) showError(errEl, 'Please enter an artist or performer name.');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="loading-spinner"></span>Saving...'; }
+
+  const slug = generateSlug();
+  const metadata = { event_type: currentEventType || 'other' };
+  if (currentEventType === 'sports') {
+    metadata.sport    = currentSport;
+    metadata.opponent = document.getElementById('create-opponent')?.value.trim() || '';
+    metadata.home_away = document.getElementById('create-homeaway')?.value || '';
+  } else if (currentEventType === 'theater') {
+    metadata.cast       = document.getElementById('theater-cast')?.value.trim() || '';
+    metadata.director   = document.getElementById('theater-director')?.value.trim() || '';
+    metadata.production = document.getElementById('theater-production')?.value.trim() || '';
+  }
+
+  const result = await sb.from('stubs').insert({
+    user_id: currentUser.id,
+    event_name: name || artist,
+    artist,
+    event_date: date || null,
+    venue, city,
+    personal_note: note,
+    slug,
+    metadata
+  }).select().single();
+
+  if (btn) { btn.disabled = false; btn.innerHTML = 'Next: Upload Photos →'; }
+  if (result.error) {
+    if (errEl) showError(errEl, 'Could not save. Please try again.');
+    return;
+  }
+
+  currentStubId = result.data.id;
+  currentSlug   = result.data.slug;
+
   await loadExistingPhotos();
   goTo('screen-photos');
 }
 
-// ── Back: Fine Details → Core Details ──
-function goBackToEventCore() {
-  goTo('screen-event');
-}
-
-// ── Back: Photos → Fine Details ──
+// ── Back: Photos → Create ──
 async function goBackToEventDetails() {
   if (currentStubId) {
     const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
     if (stub) {
-      document.getElementById('event-venue').value = stub.venue || '';
-      document.getElementById('event-city').value = stub.city || '';
-      document.getElementById('event-note').value = stub.personal_note || '';
+      const v = document.getElementById('event-venue'); if (v) v.value = stub.venue || '';
+      const c = document.getElementById('event-city');  if (c) c.value = stub.city  || '';
+      const n = document.getElementById('event-note');  if (n) n.value = stub.personal_note || '';
     }
   }
   photosToDelete = []; photos = [];
-  goTo('screen-event-details');
+  goTo('screen-create');
 }
 
-// ── Load fine details when editing ──
+// ── Compat shims ──
+function selectEventType(type) { createSelectType(type); }
+function handlePickType() {}
+function adaptEventScreen(type) {}
+async function handleEventCoreNext() {}
+async function handleEventDetailsSave() {}
+function goBackToEventCore() { goTo('screen-create'); }
 async function loadFineDetailsForEdit() {
   if (!currentStubId) return;
   const { data: stub } = await sb.from('stubs').select('*').eq('id', currentStubId).single();
   if (stub) {
-    document.getElementById('event-venue').value = stub.venue || '';
-    document.getElementById('event-city').value = stub.city || '';
-    document.getElementById('event-section').value = '';
-    document.getElementById('event-seat').value = '';
-    document.getElementById('event-note').value = stub.personal_note || '';
+    const v = document.getElementById('event-venue'); if (v) v.value = stub.venue || '';
+    const c = document.getElementById('event-city');  if (c) c.value = stub.city  || '';
+    const n = document.getElementById('event-note');  if (n) n.value = stub.personal_note || '';
   }
 }
 
@@ -3282,7 +3482,8 @@ function startNewStub() {
   const tcEl = document.getElementById('theater-cast'); if (tcEl) tcEl.value = '';
   const tdEl = document.getElementById('theater-director'); if (tdEl) tdEl.value = '';
   const tpEl = document.getElementById('theater-production'); if (tpEl) tpEl.value = '';
-  goTo('screen-pick-type');
+  resetCreateScreen();
+  goTo('screen-create');
 }
 
 // ── Edit Stub ──
@@ -3291,28 +3492,63 @@ async function editStub(stubId) {
   if (error || !stub) return alert('Could not load stub details. Please try again.');
 
   currentStubId = stub.id;
-  currentSlug = stub.slug;
-  isEditing = true;
-  document.getElementById('event-name').value = stub.event_name || '';
-  document.getElementById('event-artist').value = stub.artist || '';
-  document.getElementById('event-date').value = stub.event_date || '';
-  document.getElementById('event-venue').value = stub.venue || '';
-  document.getElementById('event-city').value = stub.city || '';
-  document.getElementById('event-note').value = stub.personal_note || '';
+  currentSlug   = stub.slug;
+  isEditing     = true;
+  currentEventType = stub.metadata?.event_type || 'concert';
+  currentSport     = stub.metadata?.sport || null;
 
-  // Lock all four core identity fields
-  ['event-name','event-artist','event-date','event-type'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.setAttribute('readonly', true); el.classList.add('locked-field'); }
-  });
-  const pn2 = document.getElementById('permanent-notice');
-  const ln2 = document.getElementById('locked-notice');
-  if (pn2) pn2.style.display = 'none';
-  if (ln2) ln2.style.display = 'block';
-  document.getElementById('event-screen-title').innerHTML = 'Edit Your <span class="gold">Stub</span>';
-  document.getElementById('event-screen-desc').textContent = 'Core details are locked. Continue to update venue, seat info and photos.';
-  document.getElementById('event-btn').innerHTML = 'Continue →';
-  goTo('screen-event');
+  resetCreateScreen();
+
+  // Select the type tile
+  document.querySelectorAll('.event-type-tile').forEach(t => t.classList.remove('selected'));
+  const tile = document.getElementById('tile-' + currentEventType);
+  if (tile) tile.classList.add('selected');
+
+  // Reveal anchor phase pre-filled (dimmed — locked)
+  revealAnchorPhase(currentEventType);
+  const artistEl = document.getElementById('create-artist');
+  const dateEl   = document.getElementById('create-date');
+  const dateGrp  = document.getElementById('create-date-group');
+  if (artistEl) artistEl.value = stub.artist || '';
+  if (dateEl)   dateEl.value   = stub.event_date || '';
+  if (dateGrp)  dateGrp.style.display = 'flex';
+
+  // Dim locked sections
+  const phaseType   = document.getElementById('create-phase-type');
+  const phaseAnchor = document.getElementById('create-phase-anchor');
+  if (phaseType)   { phaseType.style.opacity = '0.45'; phaseType.style.pointerEvents = 'none'; }
+  if (phaseAnchor) { phaseAnchor.style.opacity = '0.45'; phaseAnchor.style.pointerEvents = 'none'; }
+
+  // Reveal details pre-filled
+  revealDetailsPhase();
+  const nameEl  = document.getElementById('create-name');
+  const venueEl = document.getElementById('event-venue');
+  const cityEl  = document.getElementById('event-city');
+  const noteEl  = document.getElementById('event-note');
+  if (nameEl)  nameEl.value  = stub.event_name || '';
+  if (venueEl) venueEl.value = stub.venue || '';
+  if (cityEl)  cityEl.value  = stub.city  || '';
+  if (noteEl)  noteEl.value  = stub.personal_note || '';
+
+  if (currentEventType === 'sports') {
+    const oppEl = document.getElementById('create-opponent');
+    const haEl  = document.getElementById('create-homeaway');
+    if (oppEl) oppEl.value = stub.metadata?.opponent  || '';
+    if (haEl)  haEl.value  = stub.metadata?.home_away || '';
+  }
+  if (currentEventType === 'theater') {
+    const castEl = document.getElementById('theater-cast');
+    const dirEl  = document.getElementById('theater-director');
+    const prodEl = document.getElementById('theater-production');
+    if (castEl) castEl.value = stub.metadata?.cast        || '';
+    if (dirEl)  dirEl.value  = stub.metadata?.director    || '';
+    if (prodEl) prodEl.value = stub.metadata?.production  || '';
+  }
+
+  const saveBtn = document.getElementById('create-save-btn');
+  if (saveBtn) saveBtn.innerHTML = 'Save Changes →';
+
+  goTo('screen-create');
 }
 
 // ── Load existing photos for editing ──
