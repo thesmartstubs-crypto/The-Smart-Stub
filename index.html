@@ -2167,21 +2167,41 @@ function getEventTypeClass(evType) {
   return 'event-other';
 }
 
-function getEventTypeIcon(evType) {
+function getSportIcon(sport) {
+  const s = (sport || '').toLowerCase();
+  if (s === 'nfl' || s === 'ncaafb') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="10" ry="6.5" transform="rotate(-30 12 12)"/><path d="M12 2.5 Q15 7 15 12 Q15 17 12 21.5"/><path d="M12 2.5 Q9 7 9 12 Q9 17 12 21.5"/><path d="M3.5 9.5 Q8 10.5 12 10.5 Q16 10.5 20.5 9.5"/></svg>';
+  if (s === 'nba' || s === 'wnba' || s === 'ncaamb') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2 Q16 7 16 12 Q16 17 12 22"/><path d="M12 2 Q8 7 8 12 Q8 17 12 22"/><path d="M2 12 h20"/></svg>';
+  if (s === 'mlb') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2 Q15 6 15.5 12 Q15 18 12 22"/><path d="M12 2 Q9 6 8.5 12 Q9 18 12 22"/></svg>';
+  if (s === 'nhl') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="19" rx="7" ry="2.5"/><path d="M7 19 L4 8 Q5 7 7 8 L12 15 L17 8 Q19 7 20 8 L17 19"/></svg>';
+  if (s === 'mls') return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12,7 13.5,10.5 17,10.5 14.5,13 15.5,16.5 12,14.5 8.5,16.5 9.5,13 7,10.5 10.5,10.5" fill="currentColor" stroke="none" opacity="0.4"/><circle cx="12" cy="12" r="10"/></svg>';
+  // NCAA basketball already covered above
+  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>';
+}
+
+function getEventTypeIcon(evType, meta) {
   const t = (evType || '').toLowerCase();
   const icons = {
     concert:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-    sports:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg>',
     theater:  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10s3-3 3-8h14c0 5 3 8 3 8"/><path d="M6 15s.5-2 6-2 6 2 6 2"/><path d="M2 10v12h20V10"/><line x1="12" y1="13" x2="12" y2="22"/></svg>',
     festival: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
     comedy:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>',
   };
-  const colors = {
+  const defaultColors = {
     concert: '#9b72d0', sports: '#2ecc71', theater: '#f5c518',
     festival: '#f08030', comedy: '#e03050',
   };
-  const svg = icons[t] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-  const color = colors[t] || '#d4b896';
+
+  if (t === 'sports' && meta) {
+    const sport   = meta.sport || '';
+    const team    = meta.artist || '';  // artist field holds team name
+    const svg     = getSportIcon(sport);
+    const colors  = getTeamColors(team);
+    const primary = colors ? colors[0] : '#2ecc71';
+    return `<div style="color:${primary};">${svg}</div>`;
+  }
+
+  const svg   = icons[t] || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+  const color = defaultColors[t] || '#d4b896';
   return `<div style="color:${color};">${svg}</div>`;
 }
 
@@ -2209,12 +2229,24 @@ async function loadDashboard() {
     const artist = stub.artist ? stub.artist.toUpperCase() : 'SMARTSTUB';
     const meta   = stub.metadata || {};
     const badge  = meta.event_type ? meta.event_type.toUpperCase() : (stub.event_type || 'SMARTSTUB');
+
+    // Sports: derive team colors for accent bar and icon badge
+    const isSports = (meta.event_type || '').toLowerCase() === 'sports';
+    const teamColors = isSports ? getTeamColors(stub.artist || '') : null;
+    const accentStyle = teamColors
+      ? `style="background: linear-gradient(90deg, ${teamColors[0]}, ${teamColors[1] !== '#FFFFFF' ? teamColors[1] : teamColors[0]}cc);"`
+      : '';
+    const iconBgStyle = teamColors
+      ? `style="background: ${teamColors[0]}22; border-color: ${teamColors[0]}44;"`
+      : '';
+    const metaForIcon = isSports ? { ...meta, artist: stub.artist } : meta;
+
     return `
     <div class="stub-pin-wrapper">
       <div class="pushpin"><div class="pushpin-head"></div><div class="pushpin-needle"></div></div>
       <div class="ticket-card ${getEventTypeClass(meta.event_type)}" id="stub-item-${stub.id}" onclick="openGalleryById('${stub.id}')" style="cursor:pointer;" title="View Gallery">
-      <div class="ticket-accent-bar"></div>
-      <div class="ticket-type-icon">${getEventTypeIcon(meta.event_type)}</div>
+      <div class="ticket-accent-bar" ${accentStyle}></div>
+      <div class="ticket-type-icon" ${iconBgStyle}>${getEventTypeIcon(meta.event_type, metaForIcon)}</div>
       <div class="ticket-top">
         <div class="ticket-badge">${badge}</div>
         <div class="ticket-name">${name}</div>
