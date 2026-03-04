@@ -132,6 +132,31 @@
     flex-shrink: 0;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
+  /* Delete button — hidden by default, shown when edit panel is open */
+  .gallery-photo-delete {
+    display: none;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #c0392b;
+    color: white;
+    border: 2px solid #fff;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 20;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: background 0.15s;
+  }
+  .gallery-photo-delete:hover { background: #e74c3c; }
+  /* Show delete buttons when gallery is in edit mode */
+  .gallery-photos.edit-mode .gallery-photo-delete { display: flex; }
   .gallery-photo:nth-child(5n+1) { transform: rotate(-2.8deg); }
   .gallery-photo:nth-child(5n+2) { transform: rotate(1.5deg); }
   .gallery-photo:nth-child(5n+3) { transform: rotate(-1deg); }
@@ -3768,6 +3793,7 @@ async function renderGallery(stub, showEditPanel = false) {
         if (panel) {
           panel.style.display = 'flex';
           populateGalleryEditPanel(stub);
+          document.getElementById('gallery-photo-grid').classList.add('edit-mode');
           setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
           editDetailsBtn.style.display = 'none';
         }
@@ -3808,8 +3834,10 @@ async function renderGallery(stub, showEditPanel = false) {
       if (showEditPanel) {
         ownerActions.style.display = 'flex';
         populateGalleryEditPanel(stub);
+        document.getElementById('gallery-photo-grid').classList.add('edit-mode');
       } else {
         ownerActions.style.display = 'none';
+        document.getElementById('gallery-photo-grid').classList.remove('edit-mode');
       }
     }
   } else {
@@ -3833,7 +3861,9 @@ async function renderGallery(stub, showEditPanel = false) {
       captionHTML = `<div class="gallery-photo-caption">${savedCaption}</div>`;
     }
 
-    div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy">${captionHTML}`;
+    div.innerHTML = `<img src="${urlData.publicUrl}" alt="Memory photo" loading="lazy">
+      ${isOwner ? `<button class="gallery-photo-delete" onclick="deleteGalleryPhoto(event, '${stub.user_id}/${stub.id}/${file.name}', this)" title="Delete photo">✕</button>` : ''}
+      ${captionHTML}`;
     const photoIndex = Array.from(grid.children).length;
     div.onclick = (e) => { if (e.target.tagName !== 'INPUT') openLightbox(photoIndex); };
     grid.appendChild(div);
@@ -4092,7 +4122,43 @@ async function saveGalleryEdits() {
   }
 
   savedMsg.style.display = 'block';
-  setTimeout(() => { savedMsg.style.display = 'none'; }, 2500);
+  setTimeout(() => {
+    savedMsg.style.display = 'none';
+    // Close edit panel and return to clean gallery view
+    const panel = document.getElementById('gallery-owner-actions');
+    if (panel) panel.style.display = 'none';
+    document.getElementById('gallery-photo-grid').classList.remove('edit-mode');
+    // Show Edit Details button again and scroll to top of gallery
+    const editBtn = document.getElementById('gallery-edit-btn');
+    if (editBtn) editBtn.style.display = 'inline-block';
+    const hero = document.getElementById('gallery-hero');
+    if (hero) hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 800);
+}
+
+async function deleteGalleryPhoto(e, path, btn) {
+  e.stopPropagation(); // don't open lightbox
+  if (!confirm('Delete this photo? This cannot be undone.')) return;
+
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  const { error } = await sb.storage.from('photos').remove([path]);
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = '✕';
+    alert('Could not delete photo. Please try again.');
+    return;
+  }
+
+  // Remove the photo card from the DOM immediately
+  const photoCard = btn.closest('.gallery-photo');
+  if (photoCard) {
+    photoCard.style.transition = 'opacity 0.2s, transform 0.2s';
+    photoCard.style.opacity = '0';
+    photoCard.style.transform = 'scale(0.85)';
+    setTimeout(() => photoCard.remove(), 220);
+  }
 }
 
 async function handleGalleryAddPhotos(input) {
