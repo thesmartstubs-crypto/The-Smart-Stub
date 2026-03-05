@@ -5181,8 +5181,17 @@ function formatDate(dateStr) {
   if (session?.user) {
     currentUser = session.user;
     updateDashboardUser();
-    goTo('screen-dashboard');
-    loadDashboard();
+    const action = new URLSearchParams(location.search).get('action');
+    if (action === 'create') {
+      // Clear the param from URL without reload
+      history.replaceState({}, '', '/');
+      goTo('screen-dashboard');
+      await loadDashboard();
+      goTo('screen-create');
+    } else {
+      goTo('screen-dashboard');
+      loadDashboard();
+    }
   }
 })();
 </script>
