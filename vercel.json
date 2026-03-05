@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/activate/:token", "destination": "/activate.html" },
+    { "source": "/admin", "destination": "/admin.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
