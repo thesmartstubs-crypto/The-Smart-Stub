@@ -2570,7 +2570,7 @@ async function loadDashboard() {
       xOff += w;
     }
     const textHTML = '<text x="' + (VW/2) + '" y="' + (VH - 2) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" font-weight="bold" letter-spacing="3" fill="currentColor">SMARTSTUBS</text>';
-    const barcodeSVG = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
+    const barcodeSVG = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;transform:rotate(90deg);transform-origin:center;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
 
     // Seat fields
     const section = stub.seat_section || '';
