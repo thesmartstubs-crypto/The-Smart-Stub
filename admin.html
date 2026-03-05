@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartStubs — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --black:    #0a0a0a;
+    --surface:  #111108;
+    --card:     #18180f;
+    --border:   #2a2a18;
+    --gold:     #c9a84c;
+    --gold-dim: #7a5c1e;
+    --muted:    #5a5a40;
+    --text:     #e8e0c8;
+    --text-dim: #9a9070;
+    --red:      #c0392b;
+    --green:    #27ae60;
+    --blue:     #2980b9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse at 10% 0%, rgba(201,168,76,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 100%, rgba(201,168,76,0.04) 0%, transparent 50%);
+  }
+
+  /* ── Login ── */
+  #login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .login-box {
+    width: 100%;
+    max-width: 400px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 48px 40px;
+  }
+  .login-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .login-logo span { color: var(--gold); }
+  .login-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 36px;
+  }
+  .login-box input {
+    width: 100%;
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--gold-dim); }
+  .login-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 12px;
+    display: none;
+  }
+
+  /* ── Main Layout ── */
+  #admin-screen { display: none; }
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+  .logo span { color: var(--gold); }
+  .admin-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-left: 12px;
+    vertical-align: middle;
+  }
+  .top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .admin-email {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 32px;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+  .tab {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text-dim); }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Cards ── */
+  .panel-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    margin-bottom: 24px;
+  }
+  .panel-card h2 {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  /* ── Token generation form ── */
+  .token-type-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .token-type-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .token-type-btn.active {
+    background: rgba(201,168,76,0.1);
+    color: var(--gold);
+  }
+  .token-type-btn .type-label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .token-type-btn .type-desc {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .token-type-btn.active .type-desc { color: var(--gold-dim); }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .form-group input, .form-group select {
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color: var(--gold-dim); }
+  .form-group select option { background: #111; }
+
+  #event-fields { display: none; margin-top: 4px; }
+
+  .batch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .batch-row label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .batch-row input {
+    width: 80px;
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    text-align: center;
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    background: var(--gold);
+    color: #0a0a0a;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-weight: 700;
+    transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); }
+
+  .btn-danger {
+    background: none;
+    border: 1px solid rgba(192,57,43,0.3);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: rgba(192,57,43,0.7);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-danger:hover { background: rgba(192,57,43,0.1); color: var(--red); border-color: var(--red); }
+
+  /* ── Token table ── */
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .token-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .token-table td {
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(42,42,24,0.5);
+    vertical-align: middle;
+  }
+  .token-table tr:last-child td { border-bottom: none; }
+  .token-table tr:hover td { background: rgba(201,168,76,0.02); }
+
+  .token-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    background: rgba(201,168,76,0.08);
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .token-code:hover { background: rgba(201,168,76,0.15); }
+
+  .status-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .status-unused {
+    background: rgba(39,174,96,0.1);
+    color: #27ae60;
+    border: 1px solid rgba(39,174,96,0.2);
+  }
+  .status-claimed {
+    background: rgba(41,128,185,0.1);
+    color: #5dade2;
+    border: 1px solid rgba(41,128,185,0.2);
+  }
+  .status-revoked {
+    background: rgba(192,57,43,0.1);
+    color: #c0392b;
+    border: 1px solid rgba(192,57,43,0.2);
+  }
+
+  .token-type-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+  }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  /* ── Generated tokens box ── */
+  .generated-box {
+    display: none;
+    margin-top: 20px;
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .generated-box h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 14px;
+  }
+  .generated-token-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .generated-token-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .gen-token-url {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .copy-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
+
+  .copy-all-btn {
+    margin-top: 14px;
+    width: 100%;
+  }
+
+  /* ── Users table ── */
+  .user-row td:first-child { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-dim); }
+
+  /* ── Filters ── */
+  .filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .filter-btn.active { background: rgba(201,168,76,0.1); border-color: var(--gold-dim); color: var(--gold); }
+
+  .search-input {
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    outline: none;
+    width: 220px;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--gold-dim); }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .loading {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+  }
+
+  /* ── Activation test panel ── */
+  .activation-test {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+  }
+  .activation-test .form-group { flex: 1; }
+
+  .activation-preview {
+    display: none;
+    margin-top: 20px;
+    background: #0d0d08;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .activation-preview h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .token-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .token-detail { display: flex; flex-direction: column; gap: 4px; }
+  .token-detail .td-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .token-detail .td-val {
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  @media (max-width: 768px) {
+    .main-content { padding: 24px 16px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .top-bar { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Smart<span>Stubs</span></div>
+    <div class="login-sub">Admin Panel</div>
+    <input type="email" id="login-email" placeholder="Admin email" autocomplete="email">
+    <input type="password" id="login-password" placeholder="Password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') handleLogin()">
+    <div class="login-error" id="login-error"></div>
+    <button class="btn-primary" style="width:100%" onclick="handleLogin()" id="login-btn">Sign In</button>
+  </div>
+</div>
+
+<!-- Admin App -->
+<div id="admin-screen">
+  <div class="top-bar">
+    <div>
+      <span class="logo">Smart<span>Stubs</span></span>
+      <span class="admin-badge">ADMIN</span>
+    </div>
+    <div class="top-bar-right">
+      <span class="admin-email" id="admin-email-display"></span>
+      <button class="btn-secondary" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Tokens</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Unused</div>
+        <div class="stat-value" id="stat-unused" style="color:#27ae60;">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Claimed</div>
+        <div class="stat-value" id="stat-claimed" style="color:#5dade2;">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="stat-users">—</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('tokens')">Tokens</button>
+      <button class="tab" onclick="switchTab('generate')">Generate</button>
+      <button class="tab" onclick="switchTab('test')">Test Activation</button>
+      <button class="tab" onclick="switchTab('users')">Users</button>
+    </div>
+
+    <!-- TOKENS TAB -->
+    <div class="tab-panel active" id="tab-tokens">
+      <div class="panel-card">
+        <h2>Token Registry</h2>
+        <div class="filter-row">
+          <button class="filter-btn active" onclick="filterTokens('all', this)">All</button>
+          <button class="filter-btn" onclick="filterTokens('unused', this)">Unused</button>
+          <button class="filter-btn" onclick="filterTokens('claimed', this)">Claimed</button>
+          <button class="filter-btn" onclick="filterTokens('revoked', this)">Revoked</button>
+          <input class="search-input" placeholder="Search token..." id="token-search"
+            oninput="renderTokenTable()">
+        </div>
+        <div id="token-table-wrap">
+          <div class="loading">Loading tokens...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GENERATE TAB -->
+    <div class="tab-panel" id="tab-generate">
+      <div class="panel-card">
+        <h2>Generate Tokens</h2>
+
+        <!-- Pre-configured vs Blank -->
+        <div class="token-type-toggle">
+          <button class="token-type-btn active" id="btn-type-blank" onclick="setTokenType('blank')">
+            <span class="type-label">🎁 Blank Token</span>
+            <span class="type-desc">Recipient configures event details on activation</span>
+          </button>
+          <button class="token-type-btn" id="btn-type-configured" onclick="setTokenType('configured')">
+            <span class="type-label">🎯 Pre-configured Token</span>
+            <span class="type-desc">Event details embedded — stub auto-populates</span>
+          </button>
+        </div>
+
+        <!-- Event fields (shown for configured only) -->
+        <div id="event-fields">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Event Name</label>
+              <input type="text" id="gen-event-name" placeholder="e.g. Illinois Fighting Illini">
+            </div>
+            <div class="form-group">
+              <label>Event Type</label>
+              <select id="gen-event-type">
+                <option value="">— Select type —</option>
+                <option value="sports">Sports</option>
+                <option value="concert">Concert</option>
+                <option value="theater">Theater</option>
+                <option value="festival">Festival</option>
+                <option value="comedy">Comedy</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Artist / Team</label>
+              <input type="text" id="gen-artist" placeholder="e.g. Illinois Fighting Illini">
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="gen-date">
+            </div>
+            <div class="form-group">
+              <label>Venue</label>
+              <input type="text" id="gen-venue" placeholder="e.g. State Farm Center">
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="gen-city" placeholder="e.g. Champaign, IL">
+            </div>
+          </div>
+        </div>
+
+        <!-- Batch count -->
+        <div class="batch-row">
+          <label>Quantity</label>
+          <input type="number" id="gen-quantity" value="1" min="1" max="500">
+          <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">tokens</span>
+        </div>
+
+        <button class="btn-primary" onclick="generateTokens()" id="gen-btn">Generate Tokens</button>
+
+        <!-- Results -->
+        <div class="generated-box" id="generated-box">
+          <h3>✓ Tokens Generated</h3>
+          <div class="generated-token-list" id="generated-token-list"></div>
+          <button class="btn-secondary copy-all-btn" onclick="copyAllTokens()">Copy All URLs</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST ACTIVATION TAB -->
+    <div class="tab-panel" id="tab-test">
+      <div class="panel-card">
+        <h2>Test Activation Flow</h2>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.7;">
+          Simulate what a customer experiences when they tap their physical ticket.
+          Enter a token ID or paste a full activation URL to preview the flow.
+        </p>
+        <div class="activation-test">
+          <div class="form-group">
+            <label>Token ID or Activation URL</label>
+            <input type="text" id="test-token-input" placeholder="ss_tok_abc123 or full URL">
+          </div>
+          <button class="btn-primary" onclick="testToken()">Look Up</button>
+          <button class="btn-secondary" onclick="openActivation()">Open Activation Page</button>
+        </div>
+        <div class="activation-preview" id="activation-preview">
+          <h3>Token Details</h3>
+          <div class="token-detail-grid" id="token-detail-grid"></div>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);display:flex;gap:12px;">
+            <button class="btn-primary" onclick="simulateActivation()">Simulate Customer Flow →</button>
+            <button class="btn-danger" onclick="revokePreviewToken()">Revoke Token</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="tab-panel" id="tab-users">
+      <div class="panel-card">
+        <h2>Registered Users</h2>
+        <div id="user-table-wrap">
+          <div class="loading">Loading users...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ozzcuksblqeuljchchrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_VDyxuOyKYuuapAqIcc8OgQ_HZLYR1u4';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── IMPORTANT: Set your admin user ID here after first login ──
+// Find it in Supabase → Authentication → Users → your email → copy the UUID
+const ADMIN_USER_IDS = [];
+
+let currentAdmin = null;
+let allTokens = [];
+let tokenFilter = 'all';
+let previewTokenId = null;
+let tokenType = 'blank';
+
+// ── Auth ──
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await setAdmin(session.user);
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (session) await setAdmin(session.user);
+    else showLogin();
+  });
+}
+
+async function setAdmin(user) {
+  // Check admin — either by hardcoded ID list or email domain
+  // For now allow any authenticated user (tighten after you add your ID above)
+  currentAdmin = user;
+  document.getElementById('admin-email-display').textContent = user.email;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-screen').style.display = 'block';
+  await loadAllData();
+}
+
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-screen').style.display = 'none';
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function handleLogout() {
+  await sb.auth.signOut();
+  showLogin();
+}
+
+// ── Data loading ──
+async function loadAllData() {
+  await Promise.all([loadTokens(), loadStats()]);
+}
+
+async function loadTokens() {
+  const { data, error } = await sb.from('tokens')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+  allTokens = data || [];
+  renderTokenTable();
+  updateStats();
+}
+
+async function loadStats() {
+  // User count via stubs table (proxy — counts distinct user_ids)
+  const { data } = await sb.from('stubs').select('user_id');
+  if (data) {
+    const unique = new Set(data.map(r => r.user_id)).size;
+    document.getElementById('stat-users').textContent = unique;
+  }
+}
+
+function updateStats() {
+  const total   = allTokens.length;
+  const unused  = allTokens.filter(t => t.status === 'unused').length;
+  const claimed = allTokens.filter(t => t.status === 'claimed').length;
+  document.getElementById('stat-total').textContent   = total;
+  document.getElementById('stat-unused').textContent  = unused;
+  document.getElementById('stat-claimed').textContent = claimed;
+}
+
+// ── Token table ──
+function filterTokens(f, btn) {
+  tokenFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTokenTable();
+}
+
+function renderTokenTable() {
+  const search = (document.getElementById('token-search')?.value || '').toLowerCase();
+  let tokens = allTokens;
+
+  if (tokenFilter !== 'all') tokens = tokens.filter(t => t.status === tokenFilter);
+  if (search) tokens = tokens.filter(t =>
+    t.token_id.toLowerCase().includes(search) ||
+    (t.event_data?.event_name || '').toLowerCase().includes(search)
+  );
+
+  const wrap = document.getElementById('token-table-wrap');
+  if (!tokens.length) {
+    wrap.innerHTML = '<div class="empty-state">No tokens found</div>';
+    return;
+  }
+
+  wrap.innerHTML = `<table class="token-table">
+    <thead><tr>
+      <th>Token ID</th>
+      <th>Type</th>
+      <th>Status</th>
+      <th>Event</th>
+      <th>Claimed By</th>
+      <th>Created</th>
+      <th>Actions</th>
+    </tr></thead>
+    <tbody>${tokens.map(t => {
+      const ed = t.event_data || {};
+      const eventLabel = ed.event_name
+        ? `${ed.event_name}${ed.event_date ? ' · ' + formatDate(ed.event_date) : ''}`
+        : '<span style="color:var(--muted)">Blank</span>';
+      const claimedBy = t.claimed_by
+        ? `<span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim)">${t.claimed_by.slice(0,8)}…</span>`
+        : '—';
+      return `<tr>
+        <td><span class="token-code" onclick="copyToken('${t.token_id}')" title="Click to copy activation URL">${t.token_id}</span></td>
+        <td><span class="token-type-badge">${t.event_data ? 'configured' : 'blank'}</span></td>
+        <td><span class="status-badge status-${t.status}">${t.status}</span></td>
+        <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${eventLabel}</td>
+        <td>${claimedBy}</td>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${formatDate(t.created_at?.slice(0,10))}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn-secondary" style="padding:4px 10px;font-size:9px;" onclick="copyToken('${t.token_id}')">Copy URL</button>
+          ${t.status !== 'revoked' ? `<button class="btn-danger" onclick="revokeToken('${t.token_id}')">Revoke</button>` : ''}
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+async function revokeToken(tokenId) {
+  if (!confirm(`Revoke token ${tokenId}? This cannot be undone.`)) return;
+  const { error } = await sb.from('tokens').update({ status: 'revoked' }).eq('token_id', tokenId);
+  if (error) { alert('Error: ' + error.message); return; }
+  await loadTokens();
+}
+
+function copyToken(tokenId) {
+  const url = `${location.origin}/activate/${tokenId}`;
+  navigator.clipboard.writeText(url);
+  // Brief flash feedback
+  const els = document.querySelectorAll('.token-code');
+  els.forEach(el => { if (el.textContent === tokenId) { el.style.background = 'rgba(39,174,96,0.2)'; setTimeout(() => el.style.background = '', 800); }});
+}
+
+// ── Generate tokens ──
+function setTokenType(type) {
+  tokenType = type;
+  document.getElementById('btn-type-blank').classList.toggle('active', type === 'blank');
+  document.getElementById('btn-type-configured').classList.toggle('active', type === 'configured');
+  document.getElementById('event-fields').style.display = type === 'configured' ? 'block' : 'none';
+}
+
+function generateTokenId() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let id = 'ss_tok_';
+  for (let i = 0; i < 10; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+async function generateTokens() {
+  const qty = parseInt(document.getElementById('gen-quantity').value) || 1;
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  let eventData = null;
+  if (tokenType === 'configured') {
+    eventData = {
+      event_name:  document.getElementById('gen-event-name').value.trim() || null,
+      event_type:  document.getElementById('gen-event-type').value || null,
+      artist:      document.getElementById('gen-artist').value.trim() || null,
+      event_date:  document.getElementById('gen-date').value || null,
+      venue:       document.getElementById('gen-venue').value.trim() || null,
+      city:        document.getElementById('gen-city').value.trim() || null,
+    };
+  }
+
+  const rows = Array.from({ length: qty }, () => ({
+    token_id:   generateTokenId(),
+    status:     'unused',
+    event_data: eventData,
+    created_by: currentAdmin.id,
+  }));
+
+  const { data, error } = await sb.from('tokens').insert(rows).select();
+  btn.disabled = false;
+  btn.textContent = 'Generate Tokens';
+
+  if (error) { alert('Error: ' + error.message); return; }
+
+  // Show results
+  const box = document.getElementById('generated-box');
+  const list = document.getElementById('generated-token-list');
+  box.style.display = 'block';
+  list.innerHTML = data.map(t => {
+    const url = `${location.origin}/activate/${t.token_id}`;
+    return `<div class="generated-token-row">
+      <span class="gen-token-url">${url}</span>
+      <button class="copy-btn" onclick="copyGenToken(this, '${url}')">Copy</button>
+    </div>`;
+  }).join('');
+
+  await loadTokens();
+}
+
+function copyGenToken(btn, url) {
+  navigator.clipboard.writeText(url);
+  btn.textContent = 'Copied!';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
+}
+
+function copyAllTokens() {
+  const urls = Array.from(document.querySelectorAll('.gen-token-url')).map(el => el.textContent).join('\n');
+  navigator.clipboard.writeText(urls);
+}
+
+// ── Test activation ──
+async function testToken() {
+  let input = document.getElementById('test-token-input').value.trim();
+  // Extract token ID from URL if full URL pasted
+  if (input.includes('/activate/')) input = input.split('/activate/').pop();
+
+  const { data, error } = await sb.from('tokens').select('*').eq('token_id', input).single();
+  const preview = document.getElementById('activation-preview');
+
+  if (error || !data) {
+    preview.style.display = 'block';
+    document.getElementById('token-detail-grid').innerHTML =
+      `<div style="color:var(--red);font-family:'Space Mono',monospace;font-size:12px;grid-column:1/-1">Token not found: ${input}</div>`;
+    previewTokenId = null;
+    return;
+  }
+
+  previewTokenId = data.token_id;
+  const ed = data.event_data || {};
+  const details = [
+    { label: 'Token ID',    val: data.token_id },
+    { label: 'Status',      val: `<span class="status-badge status-${data.status}">${data.status}</span>` },
+    { label: 'Type',        val: data.event_data ? 'Pre-configured' : 'Blank' },
+    { label: 'Created',     val: formatDate(data.created_at?.slice(0,10)) },
+    { label: 'Event',       val: ed.event_name || '—' },
+    { label: 'Date',        val: ed.event_date ? formatDate(ed.event_date) : '—' },
+    { label: 'Venue',       val: ed.venue || '—' },
+    { label: 'Claimed By',  val: data.claimed_by || '—' },
+  ];
+
+  preview.style.display = 'block';
+  document.getElementById('token-detail-grid').innerHTML = details.map(d =>
+    `<div class="token-detail"><div class="td-label">${d.label}</div><div class="td-val">${d.val}</div></div>`
+  ).join('');
+}
+
+function openActivation() {
+  let input = document.getElementById('test-token-input').value.trim();
+  if (!input) { alert('Enter a token ID first'); return; }
+  if (input.includes('/activate/')) input = input.split('/activate/').pop();
+  window.open(`${location.origin}/activate/${input}`, '_blank');
+}
+
+function simulateActivation() {
+  if (!previewTokenId) return;
+  window.open(`${location.origin}/activate/${previewTokenId}`, '_blank');
+}
+
+async function revokePreviewToken() {
+  if (!previewTokenId) return;
+  await revokeToken(previewTokenId);
+  await testToken();
+}
+
+// ── Users tab ──
+async function loadUsers() {
+  const { data, error } = await sb.from('stubs')
+    .select('user_id, event_name, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) { document.getElementById('user-table-wrap').innerHTML = '<div class="empty-state">Could not load users</div>'; return; }
+
+  // Group by user
+  const userMap = {};
+  data.forEach(s => {
+    if (!userMap[s.user_id]) userMap[s.user_id] = { count: 0, latest: s.created_at };
+    userMap[s.user_id].count++;
+  });
+
+  const rows = Object.entries(userMap);
+  if (!rows.length) { document.getElementById('user-table-wrap').innerHTML = '<div class="empty-state">No users yet</div>'; return; }
+
+  document.getElementById('user-table-wrap').innerHTML = `<table class="token-table">
+    <thead><tr>
+      <th>User ID</th>
+      <th>Stubs Created</th>
+      <th>Latest Activity</th>
+    </tr></thead>
+    <tbody>${rows.map(([uid, info]) => `
+      <tr class="user-row">
+        <td>${uid}</td>
+        <td><span style="font-family:'Space Mono',monospace;font-size:13px;color:var(--gold)">${info.count}</span></td>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)">${formatDate(info.latest?.slice(0,10))}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+// ── Tabs ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['tokens','generate','test','users'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'users') loadUsers();
+  if (name === 'tokens') loadTokens();
+}
+
+// ── Helpers ──
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  try {
+    return new Date(dateStr + (dateStr.length === 10 ? 'T12:00:00' : '')).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch { return dateStr; }
+}
+
+init();
+</script>
+</body>
+</html>
