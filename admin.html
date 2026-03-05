@@ -980,6 +980,14 @@ async function generateTokens() {
   btn.disabled = true;
   btn.textContent = 'Generating...';
 
+  // Ensure we have a fresh session before inserting
+  const { data: { session }, error: sessionErr } = await sb.auth.getSession();
+  if (sessionErr || !session) {
+    alert('Session expired — please refresh the page and try again.');
+    btn.disabled = false; btn.textContent = 'Generate Tokens';
+    return;
+  }
+
   let eventData = null;
   if (tokenType === 'configured') {
     eventData = {
@@ -996,7 +1004,7 @@ async function generateTokens() {
     token_id:   generateTokenId(),
     status:     'unused',
     event_data: eventData,
-    created_by: currentAdmin.id,
+    created_by: session.user.id,
   }));
 
   const { data, error } = await sb.from('tokens').insert(rows).select();
