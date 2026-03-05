@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activate Your SmartStub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --black:   #0a0908;
+    --card:    #f8f4ec;
+    --border:  #e0d8c8;
+    --gold:    #c9a84c;
+    --dark:    #1a1410;
+    --muted:   #9a8a70;
+    --green:   #1a6b3a;
+    --red:     #c0392b;
+    --cork:    #7a5c1e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.05) 0%, transparent 50%);
+  }
+
+  /* ── Loading state ── */
+  #state-loading {
+    text-align: center;
+    color: var(--muted);
+  }
+  .loading-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: #3a3020;
+    margin-bottom: 24px;
+  }
+  .loading-logo span { color: var(--gold); }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 2px solid #2a2010;
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Error state ── */
+  #state-error {
+    display: none;
+    text-align: center;
+    max-width: 400px;
+  }
+  .error-icon { font-size: 48px; margin-bottom: 16px; }
+  .error-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--red);
+    margin-bottom: 8px;
+  }
+  .error-msg {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── Already claimed ── */
+  #state-claimed {
+    display: none;
+    text-align: center;
+    max-width: 400px;
+  }
+
+  /* ── Preview state ── */
+  #state-preview {
+    display: none;
+    width: 100%;
+    max-width: 560px;
+    animation: fadeUp 0.5s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .preview-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: #3a3020;
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .preview-logo span { color: var(--gold); }
+
+  /* Ticket preview card */
+  .ticket-preview {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .ticket-accent {
+    height: 6px;
+    width: 100%;
+  }
+  .ticket-body {
+    padding: 28px 32px 24px;
+  }
+  .ticket-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .ticket-event-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .ticket-artist {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .ticket-details {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+  }
+  .ticket-field { display: flex; flex-direction: column; gap: 3px; }
+  .ticket-field-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #b0a090;
+  }
+  .ticket-field-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--dark);
+  }
+
+  /* Blank token version */
+  .blank-ticket-body {
+    padding: 32px;
+    text-align: center;
+  }
+  .blank-icon { font-size: 52px; margin-bottom: 16px; }
+  .blank-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 2px;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+  .blank-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── Activation message ── */
+  .activation-msg {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .activation-msg h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: #e8d8b0;
+    margin-bottom: 8px;
+  }
+  .activation-msg p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── Auth panel ── */
+  .auth-panel {
+    background: #111008;
+    border: 1px solid #2a2410;
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    border-bottom: 1px solid #2a2410;
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: #5a5040;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .auth-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+
+  .auth-form input {
+    width: 100%;
+    background: #0a0908;
+    border: 1px solid #2a2410;
+    border-radius: 6px;
+    padding: 12px 14px;
+    color: #e8d8b0;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .auth-form input:focus { border-color: #7a5c1e; }
+  .auth-form input::placeholder { color: #3a3020; }
+
+  .auth-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 10px;
+    display: none;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .btn-activate {
+    width: 100%;
+    background: var(--gold);
+    color: #0a0908;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+  .btn-activate:hover { opacity: 0.85; }
+  .btn-activate:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .auth-divider {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: #3a3020;
+    margin: 16px 0;
+    text-transform: uppercase;
+  }
+
+  /* ── Success state ── */
+  #state-success {
+    display: none;
+    text-align: center;
+    max-width: 480px;
+    animation: fadeUp 0.5s ease;
+  }
+  .success-icon { font-size: 64px; margin-bottom: 20px; }
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    letter-spacing: 3px;
+    color: #e8d8b0;
+    margin-bottom: 8px;
+  }
+  .success-sub {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .btn-go-stub {
+    display: inline-block;
+    background: var(--gold);
+    color: #0a0908;
+    border: none;
+    border-radius: 8px;
+    padding: 16px 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-go-stub:hover { opacity: 0.85; }
+
+  @media (max-width: 480px) {
+    .ticket-event-name { font-size: 32px; }
+    .ticket-body { padding: 20px; }
+    .auth-panel { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="state-loading">
+  <div class="loading-logo">Smart<span>Stubs</span></div>
+  <div class="spinner"></div>
+</div>
+
+<!-- Error -->
+<div id="state-error">
+  <div class="error-icon">🎟️</div>
+  <div class="error-title">Invalid Ticket</div>
+  <p class="error-msg" id="error-msg">This activation link is not valid. Please check your ticket and try again.</p>
+</div>
+
+<!-- Already claimed -->
+<div id="state-claimed">
+  <div style="text-align:center;">
+    <div style="font-size:48px;margin-bottom:16px;">✓</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#e8d8b0;margin-bottom:8px;">Already Activated</div>
+    <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:24px;">This ticket has already been claimed. If this is yours, sign in to view your gallery.</p>
+    <a href="/" style="display:inline-block;background:var(--gold);color:#0a0908;border-radius:8px;padding:14px 32px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-decoration:none;">Go to SmartStubs</a>
+  </div>
+</div>
+
+<!-- Preview + Auth -->
+<div id="state-preview">
+  <div class="preview-logo">Smart<span>Stubs</span></div>
+
+  <!-- Ticket preview (populated by JS) -->
+  <div class="ticket-preview" id="ticket-preview"></div>
+
+  <div class="activation-msg">
+    <h2>Your Ticket Is Ready</h2>
+    <p>Create a free account or sign in to activate your SmartStub<br>and start building your gallery.</p>
+  </div>
+
+  <!-- Auth -->
+  <div class="auth-panel">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('signup')">Create Account</button>
+      <button class="auth-tab" onclick="switchAuthTab('signin')">Sign In</button>
+    </div>
+
+    <!-- Sign up -->
+    <div class="auth-form active" id="auth-signup">
+      <input type="email" id="signup-email" placeholder="Email address" autocomplete="email">
+      <input type="password" id="signup-password" placeholder="Create a password" autocomplete="new-password"
+        onkeydown="if(event.key==='Enter') handleSignup()">
+      <div class="auth-error" id="signup-error"></div>
+      <button class="btn-activate" onclick="handleSignup()" id="signup-btn">Activate My Stub →</button>
+    </div>
+
+    <!-- Sign in -->
+    <div class="auth-form" id="auth-signin">
+      <input type="email" id="signin-email" placeholder="Email address" autocomplete="email">
+      <input type="password" id="signin-password" placeholder="Password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') handleSignin()">
+      <div class="auth-error" id="signin-error"></div>
+      <button class="btn-activate" onclick="handleSignin()" id="signin-btn">Sign In & Activate →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Success -->
+<div id="state-success">
+  <div class="success-icon">🎉</div>
+  <div class="success-title">You're In!</div>
+  <p class="success-sub" id="success-msg">Your SmartStub has been activated.<br>Head to your gallery to add photos and memories.</p>
+  <a href="/" class="btn-go-stub" id="success-btn">View My Stub →</a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://ozzcuksblqeuljchchrv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_VDyxuOyKYuuapAqIcc8OgQ_HZLYR1u4';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let tokenData = null;
+let tokenId = null;
+
+// ── Extract token from URL ──
+// Supports: /activate/ss_tok_xxx  OR  ?token=ss_tok_xxx
+function getTokenFromUrl() {
+  const path = location.pathname;
+  const match = path.match(/\/activate\/([^\/\?]+)/);
+  if (match) return match[1];
+  const params = new URLSearchParams(location.search);
+  return params.get('token');
+}
+
+// ── State management ──
+function showState(name) {
+  ['loading','error','claimed','preview','success'].forEach(s => {
+    document.getElementById(`state-${s}`).style.display = s === name ? (s === 'loading' ? 'block' : 'flex') : 'none';
+  });
+  if (name === 'preview') document.getElementById('state-preview').style.display = 'block';
+}
+
+// ── Init ──
+async function init() {
+  showState('loading');
+  tokenId = getTokenFromUrl();
+
+  if (!tokenId) {
+    document.getElementById('error-msg').textContent = 'No token found in this URL. Please check your ticket and try again.';
+    showState('error');
+    return;
+  }
+
+  // Look up token
+  const { data, error } = await sb.from('tokens')
+    .select('*')
+    .eq('token_id', tokenId)
+    .single();
+
+  if (error || !data) {
+    document.getElementById('error-msg').textContent = `Token "${tokenId}" was not found. Please check your ticket.`;
+    showState('error');
+    return;
+  }
+
+  tokenData = data;
+
+  if (data.status === 'revoked') {
+    document.getElementById('error-msg').textContent = 'This ticket has been deactivated. Please contact SmartStubs support.';
+    showState('error');
+    return;
+  }
+
+  if (data.status === 'claimed') {
+    showState('claimed');
+    return;
+  }
+
+  // Show preview
+  renderTicketPreview(data);
+  showState('preview');
+
+  // Check if already logged in — if so, skip to activate directly
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    // Already signed in — activate immediately
+    await activateToken(session.user);
+  }
+}
+
+// ── Render ticket preview ──
+function renderTicketPreview(token) {
+  const preview = document.getElementById('ticket-preview');
+  const ed = token.event_data;
+
+  // Pick accent color based on event type
+  const accentColors = {
+    concert:  'linear-gradient(90deg,#6c4db8,#9b72d0)',
+    sports:   'linear-gradient(90deg,#1a6b3a,#2ecc71)',
+    theater:  'linear-gradient(90deg,#b8960a,#f5c518)',
+    festival: 'linear-gradient(90deg,#c45e10,#f08030)',
+    comedy:   'linear-gradient(90deg,#a82030,#e03050)',
+    other:    'linear-gradient(90deg,#8a7040,#d4b896)',
+  };
+  const accent = ed ? (accentColors[ed.event_type] || accentColors.other) : accentColors.other;
+
+  if (ed && ed.event_name) {
+    // Pre-configured token — show event details
+    const dateStr = ed.event_date
+      ? new Date(ed.event_date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })
+      : null;
+
+    preview.innerHTML = `
+      <div class="ticket-accent" style="background:${accent}"></div>
+      <div class="ticket-body">
+        <div class="ticket-eyebrow">${ed.event_type || 'Event'} · SmartStub</div>
+        <div class="ticket-event-name">${ed.event_name}</div>
+        ${ed.artist ? `<div class="ticket-artist">${ed.artist}</div>` : ''}
+        <div class="ticket-details">
+          ${dateStr ? `<div class="ticket-field"><div class="ticket-field-label">Date</div><div class="ticket-field-val">${dateStr}</div></div>` : ''}
+          ${ed.venue ? `<div class="ticket-field"><div class="ticket-field-label">Venue</div><div class="ticket-field-val">${ed.venue}</div></div>` : ''}
+          ${ed.city  ? `<div class="ticket-field"><div class="ticket-field-label">City</div><div class="ticket-field-val">${ed.city}</div></div>` : ''}
+        </div>
+      </div>`;
+  } else {
+    // Blank token
+    preview.innerHTML = `
+      <div class="ticket-accent" style="background:${accent}"></div>
+      <div class="blank-ticket-body">
+        <div class="blank-icon">🎟️</div>
+        <div class="blank-title">Your SmartStub Awaits</div>
+        <p class="blank-desc">This ticket is ready to be personalized.<br>Once activated you'll set up your event details and start adding memories.</p>
+      </div>`;
+  }
+}
+
+// ── Auth ──
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', ['signup','signin'][i] === tab));
+  document.querySelectorAll('.auth-form').forEach((f,i) => f.classList.toggle('active', ['auth-signup','auth-signin'][i] === `auth-${tab}`));
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const pass  = document.getElementById('signup-password').value;
+  const errEl = document.getElementById('signup-error');
+  const btn   = document.getElementById('signup-btn');
+  errEl.style.display = 'none';
+
+  if (!email || !pass) { errEl.textContent = 'Please enter your email and a password.'; errEl.style.display = 'block'; return; }
+  if (pass.length < 6)  { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  const { data, error } = await sb.auth.signUp({ email, password: pass });
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Activate My Stub →';
+    return;
+  }
+
+  if (data.user) await activateToken(data.user);
+}
+
+async function handleSignin() {
+  const email = document.getElementById('signin-email').value.trim();
+  const pass  = document.getElementById('signin-password').value;
+  const errEl = document.getElementById('signin-error');
+  const btn   = document.getElementById('signin-btn');
+  errEl.style.display = 'none';
+
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    errEl.textContent = error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Sign In & Activate →';
+    return;
+  }
+
+  if (data.user) await activateToken(data.user);
+}
+
+// ── Core: claim token and create stub ──
+async function activateToken(user) {
+  // Double-check token hasn't been claimed since page load
+  const { data: fresh } = await sb.from('tokens').select('status').eq('token_id', tokenId).single();
+  if (fresh?.status === 'claimed') { showState('claimed'); return; }
+
+  const ed = tokenData.event_data;
+  let stubId = null;
+  let stubSlug = null;
+
+  // Generate a slug
+  function makeSlug(len = 10) {
+    return Array.from({length: len}, () => 'abcdefghijklmnopqrstuvwxyz0123456789'[Math.floor(Math.random() * 36)]).join('');
+  }
+
+  if (ed && ed.event_name) {
+    // Pre-configured — create stub automatically
+    let slug = makeSlug();
+    const stubPayload = {
+      user_id:    user.id,
+      slug,
+      event_name: ed.event_name || '',
+      artist:     ed.artist     || '',
+      event_date: ed.event_date || null,
+      venue:      ed.venue      || '',
+      city:       ed.city       || '',
+      metadata:   { event_type: ed.event_type || 'other' },
+    };
+    const { data: stubData, error: stubErr } = await sb.from('stubs').insert(stubPayload).select().single();
+    if (stubErr) { console.error('Stub creation error:', stubErr); }
+    else { stubId = stubData.id; stubSlug = stubData.slug; }
+  }
+  // Blank tokens: no stub created yet — user sets up via normal create flow
+
+  // Mark token as claimed
+  await sb.from('tokens').update({
+    status:     'claimed',
+    claimed_by: user.id,
+    claimed_at: new Date().toISOString(),
+    stub_id:    stubId,
+  }).eq('token_id', tokenId);
+
+  // Show success
+  showSuccess(ed, stubSlug);
+}
+
+function showSuccess(ed, stubSlug) {
+  const btn = document.getElementById('success-btn');
+  const msg = document.getElementById('success-msg');
+
+  if (ed && ed.event_name && stubSlug) {
+    msg.innerHTML = `Your <strong style="color:#e8d8b0">${ed.event_name}</strong> SmartStub is live.<br>Head to your gallery to add photos and memories.`;
+    btn.textContent = 'View My Gallery →';
+    btn.href = `/g/${stubSlug}`;
+  } else {
+    msg.innerHTML = `Your SmartStub has been activated.<br>Head to your account to set up your event and start adding memories.`;
+    btn.textContent = 'Set Up My Stub →';
+    btn.href = '/';
+  }
+
+  showState('success');
+}
+
+init();
+</script>
+</body>
+</html>
