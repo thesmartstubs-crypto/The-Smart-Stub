@@ -501,6 +501,8 @@
     padding: 12px 10px;
     gap: 5px;
     position: relative;
+    align-self: stretch;
+    overflow: hidden;
   }
   .ticket-stub-fields { display: flex; flex-direction: column; gap: 4px; width: 100%; align-items: center; }
   .ticket-stub-field { text-align: center; }
@@ -2547,9 +2549,10 @@ async function loadDashboard() {
     }
     const allModules = [3,1,3, ...modules, 3,1,3];
     const totalUnits = allModules.reduce((a,b) => a+b, 0);
-    const bcW = 243, bcH = 405;
+    // Use a fixed internal coordinate system; SVG fills the stub zone via CSS
+    const bcW = 100, bcH = 200; // viewBox units only — display size set by CSS
     const unitW = bcH / totalUnits;
-    const barBottom = 20;
+    const barBottom = 18;
     let barsHTML = '', xOff = 0;
     for (let i = 0; i < allModules.length; i++) {
       const w = allModules[i] * unitW;
@@ -2558,8 +2561,8 @@ async function loadDashboard() {
       }
       xOff += w;
     }
-    const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 4) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="13" font-weight="bold" letter-spacing="3.5" fill="currentColor">SMARTSTUBS</text>';
-    const barcodeSVG = '<svg width="' + bcH + '" height="' + bcW + '" viewBox="0 0 ' + bcH + ' ' + bcW + '" style="transform:rotate(270deg);display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
+    const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 3) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" font-weight="bold" letter-spacing="3" fill="currentColor">SMARTSTUBS</text>';
+    const barcodeSVG = '<svg viewBox="0 0 ' + bcH + ' ' + bcW + '" preserveAspectRatio="none" style="transform:rotate(270deg);width:100%;height:100%;display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
 
     // Seat fields
     const section = stub.seat_section || '';
@@ -2572,7 +2575,7 @@ async function loadDashboard() {
           (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
           (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
           '</div>'
-      : `<div style="opacity:0.55;display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:4px 0;">${barcodeSVG}</div>`;
+      : `<div style="position:absolute;inset:6px 4px;opacity:0.6;">${barcodeSVG}</div>`;
 
     // Venue + city on one line
     const venueCity = [stub.venue, stub.city].filter(v => v && v !== '\u2014').join(' \u00b7 ') || '\u2014';
