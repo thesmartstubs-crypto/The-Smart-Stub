@@ -2539,30 +2539,38 @@ async function loadDashboard() {
       : '';
     const metaForIcon = isSports ? { ...meta, artist: stub.artist } : meta;
 
-    // Barcode SVG — realistic varying widths, vertical orientation, SMARTSTUBS label
+    // Barcode SVG — vertical bars like a real barcode, SMARTSTUBS text beneath
     const barcodeSeeds = stub.id ? String(stub.id).replace(/-/g,'').slice(0,18) : '123456789012345678';
     const seed = barcodeSeeds;
+
+    // Build bar pattern: alternating black/white with varied widths (1-4 units)
     const modules = [];
     for (let i = 0; i < 38; i++) {
       const c = seed.charCodeAt(i % seed.length);
       modules.push([1,1,1,2,2,2,3,4][(c + i) % 8]);
     }
-    const allModules = [3,1,3, ...modules, 3,1,3];
+    // Guard bars at each end like a real barcode
+    const allModules = [2,1,2, ...modules, 2,1,2];
     const totalUnits = allModules.reduce((a,b) => a+b, 0);
-    // Use a fixed internal coordinate system; SVG fills the stub zone via CSS
-    const bcW = 44, bcH = 200; // viewBox units only — narrower so rotated barcode fits stub width
-    const unitW = bcH / totalUnits;
-    const barBottom = 10;
-    let barsHTML = '', xOff = 0;
+
+    // SVG viewBox: wide enough for bars, tall enough for bars + label
+    // No rotation needed — bars drawn vertically, text at bottom
+    const VW = 200, VH = 90; // viewBox dimensions
+    const textH = 16;        // reserved for SMARTSTUBS label
+    const barsH = VH - textH - 4; // bar height
+    const unitPx = VW / totalUnits;
+
+    let barsHTML = '';
+    let xOff = 0;
     for (let i = 0; i < allModules.length; i++) {
-      const w = allModules[i] * unitW;
-      if (i % 2 === 0) {
-        barsHTML += '<rect x="' + xOff.toFixed(2) + '" y="3" width="' + w.toFixed(2) + '" height="' + (bcW - barBottom - 3) + '" fill="currentColor" rx="0"/>';
+      const w = allModules[i] * unitPx;
+      if (i % 2 === 0) { // even indices = black bars
+        barsHTML += '<rect x="' + xOff.toFixed(2) + '" y="0" width="' + (w - 0.8).toFixed(2) + '" height="' + barsH + '" fill="currentColor"/>';
       }
       xOff += w;
     }
-    const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 3) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="7" font-weight="bold" letter-spacing="1.5" fill="currentColor">SMARTSTUBS</text>';
-    const barcodeSVG = '<svg viewBox="0 0 ' + bcH + ' ' + bcW + '" preserveAspectRatio="none" style="transform:rotate(270deg);width:100%;height:100%;display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
+    const textHTML = '<text x="' + (VW/2) + '" y="' + (VH - 2) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" font-weight="bold" letter-spacing="3" fill="currentColor">SMARTSTUBS</text>';
+    const barcodeSVG = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" preserveAspectRatio="xMidYMid meet" style="width:100%;height:100%;display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
 
     // Seat fields
     const section = stub.seat_section || '';
@@ -2575,7 +2583,7 @@ async function loadDashboard() {
           (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
           (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
           '</div>'
-      : `<div style="position:absolute;inset:6px 4px;opacity:0.6;">${barcodeSVG}</div>`;
+      : `<div style="position:absolute;inset:4px 2px;opacity:0.65;">${barcodeSVG}</div>`;
 
     // Venue + city on one line
     const venueCity = [stub.venue, stub.city].filter(v => v && v !== '\u2014').join(' \u00b7 ') || '\u2014';
