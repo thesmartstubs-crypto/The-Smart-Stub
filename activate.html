@@ -638,7 +638,7 @@ function showSuccess(ed, stubSlug) {
   } else {
     msg.innerHTML = `Your SmartStub has been activated.<br>Head to your account to set up your event and start adding memories.`;
     btn.textContent = 'Set Up My Stub →';
-    btn.href = '/';
+    btn.href = '/?action=create';
   }
 
   showState('success');
