@@ -386,6 +386,9 @@
   .stub-theme-light .ticket-dots     { background: repeating-linear-gradient(to bottom, #ccc4b4 0, #ccc4b4 4px, transparent 4px, transparent 8px); }
   .stub-theme-light .ticket-stub-field .t-val { color: #5a3a10; }
   .stub-theme-light .ticket-stub svg { color: #8a7a60; }
+  /* Barcode colors: dark on light tickets, light on dark tickets */
+  .stub-theme-light .barcode-svg { color: #3a3228; }
+  .ticket-stub .barcode-svg { color: #c8b89a; }
 
   /* Left color accent bar */
   .ticket-accent-bar {
@@ -2534,7 +2537,7 @@ async function loadDashboard() {
     }
     const allModules = [3,1,3, ...modules, 3,1,3];
     const totalUnits = allModules.reduce((a,b) => a+b, 0);
-    const bcW = 108, bcH = 180;
+    const bcW = 162, bcH = 270;
     const unitW = bcH / totalUnits;
     const barBottom = 20;
     let barsHTML = '', xOff = 0;
@@ -2546,7 +2549,7 @@ async function loadDashboard() {
       xOff += w;
     }
     const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 4) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" font-weight="bold" letter-spacing="2.5" fill="currentColor">SMARTSTUBS</text>';
-    const barcodeSVG = '<svg width="' + bcH + '" height="' + bcW + '" viewBox="0 0 ' + bcH + ' ' + bcW + '" style="transform:rotate(270deg);display:block;color:#3a3228;">' + barsHTML + textHTML + '</svg>';
+    const barcodeSVG = '<svg width="' + bcH + '" height="' + bcW + '" viewBox="0 0 ' + bcH + ' ' + bcW + '" style="transform:rotate(270deg);display:block;" class="barcode-svg">' + barsHTML + textHTML + '</svg>';
 
     // Seat fields
     const section = stub.seat_section || '';
