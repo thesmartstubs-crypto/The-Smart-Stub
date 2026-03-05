@@ -2526,14 +2526,20 @@ async function loadDashboard() {
 
     // Barcode SVG seeded by stub id
     const barcodeSeeds = stub.id ? String(stub.id).replace(/-/g,'').slice(0,18) : '123456789012345678';
-    const barHeights = Array.from({length: 18}, (_,i) => {
+    const barHeights = Array.from({length: 22}, (_,i) => {
       const c = barcodeSeeds.charCodeAt(i % barcodeSeeds.length) || 50;
-      return 12 + (c % 24);
+      return 18 + (c % 28);
     });
-    const barWidths = [2,1,3,1,2,2,1,3,1,2,2,1,3,1,2,1,3,2];
-    const barcodeSVG = '<svg width="64" height="38" viewBox="0 0 64 38"><g>' +
-      barHeights.map((h,i) => `<rect x="${i*3.4+2}" y="${38-h}" width="${barWidths[i]||2}" height="${h}" fill="#3a3228" rx="0.5"/>`).join('') +
-      '</g></svg>';
+    const barWidths = [3,2,4,2,3,3,2,4,2,3,2,4,3,2,3,2,4,2,3,3,2,4];
+    // Build barcode as tall SVG (bars run vertically, we rotate the whole thing)
+    const bcW = 56, bcH = 110;
+    const barcodeSVG = `<svg width="${bcH}" height="${bcW}" viewBox="0 0 ${bcH} ${bcW}" style="transform:rotate(90deg);display:block;">` +
+      `<g>${barHeights.map((h,i) => {
+        const x = i * (bcH / barHeights.length);
+        const w = (bcH / barHeights.length) - 1.5;
+        const barH = Math.round(bcW * h / 46);
+        return `<rect x="${x.toFixed(1)}" y="${((bcW - barH)/2).toFixed(1)}" width="${w.toFixed(1)}" height="${barH}" fill="#3a3228" rx="0.5"/>`;
+      }).join('')}</g></svg>`;
 
     // Seat fields
     const section = stub.seat_section || '';
@@ -2546,7 +2552,7 @@ async function loadDashboard() {
           (row     ? `<div class="ticket-stub-field"><div class="t-label">Row</div><div class="t-val">${row}</div></div>` : '') +
           (seat    ? `<div class="ticket-stub-field"><div class="t-label">Seat</div><div class="t-val">${seat}</div></div>` : '') +
           '</div>'
-      : `<div style="opacity:0.45;">${barcodeSVG}</div>`;
+      : `<div style="opacity:0.5;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">${barcodeSVG}</div>`;
 
     // Venue + city on one line
     const venueCity = [stub.venue, stub.city].filter(v => v && v !== '\u2014').join(' \u00b7 ') || '\u2014';
