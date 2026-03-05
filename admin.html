@@ -791,7 +791,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── IMPORTANT: Set your admin user ID here after first login ──
 // Find it in Supabase → Authentication → Users → your email → copy the UUID
-const ADMIN_USER_IDS = [];
+const ADMIN_USER_IDS = ['1396b757-4e92-4b37-a555-6520782de749'];
 
 let currentAdmin = null;
 let allTokens = [];
@@ -812,8 +812,13 @@ async function init() {
 }
 
 async function setAdmin(user) {
-  // Check admin — either by hardcoded ID list or email domain
-  // For now allow any authenticated user (tighten after you add your ID above)
+  if (!ADMIN_USER_IDS.includes(user.id)) {
+    await sb.auth.signOut();
+    const errEl = document.getElementById('login-error');
+    errEl.textContent = 'Access denied. This panel is restricted to administrators.';
+    errEl.style.display = 'block';
+    return;
+  }
   currentAdmin = user;
   document.getElementById('admin-email-display').textContent = user.email;
   document.getElementById('login-screen').style.display = 'none';
