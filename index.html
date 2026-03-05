@@ -2534,9 +2534,9 @@ async function loadDashboard() {
     }
     const allModules = [3,1,3, ...modules, 3,1,3];
     const totalUnits = allModules.reduce((a,b) => a+b, 0);
-    const bcW = 72, bcH = 120;
+    const bcW = 108, bcH = 180;
     const unitW = bcH / totalUnits;
-    const barBottom = 16;
+    const barBottom = 20;
     let barsHTML = '', xOff = 0;
     for (let i = 0; i < allModules.length; i++) {
       const w = allModules[i] * unitW;
@@ -2545,8 +2545,8 @@ async function loadDashboard() {
       }
       xOff += w;
     }
-    const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 3) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="7" font-weight="bold" letter-spacing="2" fill="currentColor">SMARTSTUBS</text>';
-    const barcodeSVG = '<svg width="' + bcH + '" height="' + bcW + '" viewBox="0 0 ' + bcH + ' ' + bcW + '" style="transform:rotate(90deg);display:block;color:#3a3228;">' + barsHTML + textHTML + '</svg>';
+    const textHTML = '<text x="' + (bcH/2).toFixed(1) + '" y="' + (bcW - 4) + '" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" font-weight="bold" letter-spacing="2.5" fill="currentColor">SMARTSTUBS</text>';
+    const barcodeSVG = '<svg width="' + bcH + '" height="' + bcW + '" viewBox="0 0 ' + bcH + ' ' + bcW + '" style="transform:rotate(270deg);display:block;color:#3a3228;">' + barsHTML + textHTML + '</svg>';
 
     // Seat fields
     const section = stub.seat_section || '';
